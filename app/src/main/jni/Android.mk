@@ -1,19 +1,24 @@
-
 LOCAL_PATH := $(call my-dir)
 CURRENT_PATH := $(LOCAL_PATH)
 
 #include $(call all-subdir-makefiles)
 
-GSTREAMER_ROOT := /home/ssitwell/gstreamer-arm
+
+OPENSSL_ROOT := /Users/miskodzamba/StudioProjects/petbot-android/app/src/main/jni/openssl-1.0.2
+GSTREAMER_ROOT := /Users/miskodzamba/research/petbot/petbot_2015/gstreamer-1.0-android-$(TARGET_ARCH)-1.9.1
+#GSTREAMER_ROOT := /Users/miskodzamba/research/petbot/petbot_2015/gstreamer-1.0-android-armv7-1.9.1
+#GSTREAMER_ROOT := /Users/miskodzamba/research/petbot/petbot_2015/gstreamer-1.0-android-x86-1.9.1
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := ssl
-LOCAL_SRC_FILES := /home/ssitwell/openssl-1.0.1g/libssl.so
+LOCAL_SRC_FILES := $(OPENSSL_ROOT)/$(APP_ABI)/lib/libssl.so
+LOCAL_EXPORT_C_INCLUDES += $(OPENSSL_ROOT)/include
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := crypto
-LOCAL_SRC_FILES := /home/ssitwell/openssl-1.0.1g/libcrypto.so
+LOCAL_SRC_FILES := $(OPENSSL_ROOT)/$(APP_ABI)/lib/libcrypto.so
+LOCAL_EXPORT_C_INCLUDES += $(OPENSSL_ROOT)/include
 LOCAL_EXPORT_CFLAGS := -DWAZA
 include $(PREBUILT_SHARED_LIBRARY)
 
@@ -29,22 +34,12 @@ GSTREAMER_PLUGINS         := $(GSTREAMER_PLUGINS_CORE) $(GSTREAMER_PLUGINS_SYS) 
 GSTREAMER_EXTRA_DEPS      := gstreamer-video-1.0
 include $(GSTREAMER_NDK_BUILD_PATH)/gstreamer-1.0.mk
 
-$(info "???")
-$(info $(LOCAL_C_INCLUDES))
-$(info $(LOCAL_EXPORT_C_INCLUDES))
-$(info "???")
-
 include $(CLEAR_VARS)
-$(info "!!!")
-$(info $(LOCAL_CFLAGS))
-$(info $(LOCAL_C_INCLUDES))
-$(info $(LOCAL_EXPORT_C_INCLUDES))
-$(info "!!!")
 LOCAL_PATH := $(CURRENT_PATH)
 LOCAL_MODULE    := tutorial-3
 LOCAL_SRC_FILES := tutorial-3.c pb.c tcp_utils.c nice_utils.c
 LOCAL_SHARED_LIBRARIES := gstreamer_android ssl crypto
 LOCAL_LDLIBS := -llog -landroid
-LOCAL_CFLAGS := -std=c11 -DANDROID -DPBSSL -DPBTHREADS -I /usr/local/ssl/android-23/include
+LOCAL_CFLAGS := -std=c11 -DANDROID -DPBSSL -DPBTHREADS
 include $(BUILD_SHARED_LIBRARY)
 
