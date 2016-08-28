@@ -30,6 +30,9 @@ typedef enum {
 	PBSOCK_EXIT
 } pbsock_state;
 
+extern const char * PBMSG_TYPES_STRING[];
+
+
 typedef enum {
 	PBMSG_UNKNOWN = (1<<0),
 	PBMSG_MESSAGE = (1<<1),
@@ -52,14 +55,17 @@ typedef enum {
 	PBMSG_STREAM_EVENT = (1<<18),
 	PBMSG_QOS_EVENT = (1<<19),
         PBMSG_CONNECTED_EVENT = (1<<20),
-        PBMSG_DISCONNECTED_EVENT = (1<<21)
+        PBMSG_DISCONNECTED_EVENT = (1<<21),
+        PBMSG_ACTION_EVENT = (1<<22)
 } pbmsg_type;
+
+#define PBMSG_MAX_TYPE 22
 
 typedef struct pbmsg {
 	uint32_t pbmsg_type;
 	uint32_t pbmsg_len;
 	uint32_t pbmsg_from;
-	char * pbmsg;
+	char * pbmsg; 
 } pbmsg;
 typedef struct pbsock {
 #ifdef PBSSL
@@ -67,8 +73,8 @@ typedef struct pbsock {
 #endif
 #ifdef PBTHREADS
 	pthread_t keep_alive_thread;
-	pthread_mutex_t send_mutex;
-	pthread_mutex_t recv_mutex;
+	pthread_mutex_t send_mutex; 
+	pthread_mutex_t recv_mutex; 
 	pthread_cond_t cond;
 	int keep_alive_time;
 	int waiting_threads; //need to hold pbs->send_mutex to modify this!
@@ -116,4 +122,6 @@ size_t send_fd_pbmsg(int fd, pbmsg *m);
 
 char * read_file(const char *fn, size_t * len);
 int write_file(const char *fn , char * buffer, size_t len);
+
+char * pbmsg_type_to_string(pbmsg *m) ;
 #endif

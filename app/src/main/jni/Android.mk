@@ -42,9 +42,9 @@ $(info $(LOCAL_EXPORT_C_INCLUDES))
 $(info "!!!")
 LOCAL_PATH := $(CURRENT_PATH)
 LOCAL_MODULE    := tutorial-3
-LOCAL_SRC_FILES := tutorial-3.c tcp_utils.c nice.c
+LOCAL_SRC_FILES := tutorial-3.c pb.c tcp_utils.c nice_utils.c
 LOCAL_SHARED_LIBRARIES := gstreamer_android ssl crypto
 LOCAL_LDLIBS := -llog -landroid
-LOCAL_CFLAGS := -DPBSSL -DPBTHREADS -I /usr/local/ssl/android-23/include
+LOCAL_CFLAGS := -std=c11 -DANDROID -DPBSSL -DPBTHREADS -I /usr/local/ssl/android-23/include
 include $(BUILD_SHARED_LIBRARY)
 

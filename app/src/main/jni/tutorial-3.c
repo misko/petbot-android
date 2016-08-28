@@ -8,7 +8,7 @@
 #include <gst/video/video.h>
 #include <pthread.h>
 
-#include <nice.h>
+#include "nice_utils.h"
 #include "tcp_utils.h"
 
 GST_DEBUG_CATEGORY_STATIC (debug_category);
@@ -30,13 +30,14 @@ static int pfd[2];
 static pthread_t thr;
 static const char *tag = "myapp";
 
+/*
 static void *thread_func(void* foo)
 {
     ssize_t rdsz;
     char buf[128];
     while((rdsz = read(pfd[0], buf, sizeof buf - 1)) > 0) {
         if(buf[rdsz - 1] == '\n') --rdsz;
-        buf[rdsz - 1] = 0;  /* add null-terminator */
+        buf[rdsz - 1] = 0;  // add null-terminator
         __android_log_write(ANDROID_LOG_DEBUG, tag, buf);
     }
     return 0;
@@ -46,21 +47,22 @@ int start_logger(const char *app_name)
 {
     tag = app_name;
 
-    /* make stdout line-buffered and stderr unbuffered */
+    // make stdout line-buffered and stderr unbuffered
     setvbuf(stdout, 0, _IOLBF, 0);
     setvbuf(stderr, 0, _IONBF, 0);
 
-    /* create the pipe and redirect stdout and stderr */
+    // create the pipe and redirect stdout and stderr
     pipe(pfd);
     dup2(pfd[1], 1);
     dup2(pfd[1], 2);
 
-    /* spawn the logging thread */
+    // spawn the logging thread
     if(pthread_create(&thr, 0, thread_func, 0) == -1)
         return -1;
     pthread_detach(thr);
     return 0;
 }
+*/
 
 /* Structure to contain all our information, so we can pass it to callbacks */
 typedef struct _CustomData {
@@ -215,11 +217,16 @@ static void *app_function (void *userdata) {
 	ctx = SSL_CTX_new (SSLv23_client_method());
 	CHK_NULL(ctx);
 
-	pbsock *pbs = connect_to_server_with_key("192.168.0.102", 8888, ctx, "petbot1");
+	pbsock *pbs = connect_to_server_with_key("192.168.0.103", 8888, ctx, "petbot1");
 
 	if (pbs==NULL) {
 		GST_ERROR ("Failed to start PBSock to server...");
 		return NULL;
+	}
+
+	int ret = start_nice_client(pbs);
+	if (ret != 0) {
+		GST_ERROR ("agent fail");
 	}
 
 	g_object_set (nicesrc, "agent", agent, NULL);
@@ -289,7 +296,7 @@ static void *app_function (void *userdata) {
 /* Instruct the native code to create its internal data structure, pipeline and thread */
 static void gst_native_init (JNIEnv* env, jobject thiz) {
 
-	start_logger("petbot");
+	//start_logger("petbot");
 
 	CustomData *data = g_new0 (CustomData, 1);
 	SET_CUSTOM_DATA (env, thiz, custom_data_field_id, data);
