@@ -9,7 +9,7 @@ model {
 
         defaultConfig {
             applicationId = 'com.gst_sdk_tutorials.tutorial_3'
-            minSdkVersion.apiLevel = 4
+            minSdkVersion.apiLevel = 14
             targetSdkVersion.apiLevel = 23
         }
 
@@ -61,6 +61,12 @@ model {
             create("all")
         }
     }
+
+}
+
+dependencies {
+    compile 'com.android.support:design:+'
+    compile 'com.android.support:support-annotations:+'
 }
 
 // call regular ndk-build(.cmd) script from app directory
