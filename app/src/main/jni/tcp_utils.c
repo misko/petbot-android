@@ -578,7 +578,7 @@ int write_file(const char *fn , char * buffer, size_t len) {
 
 pbmsg * new_pbmsg_from_ptr_and_int(void * x , int z) {
 	pbmsg * m = new_pbmsg();
-	assert(sizeof(void*)==4); // fail on non interoperable systems
+	//assert(sizeof(void*)==4); // fail on non interoperable systems
 	m->pbmsg_len = 2*sizeof(void *);
 	m->pbmsg_type = PBMSG_PTR;
 	m->pbmsg = (char *)malloc(2*sizeof(void *)); //TODO : this is messy
@@ -648,3 +648,7 @@ char * pbmsg_type_to_string(pbmsg *m) {
 	return ret;	
 }
 
+
+int pbmsg_has_type(pbmsg * m , int ty ) {
+	return (m->pbmsg_type & ty)!=0 ? 1 : 0;
+}
