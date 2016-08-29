@@ -34,3 +34,4 @@ local.properties
 
 # NDK
 /app/src/main/obj/
+/app/build/
