@@ -4,13 +4,13 @@ apply plugin: 'com.android.model.application'
 
 model {
     android {
-        compileSdkVersion = 23
-        buildToolsVersion = '23.0.2'
+        compileSdkVersion = 22
+        buildToolsVersion '22'
 
         defaultConfig {
             applicationId = 'com.gst_sdk_tutorials.tutorial_3'
             minSdkVersion.apiLevel = 4
-            targetSdkVersion.apiLevel = 23
+            targetSdkVersion.apiLevel = 22
         }
 
         sources.main {
