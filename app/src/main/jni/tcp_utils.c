@@ -139,7 +139,7 @@ void *keep_alive_handler(void * v ) {
 	while (pbs->state!=PBSOCK_EXIT) {
 		gettimeofday(&tv, NULL);
 		ts.tv_sec = tv.tv_sec + pbs->keep_alive_time;
-		ts.tv_nsec = 0;	
+		ts.tv_nsec = 0;
 		if (pthread_mutex_lock(&(pbs->send_mutex))!=0) {
 			PBPRINTF("TCP_UTILS: Keep alive failed to grab send mutex\n");
 			exit(1);

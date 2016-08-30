@@ -5,11 +5,11 @@ apply plugin: 'com.android.model.application'
 model {
     android {
         compileSdkVersion = 22
-        buildToolsVersion '22'
+        buildToolsVersion "22.0.1"
 
         defaultConfig {
             applicationId = 'com.gst_sdk_tutorials.tutorial_3'
-            minSdkVersion.apiLevel = 4
+            minSdkVersion.apiLevel = 14
             targetSdkVersion.apiLevel = 22
         }
 
@@ -61,6 +61,21 @@ model {
             create("all")
         }
     }
+
+}
+
+dependencies {
+    //compile 'com.android.support:appcompat-v7:18.0.+'
+
+    //compile 'com.android.support:appcompat-v7:22.2.1'
+
+    compile 'com.android.support:appcompat-v7:22.2.1'
+    compile 'com.android.support:design:22.2.1'
+    //compile 'com.android.support:design:+'
+    //compile 'com.android.support:support-annotations:+'
+    compile 'com.android.support:support-annotations:22.0.0'
+    compile 'com.android.volley:volley:1.0.0'
+    compile 'com.google.android.gms:play-services-appindexing:8.1.0'
 }
 
 // call regular ndk-build(.cmd) script from app directory

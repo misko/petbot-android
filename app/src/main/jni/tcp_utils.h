@@ -51,12 +51,12 @@ typedef enum {
 	PBMSG_ALL = (1<<14),
 	PBMSG_CONFIG_SET = (1<<15),
 	PBMSG_CONFIG_GET = (1<<16),
-        PBMSG_CONNECTED = (1<<17),
-        PBMSG_DISCONNECTED = (1<<18),
-        PBMSG_STRING = (1<<19),
-        PBMSG_PTR = (1<<20),
-        PBMSG_BIN = (1<<21),
-        PBMSG_FILE = (1<<22),
+	PBMSG_CONNECTED = (1<<17),
+	PBMSG_DISCONNECTED = (1<<18),
+	PBMSG_STRING = (1<<19),
+	PBMSG_PTR = (1<<20),
+	PBMSG_BIN = (1<<21),
+	PBMSG_FILE = (1<<22),
 	PBMSG_KEEP_ALIVE = (1<<23)
 } pbmsg_type;
 

@@ -11,7 +11,10 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Arrays;
+
 import org.freedesktop.gstreamer.GStreamer;
+import com.petbot.PBConnector;
 
 import tutorial_3.R;
 
@@ -32,7 +35,15 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-
+		PBConnector pb = new PBConnector();
+		pb.stringFromJNI();
+		byte[] wtf=  pb.newByteArray();
+		Log.w("petbot", "no network");
+		Log.w("petbot", Arrays.toString(wtf));;
+		pb.connectToServerWithKey("159.203.252.147",8888,"PETBOTA20X1");
+		Log.w("petbot", String.valueOf(pb.ptr_pbs));
+		//pb.connectToServerWithKey(JNIEnv* env,jobject thiz, jstring hostname, int portno, jstring key );
+		System.out.println(wtf);
 		// Initialize GStreamer and warn if it fails
 		try {
 			GStreamer.init(this);
@@ -121,10 +132,11 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 	}
 
 	static {
-		System.loadLibrary("ssl");
 		System.loadLibrary("crypto");
+		System.loadLibrary("ssl");
 		System.loadLibrary("gstreamer_android");
 		System.loadLibrary("tutorial-3");
+		System.loadLibrary("PBConnector");
 		nativeClassInit();
 	}
 
