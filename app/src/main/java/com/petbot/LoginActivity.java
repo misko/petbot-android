@@ -43,6 +43,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.petbot.PBConnector;
 import static android.Manifest.permission.READ_CONTACTS;
 
 import com.petbot.R;
@@ -93,6 +94,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
 		mLoginFormView = findViewById(R.id.login_form);
 		mProgressView = findViewById(R.id.login_progress);
+		PBConnector pbc = new PBConnector("159.203.252.147",8888,"PETBOTA20X1"); //we can remove this!
 	}
 
 	private void populateAutoComplete() {

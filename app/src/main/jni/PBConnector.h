@@ -4,6 +4,10 @@
 
 #ifndef PETBOT_ANDROID_PBCONNECTOR_H
 #define PETBOT_ANDROID_PBCONNECTOR_H
+
+void Java_com_petbot_PBConnector_sendPBMsg(JNIEnv* env,jobject thiz);
+jobject Java_com_petbot_PBConnector_readPBMsg(JNIEnv* env,jobject thiz);
+void Java_com_petbot_PBConnector_sendPBMsg(JNIEnv* env,jobject thiz, jobject jpbmsg);
 JNIEXPORT jstring JNICALL
 Java_com_petbot_PBConnector_stringFromJNI( JNIEnv* env,
                                                   jobject thiz );

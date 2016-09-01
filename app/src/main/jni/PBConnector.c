@@ -20,12 +20,136 @@
 #include "pb.h"
 #include "nice_utils.h"
 #include "tcp_utils.h"
+#include <assert.h>
+
+//static jclass pbmsg_cls;
+
 /* This is a trivial JNI example where we use a native method
  * to return a new VM String. See the corresponding Java source
  * file located at:
  *
  *   apps/samples/hello-jni/project/src/com/example/hellojni/HelloJni.java
  */
+/*
+ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void *reserved) {
+    PBPRINTF("WTF WTF WTF LOAD LOAD LOAD LOAD LOAD\n");
+    JNIEnv *env;
+    //(*jvm)->GetEnv(jvm, (void**)&env, JNI_VERSION_1_4);
+    //pbmsg_cls = (*env)->FindClass(env, "com/petbot$PBMsg");
+
+        if ((*jvm)->GetEnv(jvm, (void **) &env, JNI_VERSION_1_6) != JNI_OK) {
+            return JNI_ERR;
+        } else {
+            jclass localSimpleCls = (*env)->FindClass(env,"com/petbot/PBMsg");
+            if ((*env)->ExceptionCheck(env)) {
+               return -1;
+            }
+
+            if (localSimpleCls == NULL) {
+                return JNI_ERR;
+            }
+            pbmsg_cls = (jclass) (*env)->NewGlobalRef(env, localSimpleCls);
+        }
+        return JNI_VERSION_1_6;
+ }*/
+
+pbsock * get_pbsock(JNIEnv* env,jobject thiz) {
+       jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
+       jfieldID pbs_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_pbs", "J");
+       return (pbsock*)((*env)->GetLongField(env,thiz, pbs_field));
+}
+
+
+void Java_com_petbot_PBConnector_close(JNIEnv* env,jobject thiz) {
+
+        pbsock * pbs = get_pbsock(env,thiz);
+        free_pbsock(pbs);
+
+        jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
+        jfieldID pbs_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_pbs", "J");
+        jfieldID ctx_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ctx", "J");
+
+        (*env)->SetLongField(env,thiz, pbs_field, 0);
+        (*env)->SetLongField(env,thiz, ctx_field, 0);
+}
+
+void Java_com_petbot_PBConnector_sendPBMsg(JNIEnv* env,jobject thiz, jobject jpbmsg) {
+        pbsock * pbs = get_pbsock(env,thiz);
+        //lets get the fields and such...
+
+        jclass pbmsg_cls = (*env)->FindClass(env, "com/petbot/PBMsg");
+        //get the fields for the jpbmsg
+       jfieldID pbmsg_len_fid = (*env)->GetFieldID(env,pbmsg_cls, "pbmsg_len", "I");
+       jfieldID pbmsg_type_fid = (*env)->GetFieldID(env,pbmsg_cls, "pbmsg_type", "I");
+       jfieldID pbmsg_from_fid = (*env)->GetFieldID(env,pbmsg_cls, "pbmsg_from", "I");
+       jfieldID pbmsg_msg_fid = (*env)->GetFieldID(env,pbmsg_cls, "pbmsg", "[B");
+
+       int len = (*env)->GetIntField(env,jpbmsg,pbmsg_len_fid);
+       int type = (*env)->GetIntField(env,jpbmsg,pbmsg_type_fid);
+       int from = (*env)->GetIntField(env,jpbmsg,pbmsg_from_fid);
+
+       jbyteArray jary = (jbyteArray)((*env)->GetObjectField(env,jpbmsg, pbmsg_msg_fid));
+        jbyte *b = (jbyte *)((*env)->GetByteArrayElements(env,jary, NULL));
+
+       //TODO assert lengths are correct...
+       int alen = (*env)->GetArrayLength( env, jary );
+       assert(1==0);
+       assert(alen==len);
+       char * ray = (char*)malloc(sizeof(char)*len);
+       for (int i=0; i<len; i++) {
+         ray[i]=b[i];
+       }
+
+       pbmsg * m = new_pbmsg();
+       m->pbmsg_len = len;
+       m->pbmsg_type = type;
+       m->pbmsg_from = from;
+       m->pbmsg = ray;
+
+       send_pbmsg(pbs,m);
+       free_pbmsg(m);
+
+}
+
+jobject Java_com_petbot_PBConnector_readPBMsg(JNIEnv* env,jobject thiz) {
+    jclass pbmsg_cls = (*env)->FindClass(env, "com/petbot/PBMsg");
+    jmethodID constructor = (*env)->GetMethodID(env, pbmsg_cls,"<init>","()V"); //call the basic constructor
+    jobject jpbmsg = (*env)->NewObject(env, pbmsg_cls, constructor);
+
+    //ok so now allocated a Java object... lets actually get a pbmsg..
+        pbsock * pbs = get_pbsock(env,thiz); //recover the socket
+
+        //get the fields for the jpbmsg
+       jfieldID pbmsg_len_fid = (*env)->GetFieldID(env,pbmsg_cls, "pbmsg_len", "I");
+       jfieldID pbmsg_type_fid = (*env)->GetFieldID(env,pbmsg_cls, "pbmsg_type", "I");
+       jfieldID pbmsg_from_fid = (*env)->GetFieldID(env,pbmsg_cls, "pbmsg_from", "I");
+       jfieldID pbmsg_msg_fid = (*env)->GetFieldID(env,pbmsg_cls, "pbmsg", "[B");
+
+
+       PBPRINTF("WAITING ON MSG\n");
+
+    //get a msg
+       pbmsg * m = recv_pbmsg(pbs);
+       PBPRINTF("GOT MSG\n");
+
+       //ok now copy it into the structure...
+       (*env)->SetIntField(env,jpbmsg, pbmsg_len_fid, m->pbmsg_len);
+       (*env)->SetIntField(env,jpbmsg, pbmsg_type_fid, m->pbmsg_type);
+       (*env)->SetIntField(env,jpbmsg, pbmsg_from_fid, m->pbmsg_from);
+
+
+       jbyteArray d = (*env)->NewByteArray(env, m->pbmsg_len);
+       char * ray = (char*)malloc(sizeof(char)*m->pbmsg_len);
+       for (int i=0; i<m->pbmsg_len; i++) {
+         ray[i]=m->pbmsg[i];
+       }
+       PBPRINTF("GOT MESSAGE %d %d %d %d\n",m->pbmsg_len,m->pbmsg_type,m->pbmsg_from,m->pbmsg_type&PBMSG_STRING);
+       (*env)->SetByteArrayRegion(env, d, 0, m->pbmsg_len, ray);
+       (*env)->SetObjectField(env,jpbmsg, pbmsg_msg_fid, d);
+        //TODO MEMORY LEAK? should release malloced?
+       free_pbmsg(m);
+    return jpbmsg;
+}
 
   void Java_com_petbot_PBConnector_connectToServerWithKey(JNIEnv* env,jobject thiz, jstring hostname, int portno, jstring key ) {
 
@@ -37,6 +161,7 @@
         PBPRINTF("AGENT %p\n",agent);
        jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
        jfieldID pbs_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_pbs", "J");
+       jfieldID ctx_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ctx", "J");
 
 	   SSL_CTX* ctx;
 	   OpenSSL_add_ssl_algorithms();
@@ -45,11 +170,13 @@
 	   CHK_NULL(ctx);
 
        pbsock * pbs = connect_to_server_with_key(hostname_str, portno, ctx, key_str);
-       PBPRINTF("WTF");
        //jlong ptr_pbs = env->GetLongField(obj, pbs_field);
 
-       jlong l_pbs = (jlong) 12346;
+       jlong l_pbs = (jlong) pbs;
        (*env)->SetLongField(env,thiz, pbs_field, l_pbs);
+
+       jlong l_ctx = (jlong) ctx;
+       (*env)->SetLongField(env,thiz, ctx_field, l_ctx);
 
         (*env)->ReleaseStringUTFChars(env,hostname,hostname_str);
         (*env)->ReleaseStringUTFChars(env,key,key_str);
