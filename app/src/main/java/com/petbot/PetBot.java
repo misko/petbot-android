@@ -16,7 +16,7 @@ import java.util.Arrays;
 import org.freedesktop.gstreamer.GStreamer;
 import com.petbot.PBConnector;
 
-import tutorial_3.R;
+import com.petbot.R;
 
 public class PetBot extends Activity implements SurfaceHolder.Callback {
 	private native void nativeInit();     // Initialize native code, build pipeline, etc

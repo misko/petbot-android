@@ -4,9 +4,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.app.Activity;
 import android.app.LoaderManager.LoaderCallbacks;
 
@@ -43,14 +40,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.Manifest.permission.READ_CONTACTS;
-
-import com.petbot.R;
-
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
+public class RegistrationActivity extends Activity implements LoaderCallbacks<Cursor> {
 
 	/**
 	 * Id to identity READ_CONTACTS permission request.
@@ -60,39 +53,42 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 	// UI references.
 	private AutoCompleteTextView mEmailView;
 	private EditText mPasswordView;
+	private EditText mConfirmPasswordView;
 	private View mProgressView;
-	private View mLoginFormView;
+	private View mRegistrationFormView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_login);
+		setContentView(R.layout.activity_registration);
 		// Set up the login form.
 		mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
 		populateAutoComplete();
 
 		mPasswordView = (EditText) findViewById(R.id.password);
-		mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+
+		mConfirmPasswordView = (EditText) findViewById(R.id.confirm_password);
+		mConfirmPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-				if (id == R.id.login || id == EditorInfo.IME_NULL) {
-					attemptLogin();
+				if (id == R.id.register || id == EditorInfo.IME_NULL) {
+					attemptRegister();
 					return true;
 				}
 				return false;
 			}
 		});
 
-		Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-		mEmailSignInButton.setOnClickListener(new OnClickListener() {
+		Button mNextButton = (Button) findViewById(R.id.next_button);
+		mNextButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				attemptLogin();
+				attemptRegister();
 			}
 		});
 
-		mLoginFormView = findViewById(R.id.login_form);
-		mProgressView = findViewById(R.id.login_progress);
+		mRegistrationFormView = findViewById(R.id.registration_form);
+		mProgressView = findViewById(R.id.registration_progress);
 	}
 
 	private void populateAutoComplete() {
@@ -144,7 +140,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 	 * If there are form errors (invalid email, missing fields, etc.), the
 	 * errors are presented and no actual login attempt is made.
 	 */
-	private void attemptLogin() {
+	private void attemptRegister() {
 
 		// Reset errors.
 		mEmailView.setError(null);
@@ -173,6 +169,10 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 			mEmailView.setError(getString(R.string.error_invalid_email));
 			focusView = mEmailView;
 			cancel = true;
+		} else if (!password.equals(mConfirmPasswordView.getText().toString())) {
+			mConfirmPasswordView.setError("Passwords don't match");
+			focusView = mConfirmPasswordView;
+			cancel = true;
 		}
 
 		if (cancel) {
@@ -184,18 +184,19 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 			// perform the user login attempt.
 			showProgress(true);
 
-			JSONObject login_info = new JSONObject();
+			JSONObject registration_info = new JSONObject();
 			try {
-				login_info.put("username", email);
-				login_info.put("password", password);
+				registration_info.put("username", email);
+				registration_info.put("password", password);
 			} catch (JSONException error) {
 				//TODO
 			}
 
 			JsonObjectRequest login_request = new JsonObjectRequest(
 					Request.Method.POST,
-					"https://159.203.252.147:5000/AUTH",
-					login_info,
+					//TODO registration handler not yet on server
+					"https://159.203.252.147:5000/register",
+					registration_info,
 					new Response.Listener<JSONObject>() {
 						@Override
 						public void onResponse(JSONObject response) {
@@ -211,8 +212,8 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
 							if (success) {
 								finish();
-								Intent open_main = new Intent(LoginActivity.this, PetBot.class);
-								LoginActivity.this.startActivity(open_main);
+								Intent open_main = new Intent(RegistrationActivity.this, PetBot.class);
+								RegistrationActivity.this.startActivity(open_main);
 							} else {
 								mPasswordView.setError(getString(R.string.error_incorrect_password));
 								mPasswordView.requestFocus();
@@ -232,11 +233,6 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 			queue.add(login_request);
 
 		}
-	}
-
-	public void register(View view){
-		Intent open_registration = new Intent(LoginActivity.this, RegistrationActivity.class);
-		LoginActivity.this.startActivity(open_registration);
 	}
 
 	private boolean isEmailValid(String email) {
@@ -260,12 +256,12 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
 			int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-			mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-			mLoginFormView.animate().setDuration(shortAnimTime).alpha(
+			mRegistrationFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+			mRegistrationFormView.animate().setDuration(shortAnimTime).alpha(
 					show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
 				@Override
 				public void onAnimationEnd(Animator animation) {
-					mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+					mRegistrationFormView.setVisibility(show ? View.GONE : View.VISIBLE);
 				}
 			});
 
@@ -281,7 +277,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 			// The ViewPropertyAnimator APIs are not available, so simply show
 			// and hide the relevant UI components.
 			mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-			mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+			mRegistrationFormView.setVisibility(show ? View.GONE : View.VISIBLE);
 		}
 	}
 
@@ -322,7 +318,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 	private void addEmailsToAutoComplete(List<String> emailAddressCollection) {
 		//Create adapter to tell the AutoCompleteTextView what to show in its dropdown list.
 		ArrayAdapter<String> adapter =
-				new ArrayAdapter<>(LoginActivity.this,
+				new ArrayAdapter<>(RegistrationActivity.this,
 						android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
 
 		mEmailView.setAdapter(adapter);
