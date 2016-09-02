@@ -53,12 +53,114 @@
         return JNI_VERSION_1_6;
  }*/
 
+
+pbmsg * jpbmsg_to_pbmsg(JNIEnv* env,jobject jpbmsg);
+
+
+
 pbsock * get_pbsock(JNIEnv* env,jobject thiz) {
        jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
        jfieldID pbs_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_pbs", "J");
        return (pbsock*)((*env)->GetLongField(env,thiz, pbs_field));
 }
 
+void Java_com_petbot_PBConnector_iceRequest(JNIEnv * env, jobject thiz) {
+
+        jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
+        jfieldID ice_to_child_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ice_thread_pipes_to_child", "J");
+        jfieldID ice_from_child_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ice_thread_pipes_from_child", "J");
+
+       int * ice_thread_pipes_to_child = (int*)( (*env)->GetLongField(env,thiz, ice_to_child_field ));
+       int * ice_thread_pipes_from_child = (int*)( (*env)->GetLongField(env,thiz, ice_from_child_field ));
+
+
+        PBPRINTF("POINTERS FOR ICE PIPES %p %p\n",ice_thread_pipes_to_child,ice_thread_pipes_from_child);
+
+       pbsock * pbs =  get_pbsock(env,thiz);
+
+
+        pbmsg * ice_request_m = make_ice_request(ice_thread_pipes_from_child,ice_thread_pipes_to_child);
+        fprintf(stderr,"make the ice request!\n");
+        send_pbmsg(pbs, ice_request_m);
+}
+
+
+void Java_com_petbot_PBConnector_iceNegotiate(JNIEnv * env, jobject thiz, jobject jpbmsg) {
+
+        jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
+        jfieldID ice_to_child_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ice_thread_pipes_to_child", "J");
+        jfieldID ice_from_child_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ice_thread_pipes_from_child", "J");
+        jfieldID streamer_id_field = (*env)->GetFieldID(env,PBConnectorClass, "streamer_id", "I");
+        jfieldID ptr_agent_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_agent", "J");
+        jfieldID stream_id_field = (*env)->GetFieldID(env,PBConnectorClass, "stream_id", "I");
+
+       int * ice_thread_pipes_to_child = (int*)( (*env)->GetLongField(env,thiz, ice_to_child_field ));
+       int * ice_thread_pipes_from_child = (int*)( (*env)->GetLongField(env,thiz, ice_from_child_field ));
+
+
+
+
+       pbmsg * m = jpbmsg_to_pbmsg(env,jpbmsg);
+        PBPRINTF("WTF!!!\n");
+
+        (*env)->SetIntField(env,thiz,streamer_id_field,m->pbmsg_from);
+        PBPRINTF("WTF!!!\n");
+        //int bb_streamer_id = m->pbmsg_from; //TODO save this in java object?
+        //PBPRINTF("BBSTREAMER ID %d\n",bb_streamer_id);
+        recvd_ice_response(m,ice_thread_pipes_from_child,ice_thread_pipes_to_child);
+        PBPRINTF("WTF!!!\n");
+
+        //set the java variables right for calling after
+
+       (*env)->SetLongField(env,thiz, ptr_agent_field , agent);
+       (*env)->SetIntField(env,thiz, stream_id_field , stream_id);
+       PBPRINTF("PASSING TO JAVA AGENT %p and STREAM_ID %d\n",agent,stream_id);
+
+       /*    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+               [gst_backend app_function];
+           });*/
+}
+
+void Java_com_petbot_PBConnector_startGThread(JNIEnv * env, jobject thiz) {
+
+	/* Create our own GLib Main Context and make it the default one */
+	GMainContext * context = g_main_context_new();
+	g_main_context_push_thread_default(context);
+
+        PBPRINTF("ENTER MAIN LOOP\n");
+        GMainLoop * main_loop = g_main_loop_new (NULL, FALSE);
+        g_main_loop_run (main_loop);
+        PBPRINTF("EXIT MAIN LOOP\n");
+
+}
+
+void Java_com_petbot_PBConnector_startNiceThread(JNIEnv * env, jobject thiz, jint s) {
+
+        jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
+        jfieldID ice_to_child_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ice_thread_pipes_to_child", "J");
+        jfieldID ice_from_child_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ice_thread_pipes_from_child", "J");
+
+        int * ice_thread_pipes_to_child = (int*)malloc(sizeof(int)*2);
+        int * ice_thread_pipes_from_child = (int*)malloc(sizeof(int)*2);
+        if (ice_thread_pipes_to_child==NULL || ice_thread_pipes_from_child==NULL) {
+            PBPRINTF("Failed to allocate memory for pipes\n");
+        }
+
+        int ret = pipe(ice_thread_pipes_to_child);
+        if (ret!=0) {
+            PBPRINTF("ERROR MAKING PIPE!\n");
+        }
+        ret = pipe(ice_thread_pipes_from_child);
+        if (ret!=0) {
+            PBPRINTF("ERROR MAKING PIPE!\n");
+        }
+
+        (*env)->SetLongField(env,thiz, ice_to_child_field, ice_thread_pipes_to_child);
+        (*env)->SetLongField(env,thiz, ice_from_child_field, ice_thread_pipes_from_child);
+        PBPRINTF("POINTERS FOR ICE PIPES %p %p\n",ice_thread_pipes_to_child,ice_thread_pipes_from_child);
+
+        start_nice_thread(0,ice_thread_pipes_from_child,ice_thread_pipes_to_child);
+}
 
 void Java_com_petbot_PBConnector_close(JNIEnv* env,jobject thiz) {
 
@@ -73,17 +175,13 @@ void Java_com_petbot_PBConnector_close(JNIEnv* env,jobject thiz) {
         (*env)->SetLongField(env,thiz, ctx_field, 0);
 }
 
-void Java_com_petbot_PBConnector_sendPBMsg(JNIEnv* env,jobject thiz, jobject jpbmsg) {
-        pbsock * pbs = get_pbsock(env,thiz);
-        //lets get the fields and such...
-
-        jclass pbmsg_cls = (*env)->FindClass(env, "com/petbot/PBMsg");
+pbmsg * jpbmsg_to_pbmsg(JNIEnv* env,jobject jpbmsg) {
+       jclass pbmsg_cls = (*env)->FindClass(env, "com/petbot/PBMsg");
         //get the fields for the jpbmsg
        jfieldID pbmsg_len_fid = (*env)->GetFieldID(env,pbmsg_cls, "pbmsg_len", "I");
        jfieldID pbmsg_type_fid = (*env)->GetFieldID(env,pbmsg_cls, "pbmsg_type", "I");
        jfieldID pbmsg_from_fid = (*env)->GetFieldID(env,pbmsg_cls, "pbmsg_from", "I");
        jfieldID pbmsg_msg_fid = (*env)->GetFieldID(env,pbmsg_cls, "pbmsg", "[B");
-
        int len = (*env)->GetIntField(env,jpbmsg,pbmsg_len_fid);
        int type = (*env)->GetIntField(env,jpbmsg,pbmsg_type_fid);
        int from = (*env)->GetIntField(env,jpbmsg,pbmsg_from_fid);
@@ -105,7 +203,13 @@ void Java_com_petbot_PBConnector_sendPBMsg(JNIEnv* env,jobject thiz, jobject jpb
        m->pbmsg_type = type;
        m->pbmsg_from = from;
        m->pbmsg = ray;
+        return m;
+}
 
+void Java_com_petbot_PBConnector_sendPBMsg(JNIEnv* env,jobject thiz, jobject jpbmsg) {
+        pbsock * pbs = get_pbsock(env,thiz);
+        //lets get the fields and such...
+        pbmsg * m = jpbmsg_to_pbmsg(env,jpbmsg);
        send_pbmsg(pbs,m);
        free_pbmsg(m);
 

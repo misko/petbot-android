@@ -20,6 +20,7 @@ import com.petbot.R;
 
 public class PetBot extends Activity implements SurfaceHolder.Callback {
 	private native void nativeInit();     // Initialize native code, build pipeline, etc
+	private native void nativePlayAgent(long jagent, int jstream_id);     // Initialize native code, build pipeline, etc
 	private native void nativeFinalize(); // Destroy pipeline and shutdown native code
 	private native void nativePlay();     // Set pipeline to PLAYING
 	private native void nativePause();    // Set pipeline to PAUSED
@@ -38,8 +39,58 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 		//PBConnector pb = new PBConnector();
 		//pb.stringFromJNI();
 		//byte[] wtf=  pb.newByteArray();
-		//Log.w("petbot", "no network");
-		PBConnector pb = new PBConnector("159.203.252.147",8888,"PETBOTA20X1");
+		Log.w("petbot", "no network");
+		final PBConnector pb = new PBConnector("159.203.252.147",8888,"A20PETBOTX1");
+		//start up a read thread
+		Thread read_thread = new Thread() {
+			@Override
+			public void run() {
+				while (true) {
+					final PBMsg m = pb.readPBMsg();
+					if ((m.pbmsg_type ^  (PBMsg.PBMSG_SUCCESS | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_ICE | PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_STRING))==0) {
+						Log.w("petbot", "READ" + m.toString() +" MOVE TO ICE NEGOTIATE!");		//start up a read thread
+						Thread negotiate_thread = new Thread() {
+							@Override
+							public void run() {
+								Log.w("petbot", "ANDROID - NEGOTIATE  ");
+								pb.iceNegotiate(m);
+								Log.w("petbot", "ANDROID - NEGOTIATE DONE");
+								nativePlayAgent(pb.ptr_agent,pb.stream_id);
+							}
+						};
+						negotiate_thread.start();
+					} else {
+						Log.w("petbot", "READ" + m.toString());
+					}
+				}
+			}
+		};
+		read_thread.start();
+
+		//start up a read thread
+		Thread gthread = new Thread() {
+			@Override
+			public void run() {
+				Log.w("petbot", "ANDROID - GTHREAD ");
+				pb.startGThread();
+				Log.w("petbot", "ANDROID - GTHREAD DONE");
+			}
+		};
+		gthread.start();
+
+		pb.startNiceThread(0);
+
+		//start up a read thread
+		Thread request_thread = new Thread() {
+			@Override
+			public void run() {
+				Log.w("petbot", "ANDROID - ICE REQUEST ");
+				pb.iceRequest();
+				Log.w("petbot", "ANDROID - ICE REQUEST DONE");
+			}
+		};
+		request_thread.start();
+
 		Log.w("petbot", String.valueOf(pb.ptr_pbs));
 		//pb.connectToServerWithKey(JNIEnv* env,jobject thiz, jstring hostname, int portno, jstring key );
 		//System.out.println(wtf);
@@ -114,11 +165,13 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 	private void onGStreamerInitialized () {
 		Log.i ("GStreamer", "Gst initialized. Restoring state, playing:" + is_playing_desired);
 		// Restore previous playing state
-		if (is_playing_desired) {
+
+		nativePlay();
+		/*if (is_playing_desired) {
 			nativePlay();
 		} else {
 			nativePause();
-		}
+		}*/
 
 		// Re-enable buttons, now that GStreamer is initialized
 		final Activity activity = this;
@@ -131,8 +184,8 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 	}
 
 	static {
-		//System.loadLibrary("crypto");
-		//System.loadLibrary("ssl");
+		System.loadLibrary("crypto");
+		System.loadLibrary("ssl");
 		System.loadLibrary("gstreamer_android");
 		System.loadLibrary("tutorial-3");
 		System.loadLibrary("PBConnector");

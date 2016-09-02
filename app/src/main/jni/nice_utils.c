@@ -477,6 +477,12 @@ cb_component_state_changed(NiceAgent *agent, guint _stream_id,
 
     //g_main_loop_quit (gloop);
     agent=NULL;
+  } else if (state==NICE_COMPONENT_STATE_GATHERING) {
+      PBPRINTF("NICE: STATE: GATHERING\n");
+  } else if (state==NICE_COMPONENT_STATE_CONNECTING) {
+      PBPRINTF("NICE: STATE: CONNECTING\n");
+  } else if (state==NICE_COMPONENT_STATE_DISCONNECTED) {
+      PBPRINTF("NICE: STATE: DISCONNECTED\n");
   } else {
       PBPRINTF("WEIRD STATE CHANGE??? WTF\n");
   }

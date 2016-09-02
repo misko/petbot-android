@@ -94,7 +94,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
 		mLoginFormView = findViewById(R.id.login_form);
 		mProgressView = findViewById(R.id.login_progress);
-		PBConnector pbc = new PBConnector("159.203.252.147",8888,"PETBOTA20X1"); //we can remove this!
+
 	}
 
 	private void populateAutoComplete() {
@@ -190,13 +190,14 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 			try {
 				login_info.put("username", email);
 				login_info.put("password", password);
+				login_info.put("deviceID", "TODODEVICEID-ANDROID"); //TODO
 			} catch (JSONException error) {
 				//TODO
 			}
 
 			JsonObjectRequest login_request = new JsonObjectRequest(
 					Request.Method.POST,
-					"https://159.203.252.147:5000/AUTH",
+					"https://petbot.ca:5000/AUTH",
 					login_info,
 					new Response.Listener<JSONObject>() {
 						@Override

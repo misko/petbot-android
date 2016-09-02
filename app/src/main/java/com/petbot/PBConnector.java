@@ -20,23 +20,6 @@ public class PBConnector {
         this.hostname=hostname;
         connectToServerWithKey(hostname,portno,key);
 
-        //start up a read thread
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    while(true) {
-                        sleep(1000);
-                        PBMsg m = readPBMsg();
-                        Log.w("petbot","GOT PBMSG FROM SERVER... should handle it here?" + m.toString());
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-
-        thread.start();
     }
     public static native String stringFromJNI();
     public native byte[] newByteArray();
@@ -52,8 +35,18 @@ public class PBConnector {
     public native PBMsg readPBMsg();
     public native void sendPBMsg(PBMsg m);
     public native void close();
+    public native void startNiceThread(int s);
+    public native void iceRequest();
+    public native void iceNegotiate(PBMsg m);
+    public native void startGThread();
 
 
     public long ptr_pbs = 0; //the socket to server
     public long ptr_ctx = 0; //the ssl ctx reference pointer
+    public long ptr_ice_thread_pipes_from_child = 0;
+    public long ptr_ice_thread_pipes_to_child = 0;
+    public int streamer_id=0;
+
+    public long ptr_agent=0;
+    public int stream_id=0;
 }

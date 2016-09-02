@@ -7,8 +7,8 @@ CURRENT_PATH := $(LOCAL_PATH)
 OPENSSL_ROOT := openssl-1.0.2
 
 # might need to include the gstreamer libs in the jni folder, similar to openssl
-GSTREAMER_ROOT := /home/ssitwell/gstreamer-arm
-#GSTREAMER_ROOT := /Users/miskodzamba/research/petbot/petbot_2015/gstreamer-1.0-android-$(TARGET_ARCH)-1.9.1
+#GSTREAMER_ROOT := /home/ssitwell/gstreamer-arm
+GSTREAMER_ROOT := /Users/miskodzamba/research/petbot/petbot_2015/gstreamer-1.0-android-$(TARGET_ARCH)-1.9.1
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := ssl
@@ -45,8 +45,8 @@ include $(BUILD_SHARED_LIBRARY)
 include $(CLEAR_VARS)
 LOCAL_PATH := $(CURRENT_PATH)
 LOCAL_MODULE    := tutorial-3
-LOCAL_SRC_FILES := tutorial-3.c pb.c tcp_utils.c nice_utils.c
-LOCAL_SHARED_LIBRARIES := gstreamer_android ssl crypto
+LOCAL_SRC_FILES := tutorial-3.c pb.c
+LOCAL_SHARED_LIBRARIES := gstreamer_android
 LOCAL_LDLIBS := -llog -landroid
-LOCAL_CFLAGS := -std=c11 -DANDROID -DPBSSL -DPBTHREADS
+LOCAL_CFLAGS := -std=c11 -DANDROID
 include $(BUILD_SHARED_LIBRARY)

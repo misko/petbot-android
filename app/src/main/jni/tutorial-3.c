@@ -8,8 +8,15 @@
 #include <gst/video/video.h>
 #include <pthread.h>
 
-#include "nice_utils.h"
+#include <nice/agent.h>
+
+//#include "nice_utils.h"
 #include "tcp_utils.h"
+#include "pb.h"
+
+
+NiceAgent * gst_agent;
+guint gst_stream_id;
 
 GST_DEBUG_CATEGORY_STATIC (debug_category);
 #define GST_CAT_DEFAULT debug_category
@@ -157,54 +164,41 @@ static void *app_function (void *userdata) {
 
 	JavaVMAttachArgs args;
 	GstBus *bus;
-	CustomData *data = (CustomData *)userdata;
+    CustomData *data = (CustomData *)userdata;
 	GSource *bus_source;
 	GError *error = NULL;
 
-	GST_DEBUG ("Creating pipeline in CustomData at %p", data);
+	//GST_DEBUG ("Creating pipeline in CustomData at %p", data);
 
-	/* Create our own GLib Main Context and make it the default one */
-	data->context = g_main_context_new ();
-	g_main_context_push_thread_default(data->context);
 
 	/* Build pipeline */
 	// data->pipeline = gst_parse_launch("videotestsrc ! warptv ! videoconvert ! autovideosink", &error);
 
 	// construct pipeline elements
-	GstElement *nicesrc = gst_element_factory_make ("nicesrc", "nicesrc");
+    GstElement *nicesrc = gst_element_factory_make ("nicesrc", "nicesrc");
 	GstElement *rtph264depay = gst_element_factory_make ("rtph264depay", "rtph264depay");
 	GstElement *avdec_h264 = gst_element_factory_make ("avdec_h264", "avdec_h264");
 	GstElement *videoconvert = gst_element_factory_make ("videoconvert", "videoconvert");
 	GstElement *autovideosink = gst_element_factory_make ("autovideosink", "autovideosink");
+	//GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", "videotestsrc");
 
-	SSL_CTX* ctx;
-	OpenSSL_add_ssl_algorithms();
-	SSL_load_error_strings();
-	ctx = SSL_CTX_new (SSLv23_client_method());
-	CHK_NULL(ctx);
+    PBPRINTF("nicesrc %p\n",nicesrc);
+    PBPRINTF("rtph264depay %p\n",rtph264depay);
+    PBPRINTF("avdec_h264 %p\n",avdec_h264);
+    PBPRINTF("videoconvert %p\n",videoconvert);
+    PBPRINTF("autovideosink %p\n",autovideosink);
+    //PBPRINTF("videotestsrc %p\n",videotestsrc);
 
-	pbsock *pbs = connect_to_server_with_key("192.168.0.103", 8888, ctx, "petbot1");
 
-	if (pbs==NULL) {
-		GST_ERROR ("Failed to start PBSock to server...");
-		return NULL;
-	}
-
-	int ret = start_nice_client(pbs);
-	if (ret != 0) {
-		GST_ERROR ("agent fail");
-	}
-
-	g_object_set (nicesrc, "agent", agent, NULL);
-	g_object_set (nicesrc, "stream", stream_id, NULL);
+	g_object_set (nicesrc, "agent", gst_agent, NULL);
+	g_object_set (nicesrc, "stream", gst_stream_id, NULL);
 	g_object_set (nicesrc, "component", 1, NULL);
 	GstCaps *nicesrc_caps = gst_caps_from_string("application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=96");
 
-	/* Create the empty pipeline */
 	data->pipeline = gst_pipeline_new ("receive-pipeline");
 
-	/* Build the pipeline */
 	gst_bin_add_many (GST_BIN (data->pipeline), nicesrc, rtph264depay, avdec_h264, videoconvert, autovideosink,  NULL);
+	//gst_bin_add_many (GST_BIN (data->pipeline), videotestsrc, videoconvert, autovideosink,  NULL);
 	if (!gst_element_link_filtered( nicesrc, rtph264depay, nicesrc_caps)) {
 		GST_ERROR ("Failed to link 1");
 		return NULL;
@@ -217,8 +211,13 @@ static void *app_function (void *userdata) {
 	//g_object_set( G_OBJECT(nicesrc), "port", udp_port,NULL);
 	g_object_set( G_OBJECT(autovideosink), "sync", FALSE, NULL);
 
+
+  //data->pipeline = gst_parse_launch("videotestsrc ! videoconvert ! autovideosink", &error);
+
 	/* Set the pipeline to READY, so it can already accept a window handle, if we have one */
-	gst_element_set_state(data->pipeline, GST_STATE_READY);
+	if (gst_element_set_state(data->pipeline, GST_STATE_PLAYING)==GST_STATE_CHANGE_FAILURE) {
+        PBPRINTF("FAILED TO CHANGE STATE!!!\n");
+	}
 
 	data->video_sink = gst_bin_get_by_interface(GST_BIN(data->pipeline), GST_TYPE_VIDEO_OVERLAY);
 	if (!data->video_sink) {
@@ -260,6 +259,14 @@ static void *app_function (void *userdata) {
  */
 
 /* Instruct the native code to create its internal data structure, pipeline and thread */
+
+static void gst_play_with_agent(JNIEnv* env, jobject thiz, jlong jagent, jint jstream_id) {
+    gst_agent = (NiceAgent*)jagent;
+    gst_stream_id = jstream_id;
+    PBPRINTF("PLAYWITH AGENT %p %d\n",gst_agent,gst_stream_id);
+	pthread_create (&gst_app_thread, NULL, &app_function, GET_CUSTOM_DATA (env, thiz, custom_data_field_id));
+}
+
 static void gst_native_init (JNIEnv* env, jobject thiz) {
 
 	//start_logger("petbot");
@@ -271,7 +278,7 @@ static void gst_native_init (JNIEnv* env, jobject thiz) {
 	GST_DEBUG ("Created CustomData at %p", data);
 	data->app = (*env)->NewGlobalRef (env, thiz);
 	GST_DEBUG ("Created GlobalRef for app object at %p", data->app);
-	pthread_create (&gst_app_thread, NULL, &app_function, data);
+	//pthread_create (&gst_app_thread, NULL, &app_function, data);
 }
 
 /* Quit the main loop, remove the native thread and free resources */
@@ -365,6 +372,7 @@ static void gst_native_surface_finalize (JNIEnv *env, jobject thiz) {
 /* List of implemented native methods */
 static JNINativeMethod native_methods[] = {
 	{ "nativeInit", "()V", (void *) gst_native_init},
+	{ "nativePlayAgent", "(JI)V", (void *) gst_play_with_agent},
 	{ "nativeFinalize", "()V", (void *) gst_native_finalize},
 	{ "nativePlay", "()V", (void *) gst_native_play},
 	{ "nativePause", "()V", (void *) gst_native_pause},
