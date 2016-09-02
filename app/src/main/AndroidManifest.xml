@@ -33,6 +33,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.petbot.LoginActivity"/>
         </activity>
+        <activity
+            android:name=".SetupActivity"
+            android:label="@string/title_activity_setup"
+            android:parentActivityName="com.petbot.SetupActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.petbot.RegistrationActivity"/>
+        </activity>
     </application>
 
 </manifest>
