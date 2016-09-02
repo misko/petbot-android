@@ -180,57 +180,11 @@ public class RegistrationActivity extends Activity implements LoaderCallbacks<Cu
 			// form field with an error.
 			focusView.requestFocus();
 		} else {
-			// Show a progress spinner, and kick off a background task to
-			// perform the user login attempt.
-			showProgress(true);
 
-			JSONObject registration_info = new JSONObject();
-			try {
-				registration_info.put("username", email);
-				registration_info.put("password", password);
-			} catch (JSONException error) {
-				//TODO
-			}
-
-			JsonObjectRequest login_request = new JsonObjectRequest(
-					Request.Method.POST,
-					//TODO registration handler not yet on server
-					"https://159.203.252.147:5000/register",
-					registration_info,
-					new Response.Listener<JSONObject>() {
-						@Override
-						public void onResponse(JSONObject response) {
-
-							showProgress(false);
-
-							boolean success = false;
-							try {
-								success = response.getInt("status") == 1;
-							} catch (JSONException error) {
-								//TODO
-							}
-
-							if (success) {
-								finish();
-								Intent open_main = new Intent(RegistrationActivity.this, PetBot.class);
-								RegistrationActivity.this.startActivity(open_main);
-							} else {
-								mPasswordView.setError(getString(R.string.error_incorrect_password));
-								mPasswordView.requestFocus();
-							}
-						}
-					},
-					new Response.ErrorListener() {
-						@Override
-						public void onErrorResponse(VolleyError error) {
-							Log.e("asdfasdfasdf", error.getMessage());
-							showProgress(false);
-						}
-					}
-			);
-
-			RequestQueue queue = Volley.newRequestQueue(this);
-			queue.add(login_request);
+			// open petbot setup activity, passing in registration email as a parameter
+			Intent open_setup = new Intent(RegistrationActivity.this, SetupActivity.class);
+			open_setup.putExtra("email", email);
+			RegistrationActivity.this.startActivity(open_setup);
 
 		}
 	}
@@ -245,41 +199,6 @@ public class RegistrationActivity extends Activity implements LoaderCallbacks<Cu
 		return password.length() > 4;
 	}
 
-	/**
-	 * Shows the progress UI and hides the login form.
-	 */
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-	private void showProgress(final boolean show) {
-		// On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-		// for very easy animations. If available, use these APIs to fade-in
-		// the progress spinner.
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-			int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-			mRegistrationFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-			mRegistrationFormView.animate().setDuration(shortAnimTime).alpha(
-					show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-				@Override
-				public void onAnimationEnd(Animator animation) {
-					mRegistrationFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-				}
-			});
-
-			mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-			mProgressView.animate().setDuration(shortAnimTime).alpha(
-					show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-				@Override
-				public void onAnimationEnd(Animator animation) {
-					mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-				}
-			});
-		} else {
-			// The ViewPropertyAnimator APIs are not available, so simply show
-			// and hide the relevant UI components.
-			mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-			mRegistrationFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-		}
-	}
 
 	@Override
 	public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
