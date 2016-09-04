@@ -7,8 +7,10 @@ import android.view.SurfaceView;
 
 // A simple SurfaceView whose width and height can be set from the outside
 public class GStreamerSurfaceView extends SurfaceView {
-    public int media_width = 320;
-    public int media_height = 240;
+    public int media_width = 640;
+    public int media_height = 480;
+
+
 
     // Mandatory constructors, they do not do much
     public GStreamerSurfaceView(Context context, AttributeSet attrs,
@@ -78,6 +80,8 @@ public class GStreamerSurfaceView extends SurfaceView {
         // Obey minimum size
         width = Math.max (getSuggestedMinimumWidth(), width);
         height = Math.max (getSuggestedMinimumHeight(), height);
+
+        Log.i ("GStreamer", "setMeasuredDimension called with " + width + "x" + height);
         setMeasuredDimension(width, height);
     }
 

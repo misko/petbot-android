@@ -41,7 +41,7 @@ static const char *tag = "myapp";
 typedef struct _CustomData {
 	jobject app;            /* Application instance, used to call its methods. A global reference is kept. */
 	GstElement *pipeline;   /* The running pipeline */
-	GMainContext *context;  /* GLib context used to run the main loop */
+	//GMainContext *context;  /* GLib context used to run the main loop */
 	GMainLoop *main_loop;   /* GLib main loop */
 	gboolean initialized;   /* To avoid informing the UI multiple times about the initialization */
 	GstElement *video_sink; /* The video sink element which receives XOverlay commands */
@@ -229,29 +229,34 @@ static void *app_function (void *userdata) {
 	bus = gst_element_get_bus (data->pipeline);
 	bus_source = gst_bus_create_watch (bus);
 	g_source_set_callback (bus_source, (GSourceFunc) gst_bus_async_signal_func, NULL, NULL);
-	g_source_attach (bus_source, data->context);
+	//g_source_attach (bus_source, data->context);
+	g_source_attach (bus_source, NULL);
 	g_source_unref (bus_source);
 	g_signal_connect (G_OBJECT (bus), "message::error", (GCallback)error_cb, data);
 	g_signal_connect (G_OBJECT (bus), "message::state-changed", (GCallback)state_changed_cb, data);
 	gst_object_unref (bus);
 
+
+	//return NULL;
 	/* Create a GLib Main Loop and set it to run */
 	GST_DEBUG ("Entering main loop... (CustomData:%p)", data);
-	data->main_loop = g_main_loop_new (data->context, FALSE);
+	//data->main_loop = g_main_loop_new (data->context, FALSE);
+	data->main_loop = g_main_loop_new (NULL, FALSE);
 	check_initialization_complete (data);
 	g_main_loop_run (data->main_loop);
-	GST_DEBUG ("Exited main loop");
+
+	return NULL;
+	/*GST_DEBUG ("Exited main loop");
 	g_main_loop_unref (data->main_loop);
 	data->main_loop = NULL;
 
-	/* Free resources */
 	g_main_context_pop_thread_default(data->context);
 	g_main_context_unref (data->context);
 	gst_element_set_state (data->pipeline, GST_STATE_NULL);
 	gst_object_unref (data->video_sink);
 	gst_object_unref (data->pipeline);
 
-	return NULL;
+	return NULL;*/
 }
 
 /*
@@ -271,6 +276,7 @@ static void gst_native_init (JNIEnv* env, jobject thiz) {
 
 	//start_logger("petbot");
 
+
 	CustomData *data = g_new0 (CustomData, 1);
 	SET_CUSTOM_DATA (env, thiz, custom_data_field_id, data);
 	GST_DEBUG_CATEGORY_INIT (debug_category, "tutorial-3", 0, "Android tutorial 3");
@@ -278,6 +284,7 @@ static void gst_native_init (JNIEnv* env, jobject thiz) {
 	GST_DEBUG ("Created CustomData at %p", data);
 	data->app = (*env)->NewGlobalRef (env, thiz);
 	GST_DEBUG ("Created GlobalRef for app object at %p", data->app);
+
 	//pthread_create (&gst_app_thread, NULL, &app_function, data);
 }
 

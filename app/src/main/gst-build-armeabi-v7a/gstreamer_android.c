@@ -3,6 +3,45 @@
 #include <gio/gio.h>
 #include <android/log.h>
 
+/* XXX: Workaround for Android <21 making signal() an inline function
+ * around bsd_signal(), and Android >= 21 not having any bsd_signal()
+ * symbol but only signal().
+ * See https://bugzilla.gnome.org/show_bug.cgi?id=766235
+ */
+static gpointer
+load_real_signal (gpointer data)
+{
+  GModule *module;
+  gpointer ret = NULL;
+
+  module = g_module_open ("libc.so", G_MODULE_BIND_LOCAL);
+  g_module_symbol (module, "signal", &ret);
+
+  /* As fallback, let's try bsd_signal */
+  if (ret == NULL) {
+    g_warning ("Can't find signal(3) in libc.so!");
+    g_module_symbol (module, "bsd_signal", &ret);
+  }
+
+  g_module_close (module);
+
+  return ret;
+}
+
+__sighandler_t bsd_signal(int signum, __sighandler_t handler) __attribute__((weak));
+__sighandler_t bsd_signal(int signum, __sighandler_t handler)
+{
+  static GOnce gonce = G_ONCE_INIT;
+  __sighandler_t (*real_signal) (int signum, __sighandler_t handler);
+
+  g_once (&gonce, load_real_signal, NULL);
+
+  real_signal = gonce.retval;
+  g_assert (real_signal != NULL);
+
+  return real_signal(signum, handler);
+}
+
 static jobject _context = NULL;
 static jobject _class_loader = NULL;
 static GstClockTime _priv_gst_info_start_time;
@@ -14,59 +53,7 @@ extern void G_PASTE(g_io_module_, G_PASTE(name, _load_static)) (void)
 G_PASTE(g_io_module_, G_PASTE(name, _load_static)) ()
 
 /* Declaration of static plugins */
-  GST_PLUGIN_STATIC_DECLARE(coreelements);
-  GST_PLUGIN_STATIC_DECLARE(adder);
-  GST_PLUGIN_STATIC_DECLARE(app);
-  GST_PLUGIN_STATIC_DECLARE(audioconvert);
-  GST_PLUGIN_STATIC_DECLARE(audiorate);
-  GST_PLUGIN_STATIC_DECLARE(audioresample);
-  GST_PLUGIN_STATIC_DECLARE(audiotestsrc);
-  GST_PLUGIN_STATIC_DECLARE(gio);
-  GST_PLUGIN_STATIC_DECLARE(pango);
-  GST_PLUGIN_STATIC_DECLARE(typefindfunctions);
-  GST_PLUGIN_STATIC_DECLARE(videoconvert);
-  GST_PLUGIN_STATIC_DECLARE(videorate);
-  GST_PLUGIN_STATIC_DECLARE(videoscale);
-  GST_PLUGIN_STATIC_DECLARE(videotestsrc);
-  GST_PLUGIN_STATIC_DECLARE(volume);
-  GST_PLUGIN_STATIC_DECLARE(autodetect);
-  GST_PLUGIN_STATIC_DECLARE(videofilter);
-  GST_PLUGIN_STATIC_DECLARE(opensles);
-  GST_PLUGIN_STATIC_DECLARE(opengl);
-  GST_PLUGIN_STATIC_DECLARE(tcp);
-  GST_PLUGIN_STATIC_DECLARE(rtsp);
-  GST_PLUGIN_STATIC_DECLARE(rtp);
-  GST_PLUGIN_STATIC_DECLARE(rtpmanager);
-  GST_PLUGIN_STATIC_DECLARE(soup);
-  GST_PLUGIN_STATIC_DECLARE(udp);
-  GST_PLUGIN_STATIC_DECLARE(dataurisrc);
-  GST_PLUGIN_STATIC_DECLARE(sdp);
-  GST_PLUGIN_STATIC_DECLARE(srtp);
-  GST_PLUGIN_STATIC_DECLARE(rtspclientsink);
-  GST_PLUGIN_STATIC_DECLARE(asfmux);
-  GST_PLUGIN_STATIC_DECLARE(dtsdec);
-  GST_PLUGIN_STATIC_DECLARE(faad);
-  GST_PLUGIN_STATIC_DECLARE(mpegpsdemux);
-  GST_PLUGIN_STATIC_DECLARE(mpegpsmux);
-  GST_PLUGIN_STATIC_DECLARE(mpegtsdemux);
-  GST_PLUGIN_STATIC_DECLARE(mpegtsmux);
-  GST_PLUGIN_STATIC_DECLARE(voaacenc);
-  GST_PLUGIN_STATIC_DECLARE(a52dec);
-  GST_PLUGIN_STATIC_DECLARE(amrnb);
-  GST_PLUGIN_STATIC_DECLARE(amrwbdec);
-  GST_PLUGIN_STATIC_DECLARE(asf);
-  GST_PLUGIN_STATIC_DECLARE(dvdsub);
-  GST_PLUGIN_STATIC_DECLARE(dvdlpcmdec);
-  GST_PLUGIN_STATIC_DECLARE(mad);
-  GST_PLUGIN_STATIC_DECLARE(mpeg2dec);
-  GST_PLUGIN_STATIC_DECLARE(xingmux);
-  GST_PLUGIN_STATIC_DECLARE(realmedia);
-  GST_PLUGIN_STATIC_DECLARE(x264);
-  GST_PLUGIN_STATIC_DECLARE(lame);
-  GST_PLUGIN_STATIC_DECLARE(mpg123);
-  GST_PLUGIN_STATIC_DECLARE(libav);
-  GST_PLUGIN_STATIC_DECLARE(nice);
-
+  GST_PLUGIN_STATIC_DECLARE(coreelements);  GST_PLUGIN_STATIC_DECLARE(adder);  GST_PLUGIN_STATIC_DECLARE(app);  GST_PLUGIN_STATIC_DECLARE(audioconvert);  GST_PLUGIN_STATIC_DECLARE(audiorate);  GST_PLUGIN_STATIC_DECLARE(audioresample);  GST_PLUGIN_STATIC_DECLARE(audiotestsrc);  GST_PLUGIN_STATIC_DECLARE(gio);  GST_PLUGIN_STATIC_DECLARE(pango);  GST_PLUGIN_STATIC_DECLARE(typefindfunctions);  GST_PLUGIN_STATIC_DECLARE(videoconvert);  GST_PLUGIN_STATIC_DECLARE(videorate);  GST_PLUGIN_STATIC_DECLARE(videoscale);  GST_PLUGIN_STATIC_DECLARE(videotestsrc);  GST_PLUGIN_STATIC_DECLARE(volume);  GST_PLUGIN_STATIC_DECLARE(autodetect);  GST_PLUGIN_STATIC_DECLARE(videofilter);  GST_PLUGIN_STATIC_DECLARE(opensles);  GST_PLUGIN_STATIC_DECLARE(opengl);  GST_PLUGIN_STATIC_DECLARE(tcp);  GST_PLUGIN_STATIC_DECLARE(rtsp);  GST_PLUGIN_STATIC_DECLARE(rtp);  GST_PLUGIN_STATIC_DECLARE(rtpmanager);  GST_PLUGIN_STATIC_DECLARE(soup);  GST_PLUGIN_STATIC_DECLARE(udp);  GST_PLUGIN_STATIC_DECLARE(dataurisrc);  GST_PLUGIN_STATIC_DECLARE(sdp);  GST_PLUGIN_STATIC_DECLARE(srtp);  GST_PLUGIN_STATIC_DECLARE(rtspclientsink);  GST_PLUGIN_STATIC_DECLARE(asfmux);  GST_PLUGIN_STATIC_DECLARE(dtsdec);  GST_PLUGIN_STATIC_DECLARE(faad);  GST_PLUGIN_STATIC_DECLARE(mpegpsdemux);  GST_PLUGIN_STATIC_DECLARE(mpegpsmux);  GST_PLUGIN_STATIC_DECLARE(mpegtsdemux);  GST_PLUGIN_STATIC_DECLARE(mpegtsmux);  GST_PLUGIN_STATIC_DECLARE(voaacenc);  GST_PLUGIN_STATIC_DECLARE(a52dec);  GST_PLUGIN_STATIC_DECLARE(amrnb);  GST_PLUGIN_STATIC_DECLARE(amrwbdec);  GST_PLUGIN_STATIC_DECLARE(asf);  GST_PLUGIN_STATIC_DECLARE(dvdsub);  GST_PLUGIN_STATIC_DECLARE(dvdlpcmdec);  GST_PLUGIN_STATIC_DECLARE(mad);  GST_PLUGIN_STATIC_DECLARE(mpeg2dec);  GST_PLUGIN_STATIC_DECLARE(xingmux);  GST_PLUGIN_STATIC_DECLARE(realmedia);  GST_PLUGIN_STATIC_DECLARE(x264);  GST_PLUGIN_STATIC_DECLARE(lame);  GST_PLUGIN_STATIC_DECLARE(mpg123);  GST_PLUGIN_STATIC_DECLARE(libav);  GST_PLUGIN_STATIC_DECLARE(nice);
 
 /* Declaration of static gio modules */
  
@@ -75,59 +62,7 @@ G_PASTE(g_io_module_, G_PASTE(name, _load_static)) ()
 void
 gst_android_register_static_plugins (void)
 {
-  GST_PLUGIN_STATIC_REGISTER(coreelements);
-  GST_PLUGIN_STATIC_REGISTER(adder);
-  GST_PLUGIN_STATIC_REGISTER(app);
-  GST_PLUGIN_STATIC_REGISTER(audioconvert);
-  GST_PLUGIN_STATIC_REGISTER(audiorate);
-  GST_PLUGIN_STATIC_REGISTER(audioresample);
-  GST_PLUGIN_STATIC_REGISTER(audiotestsrc);
-  GST_PLUGIN_STATIC_REGISTER(gio);
-  GST_PLUGIN_STATIC_REGISTER(pango);
-  GST_PLUGIN_STATIC_REGISTER(typefindfunctions);
-  GST_PLUGIN_STATIC_REGISTER(videoconvert);
-  GST_PLUGIN_STATIC_REGISTER(videorate);
-  GST_PLUGIN_STATIC_REGISTER(videoscale);
-  GST_PLUGIN_STATIC_REGISTER(videotestsrc);
-  GST_PLUGIN_STATIC_REGISTER(volume);
-  GST_PLUGIN_STATIC_REGISTER(autodetect);
-  GST_PLUGIN_STATIC_REGISTER(videofilter);
-  GST_PLUGIN_STATIC_REGISTER(opensles);
-  GST_PLUGIN_STATIC_REGISTER(opengl);
-  GST_PLUGIN_STATIC_REGISTER(tcp);
-  GST_PLUGIN_STATIC_REGISTER(rtsp);
-  GST_PLUGIN_STATIC_REGISTER(rtp);
-  GST_PLUGIN_STATIC_REGISTER(rtpmanager);
-  GST_PLUGIN_STATIC_REGISTER(soup);
-  GST_PLUGIN_STATIC_REGISTER(udp);
-  GST_PLUGIN_STATIC_REGISTER(dataurisrc);
-  GST_PLUGIN_STATIC_REGISTER(sdp);
-  GST_PLUGIN_STATIC_REGISTER(srtp);
-  GST_PLUGIN_STATIC_REGISTER(rtspclientsink);
-  GST_PLUGIN_STATIC_REGISTER(asfmux);
-  GST_PLUGIN_STATIC_REGISTER(dtsdec);
-  GST_PLUGIN_STATIC_REGISTER(faad);
-  GST_PLUGIN_STATIC_REGISTER(mpegpsdemux);
-  GST_PLUGIN_STATIC_REGISTER(mpegpsmux);
-  GST_PLUGIN_STATIC_REGISTER(mpegtsdemux);
-  GST_PLUGIN_STATIC_REGISTER(mpegtsmux);
-  GST_PLUGIN_STATIC_REGISTER(voaacenc);
-  GST_PLUGIN_STATIC_REGISTER(a52dec);
-  GST_PLUGIN_STATIC_REGISTER(amrnb);
-  GST_PLUGIN_STATIC_REGISTER(amrwbdec);
-  GST_PLUGIN_STATIC_REGISTER(asf);
-  GST_PLUGIN_STATIC_REGISTER(dvdsub);
-  GST_PLUGIN_STATIC_REGISTER(dvdlpcmdec);
-  GST_PLUGIN_STATIC_REGISTER(mad);
-  GST_PLUGIN_STATIC_REGISTER(mpeg2dec);
-  GST_PLUGIN_STATIC_REGISTER(xingmux);
-  GST_PLUGIN_STATIC_REGISTER(realmedia);
-  GST_PLUGIN_STATIC_REGISTER(x264);
-  GST_PLUGIN_STATIC_REGISTER(lame);
-  GST_PLUGIN_STATIC_REGISTER(mpg123);
-  GST_PLUGIN_STATIC_REGISTER(libav);
-  GST_PLUGIN_STATIC_REGISTER(nice);
-
+  GST_PLUGIN_STATIC_REGISTER(coreelements);  GST_PLUGIN_STATIC_REGISTER(adder);  GST_PLUGIN_STATIC_REGISTER(app);  GST_PLUGIN_STATIC_REGISTER(audioconvert);  GST_PLUGIN_STATIC_REGISTER(audiorate);  GST_PLUGIN_STATIC_REGISTER(audioresample);  GST_PLUGIN_STATIC_REGISTER(audiotestsrc);  GST_PLUGIN_STATIC_REGISTER(gio);  GST_PLUGIN_STATIC_REGISTER(pango);  GST_PLUGIN_STATIC_REGISTER(typefindfunctions);  GST_PLUGIN_STATIC_REGISTER(videoconvert);  GST_PLUGIN_STATIC_REGISTER(videorate);  GST_PLUGIN_STATIC_REGISTER(videoscale);  GST_PLUGIN_STATIC_REGISTER(videotestsrc);  GST_PLUGIN_STATIC_REGISTER(volume);  GST_PLUGIN_STATIC_REGISTER(autodetect);  GST_PLUGIN_STATIC_REGISTER(videofilter);  GST_PLUGIN_STATIC_REGISTER(opensles);  GST_PLUGIN_STATIC_REGISTER(opengl);  GST_PLUGIN_STATIC_REGISTER(tcp);  GST_PLUGIN_STATIC_REGISTER(rtsp);  GST_PLUGIN_STATIC_REGISTER(rtp);  GST_PLUGIN_STATIC_REGISTER(rtpmanager);  GST_PLUGIN_STATIC_REGISTER(soup);  GST_PLUGIN_STATIC_REGISTER(udp);  GST_PLUGIN_STATIC_REGISTER(dataurisrc);  GST_PLUGIN_STATIC_REGISTER(sdp);  GST_PLUGIN_STATIC_REGISTER(srtp);  GST_PLUGIN_STATIC_REGISTER(rtspclientsink);  GST_PLUGIN_STATIC_REGISTER(asfmux);  GST_PLUGIN_STATIC_REGISTER(dtsdec);  GST_PLUGIN_STATIC_REGISTER(faad);  GST_PLUGIN_STATIC_REGISTER(mpegpsdemux);  GST_PLUGIN_STATIC_REGISTER(mpegpsmux);  GST_PLUGIN_STATIC_REGISTER(mpegtsdemux);  GST_PLUGIN_STATIC_REGISTER(mpegtsmux);  GST_PLUGIN_STATIC_REGISTER(voaacenc);  GST_PLUGIN_STATIC_REGISTER(a52dec);  GST_PLUGIN_STATIC_REGISTER(amrnb);  GST_PLUGIN_STATIC_REGISTER(amrwbdec);  GST_PLUGIN_STATIC_REGISTER(asf);  GST_PLUGIN_STATIC_REGISTER(dvdsub);  GST_PLUGIN_STATIC_REGISTER(dvdlpcmdec);  GST_PLUGIN_STATIC_REGISTER(mad);  GST_PLUGIN_STATIC_REGISTER(mpeg2dec);  GST_PLUGIN_STATIC_REGISTER(xingmux);  GST_PLUGIN_STATIC_REGISTER(realmedia);  GST_PLUGIN_STATIC_REGISTER(x264);  GST_PLUGIN_STATIC_REGISTER(lame);  GST_PLUGIN_STATIC_REGISTER(mpg123);  GST_PLUGIN_STATIC_REGISTER(libav);  GST_PLUGIN_STATIC_REGISTER(nice);
 }
 
 /* Call this function to load GIO modules */

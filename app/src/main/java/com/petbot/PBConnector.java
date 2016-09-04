@@ -11,6 +11,7 @@ public class PBConnector {
         System.loadLibrary("ssl");
         System.loadLibrary("PBConnector");
     }
+
     public PBConnector (String hostname, int portno, String key) {
         Log.w("petbot", "Create PBConnector");
         Log.w("petbot", (new PBMsg()).toString());
@@ -19,6 +20,21 @@ public class PBConnector {
         this.portno=portno;
         this.hostname=hostname;
         connectToServerWithKey(hostname,portno,key);
+        initGlib();
+    }
+
+    public void takeSelfie() {
+        PBMsg m = new PBMsg("selfie", PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
+        sendPBMsg(m);
+    }
+    public void sendCookie() {
+        PBMsg m = new PBMsg("cookie",PBMsg.PBMSG_COOKIE | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
+        sendPBMsg(m);
+    }
+
+    public void close () {
+        Log.w("petbot", "ANDROID - JAVA PBCONNECTOR - CLOSE ");
+        nativeClose();
 
     }
     public static native String stringFromJNI();
@@ -34,11 +50,11 @@ public class PBConnector {
     public native void connectToServerWithKey(String hostname, int portno, String key);
     public native PBMsg readPBMsg();
     public native void sendPBMsg(PBMsg m);
-    public native void close();
+    public native void nativeClose();
     public native void startNiceThread(int s);
     public native void iceRequest();
     public native void iceNegotiate(PBMsg m);
-    public native void startGThread();
+    public native void initGlib();
 
 
     public long ptr_pbs = 0; //the socket to server
@@ -49,4 +65,5 @@ public class PBConnector {
 
     public long ptr_agent=0;
     public int stream_id=0;
+    public long ptr_mainloop=0;
 }

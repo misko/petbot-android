@@ -20,4 +20,5 @@
     <string name="title_activity_login2">Sign in</string>
     <string name="title_activity_registration">Sign Up</string>
     <string name="title_activity_setup">Setup</string>
+    <string name="cookie">Cookie</string>
 </resources>

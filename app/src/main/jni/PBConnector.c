@@ -121,18 +121,38 @@ void Java_com_petbot_PBConnector_iceNegotiate(JNIEnv * env, jobject thiz, jobjec
            });*/
 }
 
-void Java_com_petbot_PBConnector_startGThread(JNIEnv * env, jobject thiz) {
 
-	/* Create our own GLib Main Context and make it the default one */
-	GMainContext * context = g_main_context_new();
-	g_main_context_push_thread_default(context);
-
-        PBPRINTF("ENTER MAIN LOOP\n");
-        GMainLoop * main_loop = g_main_loop_new (NULL, FALSE);
-        g_main_loop_run (main_loop);
-        PBPRINTF("EXIT MAIN LOOP\n");
-
+static void * start_GMain(void * x) {
+        PBPRINTF("PBCONNECTOR START GMAIN\n");
+         GMainLoop * main_loop = ( GMainLoop * )x;
+         g_main_loop_run (main_loop);
+        PBPRINTF("PBCONNECTOR END GMAIN\n");
+        //TODO cleanup? Thread join?
 }
+
+void Java_com_petbot_PBConnector_initGlib(JNIEnv * env, jobject thiz) {
+        GMainLoop * main_loop = g_main_loop_new (NULL, FALSE);
+
+        jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
+        jfieldID mainloop_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_mainloop", "J");
+        (*env)->SetLongField(env,thiz, mainloop_field, main_loop);
+
+        pthread_t gst_app_thread; // TODO KEEP TRACK OF THIS?
+	    pthread_create (&gst_app_thread, NULL, &start_GMain, main_loop);
+}
+
+
+/*void Java_com_petbot_PBConnector_startGThread(JNIEnv * env, jobject thiz) {
+
+        jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
+        jfieldID mainloop_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_mainloop", "J");
+
+        GMainLoop * main_loop = (GMainContext*)((*env)->GetLongField(env,thiz, mainloop_field ));
+
+        PBPRINTF("PBCONNECTOR ENTER MAIN LOOP CONTEXT\n",);
+        g_main_loop_run (main_loop);
+        PBPRINTF("PBCONNECTOR EXIT MAIN LOOP\n");
+}*/
 
 void Java_com_petbot_PBConnector_startNiceThread(JNIEnv * env, jobject thiz, jint s) {
 
@@ -170,9 +190,13 @@ void Java_com_petbot_PBConnector_close(JNIEnv* env,jobject thiz) {
         jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
         jfieldID pbs_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_pbs", "J");
         jfieldID ctx_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ctx", "J");
+        jfieldID mainloop_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_mainloop", "J");
 
         (*env)->SetLongField(env,thiz, pbs_field, 0);
         (*env)->SetLongField(env,thiz, ctx_field, 0);
+        GMainLoop * mainloop = (GMainLoop*)((*env)->GetLongField(env,thiz, mainloop_field));
+
+        g_main_loop_quit (mainloop);
 }
 
 pbmsg * jpbmsg_to_pbmsg(JNIEnv* env,jobject jpbmsg) {

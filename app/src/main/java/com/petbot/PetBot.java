@@ -1,15 +1,19 @@
 package com.petbot;
 
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.ViewGroup.LayoutParams;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.ImageButton;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Button;
+
 
 import java.util.Arrays;
 
@@ -29,7 +33,6 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 	private native void nativeSurfaceFinalize();
 	private long native_custom_data;      // Native code will use this to keep private data
 
-	private boolean is_playing_desired;   // Whether the user asked to go to PLAYING
 
 	// Called when the activity is first created.
 	@Override
@@ -41,6 +44,9 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 		//byte[] wtf=  pb.newByteArray();
 		Log.w("petbot", "no network");
 		final PBConnector pb = new PBConnector("159.203.252.147",8888,"A20PETBOTX1");
+
+		//pb.initGlib(); //setup the context and launch main run loop
+
 		//start up a read thread
 		Thread read_thread = new Thread() {
 			@Override
@@ -67,17 +73,6 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 		};
 		read_thread.start();
 
-		//start up a read thread
-		Thread gthread = new Thread() {
-			@Override
-			public void run() {
-				Log.w("petbot", "ANDROID - GTHREAD ");
-				pb.startGThread();
-				Log.w("petbot", "ANDROID - GTHREAD DONE");
-			}
-		};
-		gthread.start();
-
 		pb.startNiceThread(0);
 
 		//start up a read thread
@@ -94,6 +89,7 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 		Log.w("petbot", String.valueOf(pb.ptr_pbs));
 		//pb.connectToServerWithKey(JNIEnv* env,jobject thiz, jstring hostname, int portno, jstring key );
 		//System.out.println(wtf);
+
 		// Initialize GStreamer and warn if it fails
 		try {
 			GStreamer.init(this);
@@ -105,7 +101,22 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 
 		setContentView(R.layout.main);
 
-		ImageButton play = (ImageButton) this.findViewById(R.id.button_play);
+
+		Button cookieButton = (Button) this.findViewById(R.id.cookieButton);
+		cookieButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				pb.sendCookie();
+			}
+		});
+
+		Button soundButton = (Button) this.findViewById(R.id.soundButton);
+		cookieButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				pb.sendCookie();
+			}
+		});
+
+		/*ImageButton play = (ImageButton) this.findViewById(R.id.button_play);
 		play.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				is_playing_desired = true;
@@ -119,33 +130,53 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 				is_playing_desired = false;
 				nativePause();
 			}
-		});
+		});*/
 
 		SurfaceView sv = (SurfaceView) this.findViewById(R.id.surface_video);
 		SurfaceHolder sh = sv.getHolder();
 		sh.addCallback(this);
 
-		if (savedInstanceState != null) {
+		/*if (savedInstanceState != null) {
 			is_playing_desired = savedInstanceState.getBoolean("playing");
 			Log.i ("GStreamer", "Activity created. Saved state is playing:" + is_playing_desired);
 		} else {
 			is_playing_desired = false;
 			Log.i ("GStreamer", "Activity created. There is no saved state, playing: false");
-		}
+		}*/
 
 		// Start with disabled buttons, until native code is initialized
-		this.findViewById(R.id.button_play).setEnabled(false);
-		this.findViewById(R.id.button_stop).setEnabled(false);
+		//this.findViewById(R.id.button_play).setEnabled(false);
+		//this.findViewById(R.id.button_stop).setEnabled(false);
 
 		nativeInit();
 	}
 
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+
+		// Checks the orientation of the screen
+		if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+			//Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
+			// for example the width of a layout
+			int width = 300;
+			int height = LayoutParams.WRAP_CONTENT;
+			//SurfaceView sv = (SurfaceView) this.findViewById(R.id.surface_video);
+			//sv.setLayoutParams(new LayoutParams(width, height));
+			//childLayout.setLayoutParams(new LayoutParams(width, height));
+		} else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+			//Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show();
+		}
+		Log.w("petbot","WTF CONFIG CHANGE?");
+	}
+
 	protected void onSaveInstanceState (Bundle outState) {
-		Log.d ("GStreamer", "Saving state, playing:" + is_playing_desired);
-		outState.putBoolean("playing", is_playing_desired);
+		Log.d ("GStreamer", "Saving state, playing:" );
+		//outState.putBoolean("playing", is_playing_desired);
 	}
 
 	protected void onDestroy() {
+		Log.w("Petbot","WTF WTF DESTROY????");
+		Log.d("Petbot", Log.getStackTraceString(new Exception()));
 		nativeFinalize();
 		super.onDestroy();
 	}
@@ -163,22 +194,15 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 	// Called from native code. Native code calls this once it has created its pipeline and
 	// the main loop is running, so it is ready to accept commands.
 	private void onGStreamerInitialized () {
-		Log.i ("GStreamer", "Gst initialized. Restoring state, playing:" + is_playing_desired);
-		// Restore previous playing state
 
 		nativePlay();
-		/*if (is_playing_desired) {
-			nativePlay();
-		} else {
-			nativePause();
-		}*/
 
 		// Re-enable buttons, now that GStreamer is initialized
 		final Activity activity = this;
 		runOnUiThread(new Runnable() {
 			public void run() {
-				activity.findViewById(R.id.button_play).setEnabled(true);
-				activity.findViewById(R.id.button_stop).setEnabled(true);
+				//activity.findViewById(R.id.button_play).setEnabled(true);
+				//activity.findViewById(R.id.button_stop).setEnabled(true);
 			}
 		});
 	}
