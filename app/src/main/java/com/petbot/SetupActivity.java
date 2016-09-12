@@ -112,7 +112,9 @@ public class SetupActivity extends Activity {
 		} else {
 
 			// open activity to display QR code
-			String image_url =  "https://petbot.ca:5000/PB_QRCODE/SETUP:" + getIntent().getExtras().getString("email") + ":" + network + ":" + password;
+			String username = getIntent().getExtras().getString("username");
+			String email = getIntent().getExtras().getString("email");
+			String image_url =  "https://petbot.ca:5000/PB_QRCODE/SETUP:" + username + ":" + email + ":" + network + ":" + password;
 			Intent open_qr = new Intent(SetupActivity.this, QRViewer.class);
 			open_qr.putExtra("image_url", image_url);
 			SetupActivity.this.startActivity(open_qr);

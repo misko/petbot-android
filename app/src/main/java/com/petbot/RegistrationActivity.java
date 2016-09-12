@@ -51,6 +51,7 @@ public class RegistrationActivity extends Activity implements LoaderCallbacks<Cu
 	private static final int REQUEST_READ_CONTACTS = 0;
 
 	// UI references.
+	private EditText mUsernameView;
 	private AutoCompleteTextView mEmailView;
 	private EditText mPasswordView;
 	private EditText mConfirmPasswordView;
@@ -62,6 +63,9 @@ public class RegistrationActivity extends Activity implements LoaderCallbacks<Cu
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_registration);
 		// Set up the login form.
+
+		mUsernameView = (EditText) findViewById(R.id.username);
+
 		mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
 		populateAutoComplete();
 
@@ -143,25 +147,28 @@ public class RegistrationActivity extends Activity implements LoaderCallbacks<Cu
 	private void attemptRegister() {
 
 		// Reset errors.
+		mUsernameView.setError(null);
 		mEmailView.setError(null);
 		mPasswordView.setError(null);
 
 		// Store values at the time of the login attempt.
-		String email = mEmailView.getText().toString();
+		final String username = mUsernameView.getText().toString();
+		final String email = mEmailView.getText().toString();
 		String password = mPasswordView.getText().toString();
 
 		boolean cancel = false;
 		View focusView = null;
 
-		// Check for a valid password, if the user entered one.
+		// field validation
 		if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
 			mPasswordView.setError(getString(R.string.error_invalid_password));
 			focusView = mPasswordView;
 			cancel = true;
-		}
-
-		// Check for a valid email address.
-		if (TextUtils.isEmpty(email)) {
+		} else if (TextUtils.isEmpty(username)) {
+			mUsernameView.setError(getString(R.string.error_field_required));
+			focusView = mUsernameView;
+			cancel = true;
+		} else if (TextUtils.isEmpty(email)) {
 			mEmailView.setError(getString(R.string.error_field_required));
 			focusView = mEmailView;
 			cancel = true;
@@ -179,14 +186,63 @@ public class RegistrationActivity extends Activity implements LoaderCallbacks<Cu
 			// There was an error; don't attempt login and focus the first
 			// form field with an error.
 			focusView.requestFocus();
-		} else {
-
-			// open petbot setup activity, passing in registration email as a parameter
-			Intent open_setup = new Intent(RegistrationActivity.this, SetupActivity.class);
-			open_setup.putExtra("email", email);
-			RegistrationActivity.this.startActivity(open_setup);
-
+			return;
 		}
+
+		JSONObject user_info = new JSONObject();
+		try {
+			user_info.put("username", username);
+			user_info.put("email", email);
+		} catch (JSONException error) {
+			//TODO
+		}
+		JsonObjectRequest registration_request = new JsonObjectRequest(
+				Request.Method.POST,
+				"https://petbot.ca:5000/SETUP/CHECK",
+				user_info,
+				new Response.Listener<JSONObject>() {
+					@Override
+					public void onResponse(JSONObject response) {
+
+						showProgress(false);
+
+						boolean success = false;
+						try {
+
+							success = response.getInt("status") == 1;
+							if (success) {
+
+								// open petbot setup activity, passing in registration email as a parameter
+								Intent open_setup = new Intent(RegistrationActivity.this, SetupActivity.class);
+								open_setup.putExtra("username", username);
+								open_setup.putExtra("email", email);
+								RegistrationActivity.this.startActivity(open_setup);
+
+							} else {
+								// TODO: should only put error message for user errors, not all errors
+								mUsernameView.setError(response.getString("err_msg"));
+								mUsernameView.requestFocus();
+							}
+
+						} catch (JSONException error) {
+							//TODO
+						}
+					}
+				},
+				new Response.ErrorListener() {
+					@Override
+					public void onErrorResponse(VolleyError error) {
+						Log.e("asdfasdfasdf", error.toString());
+						showProgress(false);
+					}
+				}
+		);
+
+		showProgress(true);
+		RequestQueue queue = Volley.newRequestQueue(this);
+		queue.add(registration_request);
+
+
 	}
 
 	private boolean isEmailValid(String email) {
@@ -197,6 +253,43 @@ public class RegistrationActivity extends Activity implements LoaderCallbacks<Cu
 	private boolean isPasswordValid(String password) {
 		//TODO: Replace this with your own logic
 		return password.length() > 4;
+	}
+
+
+	/**
+	 * Shows the progress UI and hides the login form.
+	 */
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+	private void showProgress(final boolean show) {
+		// On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+		// for very easy animations. If available, use these APIs to fade-in
+		// the progress spinner.
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+			int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+			mRegistrationFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+			mRegistrationFormView.animate().setDuration(shortAnimTime).alpha(
+					show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+				@Override
+				public void onAnimationEnd(Animator animation) {
+					mRegistrationFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+				}
+			});
+
+			mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+			mProgressView.animate().setDuration(shortAnimTime).alpha(
+					show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+				@Override
+				public void onAnimationEnd(Animator animation) {
+					mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+				}
+			});
+		} else {
+			// The ViewPropertyAnimator APIs are not available, so simply show
+			// and hide the relevant UI components.
+			mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+			mRegistrationFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+		}
 	}
 
 
