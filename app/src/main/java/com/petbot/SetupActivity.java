@@ -40,7 +40,6 @@ public class SetupActivity extends Activity {
 	// UI references.
 	private EditText mNetworkView;
 	private EditText mPasswordView;
-	private View mProgressView;
 	private View mRegistrationFormView;
 
 	@Override
@@ -71,7 +70,6 @@ public class SetupActivity extends Activity {
 		});
 
 		mRegistrationFormView = findViewById(R.id.network_form);
-		mProgressView = findViewById(R.id.qr_progress);
 	}
 
 
@@ -81,8 +79,6 @@ public class SetupActivity extends Activity {
 	 * errors are presented and no actual login attempt is made.
 	 */
 	private void generateQR() {
-
-		final ImageView mQRView = (ImageView) findViewById(R.id.qr_code);
 
 		// Reset errors.
 		mNetworkView.setError(null);
@@ -114,73 +110,13 @@ public class SetupActivity extends Activity {
 			// form field with an error.
 			focusView.requestFocus();
 		} else {
-			// Show a progress spinner, and kick off a background task to
-			// perform the user login attempt.
-			showProgress(true);
 
-			String qr_text = "SETUP:" + getIntent().getExtras().getString("email") + ":" + network + ":" + password;
+			// open activity to display QR code
+			String image_url =  "https://petbot.ca:5000/PB_QRCODE/SETUP:" + getIntent().getExtras().getString("email") + ":" + network + ":" + password;
+			Intent open_qr = new Intent(SetupActivity.this, QRViewer.class);
+			open_qr.putExtra("image_url", image_url);
+			SetupActivity.this.startActivity(open_qr);
 
-			ImageRequest qr_request = new ImageRequest(
-					"https://159.203.252.147:5000/PB_QRCODE/" + qr_text,
-					new Response.Listener<Bitmap>() {
-						@Override
-						public void onResponse(Bitmap bitmap) {
-							showProgress(false);
-							mQRView.setImageBitmap(bitmap);
-						}
-					},
-					200,
-					200,
-					ImageView.ScaleType.CENTER_INSIDE,
-					Bitmap.Config.RGB_565,
-					new Response.ErrorListener() {
-						@Override
-						public void onErrorResponse(VolleyError error) {
-							Log.e("asdfasdfasdf", error.getMessage());
-							showProgress(false);
-						}
-					}
-			);
-
-			RequestQueue queue = Volley.newRequestQueue(this);
-			queue.add(qr_request);
-
-		}
-	}
-
-	/**
-	 * Shows the progress UI and hides the login form.
-	 */
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-	private void showProgress(final boolean show) {
-		// On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-		// for very easy animations. If available, use these APIs to fade-in
-		// the progress spinner.
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-			int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-			mRegistrationFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-			mRegistrationFormView.animate().setDuration(shortAnimTime).alpha(
-					show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-				@Override
-				public void onAnimationEnd(Animator animation) {
-					mRegistrationFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-				}
-			});
-
-			mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-			mProgressView.animate().setDuration(shortAnimTime).alpha(
-					show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-				@Override
-				public void onAnimationEnd(Animator animation) {
-					mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-				}
-			});
-		} else {
-			// The ViewPropertyAnimator APIs are not available, so simply show
-			// and hide the relevant UI components.
-			mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-			mRegistrationFormView.setVisibility(show ? View.GONE : View.VISIBLE);
 		}
 	}
 

@@ -225,7 +225,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 					new Response.ErrorListener() {
 						@Override
 						public void onErrorResponse(VolleyError error) {
-							Log.e("asdfasdfasdf", error.getMessage());
+							Log.e("asdfasdfasdf", error.toString());
 							showProgress(false);
 						}
 					}

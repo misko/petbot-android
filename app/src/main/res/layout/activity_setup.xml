@@ -10,15 +10,6 @@
               android:paddingTop="@dimen/activity_vertical_margin"
               tools:context=".SetupActivity">
 
-    <!-- Login progress -->
-    <ProgressBar
-        android:id="@+id/qr_progress"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:visibility="gone"/>
-
     <ScrollView
         android:id="@+id/network_form"
         android:layout_width="match_parent"
@@ -81,9 +72,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="Enter Wifi credentials above
-Generate QR code
-Show QR code to PetBot
+                    android:text="Enter Wifi credentials above\n
+Generate QR code\n
+Show QR code to PetBot\n
 PetBot will say “Thanks!”"
                     android:id="@+id/textView4" android:inputType="textMultiLine"
                     android:gravity="center_horizontal"/>
@@ -96,10 +87,6 @@ PetBot will say “Thanks!”"
                 android:layout_marginTop="16dp"
                 android:text="Generate QR code"
                 android:textStyle="bold"/>
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/qr_code" android:layout_gravity="center_horizontal"/>
 
         </LinearLayout>
     </ScrollView>
