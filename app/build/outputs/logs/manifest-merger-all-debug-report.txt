@@ -1,6 +1,6 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:2:1-38:12
+ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:2:1-55:12
 	xmlns:android
 		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:2:11-69
 	package
@@ -32,7 +32,7 @@ ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManif
 	android:name
 		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:11:22-69
 application
-ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:13:5-36:19
+ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:13:5-53:19
 MERGED from [com.android.support:appcompat-v7:22.2.1] /home/ssitwell/AndroidStudioProjects/petbot/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/22.2.1/AndroidManifest.xml:22:5-20
 MERGED from [com.android.support:support-v4:22.2.1] /home/ssitwell/AndroidStudioProjects/petbot/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.2.1/AndroidManifest.xml:22:5-20
 MERGED from [com.android.support:design:22.2.1] /home/ssitwell/AndroidStudioProjects/petbot/app/build/intermediates/exploded-aar/com.android.support/design/22.2.1/AndroidManifest.xml:22:5-20
@@ -64,25 +64,43 @@ ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManif
 	android:name
 		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:21:27-74
 activity#com.petbot.PetBot
-ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:24:9-27:20
+ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:24:9-28:20
 	android:label
-		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:26:13-45
+		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:27:13-45
+	android:configChanges
+		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:26:13-74
 	android:name
-		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:25:13-45
+		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:25:13-35
 activity#com.petbot.RegistrationActivity
-ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:28:9-35:20
+ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:29:9-36:20
 	android:label
-		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:30:13-64
+		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:31:13-64
 	android:parentActivityName
-		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:31:13-66
+		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:32:13-56
 	android:name
-		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:29:13-49
+		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:30:13-49
 meta-data#android.support.PARENT_ACTIVITY
-ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:32:13-34:59
+ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:33:13-35:59
 	android:name
-		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:33:17-63
+		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:34:17-63
 	android:value
-		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:34:17-57
+		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:35:17-57
+activity#com.petbot.SetupActivity
+ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:37:9-44:20
+	android:label
+		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:39:13-57
+	android:parentActivityName
+		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:40:13-56
+	android:name
+		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:38:13-42
+activity#com.petbot.QRViewer
+ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:45:9-52:20
+	android:label
+		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:47:13-60
+	android:parentActivityName
+		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:48:13-56
+	android:name
+		ADDED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml:46:13-37
 uses-sdk
 INJECTED from /home/ssitwell/AndroidStudioProjects/petbot/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
 MERGED from [com.android.support:appcompat-v7:22.2.1] /home/ssitwell/AndroidStudioProjects/petbot/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/22.2.1/AndroidManifest.xml:20:5-43

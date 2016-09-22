@@ -1,7 +1,10 @@
 package com.petbot;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.Configuration;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -15,14 +18,26 @@ import android.widget.Toast;
 import android.widget.Button;
 
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import org.freedesktop.gstreamer.GStreamer;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.petbot.PBConnector;
 
 import com.petbot.R;
 
 public class PetBot extends Activity implements SurfaceHolder.Callback {
+
 	private native void nativeInit();     // Initialize native code, build pipeline, etc
 	private native void nativePlayAgent(long jagent, int jstream_id);     // Initialize native code, build pipeline, etc
 	private native void nativeFinalize(); // Destroy pipeline and shutdown native code
@@ -33,6 +48,7 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 	private native void nativeSurfaceFinalize();
 	private long native_custom_data;      // Native code will use this to keep private data
 
+	private String petbot_secret;
 
 	// Called when the activity is first created.
 	@Override
@@ -101,6 +117,9 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 
 		setContentView(R.layout.main);
 
+		//TODO: server does not return secret, must be commented out
+		//petbot_secret = getIntent().getExtras().getString("secret");
+		final String petbot_secret = "A20PETBOTX1";
 
 		Button cookieButton = (Button) this.findViewById(R.id.cookieButton);
 		cookieButton.setOnClickListener(new OnClickListener() {
@@ -109,12 +128,76 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 			}
 		});
 
-		Button soundButton = (Button) this.findViewById(R.id.soundButton);
-		cookieButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				pb.sendCookie();
-			}
-		});
+		final Button soundButton = (Button) this.findViewById(R.id.soundButton);
+
+		JSONObject sounds_info = new JSONObject();
+		try {
+			sounds_info.put("file_type", "mp3");
+			sounds_info.put("start_idx", 0);
+			sounds_info.put("end_idx", 0); //TODO: start_idx and end_idx are not used in server
+		} catch (JSONException error) {
+			//TODO
+		}
+
+		JsonObjectRequest sounds_request = new JsonObjectRequest(
+				Request.Method.POST,
+				"https://petbot.ca:5000/FILES_LS/" + petbot_secret,
+				sounds_info,
+				new Response.Listener<JSONObject>() {
+					@Override
+					public void onResponse(JSONObject response) {
+
+						Log.e("petbot", response.toString());
+						boolean success = false;
+						try {
+
+							success = response.getInt("status") == 1;
+							if (success) {
+
+								JSONArray sound_files = response.getJSONArray("files");
+								if (sound_files.length() > 0) {
+
+									// get the file id of the first sound in the list
+									final String file_id = sound_files.getJSONArray(0).getString(0);
+
+									soundButton.setOnClickListener(new OnClickListener() {
+										public void onClick(View v) {
+
+											String url = "https://petbot.ca:5000/FILES_DL/" + petbot_secret + "/" + file_id;
+											//String url = "https://goo.gl/XJuOUW";
+											MediaPlayer mediaPlayer = new MediaPlayer();
+											mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+											try {
+												mediaPlayer.setDataSource(url);
+												mediaPlayer.prepare(); // might take long! (for buffering, etc)
+											} catch (IOException error) {
+												//TODO
+												Log.e("petbot", error.toString());
+											}
+											mediaPlayer.start();
+											pb.playSound(url);
+										}
+									});
+								}
+							}
+						} catch (JSONException error) {
+							//TODO
+							Log.e("petbot", error.toString());
+						}
+
+					}
+				},
+				new Response.ErrorListener() {
+					@Override
+					public void onErrorResponse(VolleyError error) {
+						Log.e("petbot", error.toString());
+					}
+				}
+		);
+
+		RequestQueue queue = Volley.newRequestQueue(this);
+		queue.add(sounds_request);
+
 
 		/*ImageButton play = (ImageButton) this.findViewById(R.id.button_play);
 		play.setOnClickListener(new OnClickListener() {

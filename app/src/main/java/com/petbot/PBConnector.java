@@ -31,6 +31,10 @@ public class PBConnector {
         PBMsg m = new PBMsg("cookie",PBMsg.PBMSG_COOKIE | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
         sendPBMsg(m);
     }
+	public void playSound(String url) {
+		PBMsg m = new PBMsg(url, PBMsg.PBMSG_SOUND | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
+		sendPBMsg(m);
+	}
 
     public void close () {
         Log.w("petbot", "ANDROID - JAVA PBCONNECTOR - CLOSE ");

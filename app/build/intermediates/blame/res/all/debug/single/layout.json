@@ -84,6 +84,10 @@
         "source": "/home/ssitwell/AndroidStudioProjects/petbot/app/src/main/res/layout/activity_login.xml"
     },
     {
+        "merged": "/home/ssitwell/AndroidStudioProjects/petbot/app/build/intermediates/res/merged/all/debug/layout/activity_setup.xml",
+        "source": "/home/ssitwell/AndroidStudioProjects/petbot/app/src/main/res/layout/activity_setup.xml"
+    },
+    {
         "merged": "/home/ssitwell/AndroidStudioProjects/petbot/app/build/intermediates/res/merged/all/debug/layout/select_dialog_singlechoice_material.xml",
         "source": "/home/ssitwell/AndroidStudioProjects/petbot/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/22.2.1/res/layout/select_dialog_singlechoice_material.xml"
     },
@@ -142,6 +146,10 @@
     {
         "merged": "/home/ssitwell/AndroidStudioProjects/petbot/app/build/intermediates/res/merged/all/debug/layout/abc_list_menu_item_layout.xml",
         "source": "/home/ssitwell/AndroidStudioProjects/petbot/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/22.2.1/res/layout/abc_list_menu_item_layout.xml"
+    },
+    {
+        "merged": "/home/ssitwell/AndroidStudioProjects/petbot/app/build/intermediates/res/merged/all/debug/layout/activity_qrviewer.xml",
+        "source": "/home/ssitwell/AndroidStudioProjects/petbot/app/src/main/res/layout/activity_qrviewer.xml"
     },
     {
         "merged": "/home/ssitwell/AndroidStudioProjects/petbot/app/build/intermediates/res/merged/all/debug/layout/abc_screen_simple.xml",

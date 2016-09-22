@@ -5,41 +5,77 @@
     android:gravity="center_vertical"
     android:orientation="vertical" >
 
-    <TextView
-        android:id="@+id/textview_message"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dip"
-        android:gravity="center_horizontal" />
+        android:layout_height="match_parent">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dip"
-        android:gravity="center_horizontal"
-        android:orientation="horizontal" >
+        <org.freedesktop.gstreamer.GStreamerSurfaceView
+            android:id="@+id/surface_video"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center_vertical|center_horizontal" />
 
-        <ImageButton
-            android:id="@+id/button_play"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="0dp"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal" >
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textview_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="0dp"
+            android:gravity="center_horizontal" />
+
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/button_play"
-            android:src="@android:drawable/ic_media_play"
-            android:text="@string/button_play" />
+            android:text="@string/cookie"
+            android:id="@+id/cookieButton"
+            android:textColor="@color/PBButtonTextColor"
+            android:background="@color/PBButtonColor"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
 
-        <ImageButton
-            android:id="@+id/button_stop"
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/button_stop"
-            android:src="@android:drawable/ic_media_pause"
-            android:text="@string/button_stop" />
-    </LinearLayout>
+            android:text="Sound"
+            android:id="@+id/soundButton"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:textColor="@color/PBButtonTextColor"
+            android:background="@color/PBButtonColor" />
 
-    <org.freedesktop.gstreamer.GStreamerSurfaceView
-        android:id="@+id/surface_video"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|center_horizontal" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="selfie"
+            android:id="@+id/selfieButton"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:background="@color/PBButtonColor"
+            android:textColor="@color/PBButtonTextColor" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BYE :("
+            android:id="@+id/logoutButton"
+            android:background="@color/PBButtonColor"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:textColor="@color/PBButtonTextColor"
+            android:clickable="true" />
+
+    </RelativeLayout>
 
 </LinearLayout>

@@ -215,6 +215,12 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 							if (success) {
 								finish();
 								Intent open_main = new Intent(LoginActivity.this, PetBot.class);
+								try {
+									open_main.putExtra("secret", response.getString("secret"));
+								} catch (JSONException error) {
+									//TODO: this will fail for every user but "misko", should handle failure regardless
+									Log.e("petbot", error.toString());
+								}
 								LoginActivity.this.startActivity(open_main);
 							} else {
 								mPasswordView.setError(getString(R.string.error_incorrect_password));
@@ -244,7 +250,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
 	private boolean isEmailValid(String email) {
 		//TODO: Replace this with your own logic
-		return email.contains("@");
+		return true;//email.contains("@");
 	}
 
 	private boolean isPasswordValid(String password) {
