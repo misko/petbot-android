@@ -131,7 +131,7 @@ public class SetupActivity extends Activity {
 			String username = getIntent().getExtras().getString("username");
 			String email = getIntent().getExtras().getString("email");
 			String image_url =  "https://petbot.ca:5000/PB_QRCODE/SETUP:" + username + ":" + email + ":" + network + ":" + password +
-			                    IP + ":" + Integer.toString(state.port);
+			                    ":" + IP + ":" + Integer.toString(state.port);
 			Intent open_qr = new Intent(SetupActivity.this, QRViewer.class);
 			open_qr.putExtra("image_url", image_url);
 			SetupActivity.this.startActivity(open_qr);
