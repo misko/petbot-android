@@ -6,9 +6,11 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.text.format.Formatter;
 import android.util.Log;
 
 import android.view.KeyEvent;
@@ -26,6 +28,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.Volley;
+
+import java.net.ServerSocket;
 
 /**
  * A login screen that offers login via email/password.
@@ -111,10 +115,23 @@ public class SetupActivity extends Activity {
 			focusView.requestFocus();
 		} else {
 
+			WifiManager wifi = (WifiManager) getSystemService(WIFI_SERVICE);
+			String IP = Formatter.formatIpAddress(wifi.getConnectionInfo().getIpAddress());
+			ApplicationState state = (ApplicationState) getApplicationContext();
+			try {
+				ServerSocket socket = new ServerSocket(0);
+				socket.setReuseAddress(true);
+				state.port = socket.getLocalPort();
+				socket.close();
+			} catch (Exception error) {
+				Log.e("petbot", error.toString());
+			}
+
 			// open activity to display QR code
 			String username = getIntent().getExtras().getString("username");
 			String email = getIntent().getExtras().getString("email");
-			String image_url =  "https://petbot.ca:5000/PB_QRCODE/SETUP:" + username + ":" + email + ":" + network + ":" + password;
+			String image_url =  "https://petbot.ca:5000/PB_QRCODE/SETUP:" + username + ":" + email + ":" + network + ":" + password +
+			                    IP + ":" + Integer.toString(state.port);
 			Intent open_qr = new Intent(SetupActivity.this, QRViewer.class);
 			open_qr.putExtra("image_url", image_url);
 			SetupActivity.this.startActivity(open_qr);

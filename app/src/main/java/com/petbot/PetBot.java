@@ -39,7 +39,7 @@ import com.petbot.R;
 public class PetBot extends Activity implements SurfaceHolder.Callback {
 
 	private native void nativeInit();     // Initialize native code, build pipeline, etc
-	private native void nativePlayAgent(long jagent, int jstream_id);     // Initialize native code, build pipeline, etc
+	private native void nativePlayAgent(int port);     // Initialize native code, build pipeline, etc
 	private native void nativeFinalize(); // Destroy pipeline and shutdown native code
 	private native void nativePlay();     // Set pipeline to PLAYING
 	private native void nativePause();    // Set pipeline to PAUSED
@@ -70,14 +70,12 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 				while (true) {
 					final PBMsg m = pb.readPBMsg();
 					if ((m.pbmsg_type ^  (PBMsg.PBMSG_SUCCESS | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_ICE | PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_STRING))==0) {
-						Log.w("petbot", "READ" + m.toString() +" MOVE TO ICE NEGOTIATE!");		//start up a read thread
+						final int port = ((ApplicationState) getApplicationContext()).port;
+						Log.w("petbot", "READ" + m.toString() + " START STREAM WITH UDPSRC PORT: " + Integer.toString(port));		//start up a read thread
 						Thread negotiate_thread = new Thread() {
 							@Override
 							public void run() {
-								Log.w("petbot", "ANDROID - NEGOTIATE  ");
-								pb.iceNegotiate(m);
-								Log.w("petbot", "ANDROID - NEGOTIATE DONE");
-								nativePlayAgent(pb.ptr_agent,pb.stream_id);
+								nativePlayAgent(port);
 							}
 						};
 						negotiate_thread.start();

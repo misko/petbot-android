@@ -14,9 +14,7 @@
 #include "tcp_utils.h"
 #include "pb.h"
 
-
-NiceAgent * gst_agent;
-guint gst_stream_id;
+guint udp_port;
 
 GST_DEBUG_CATEGORY_STATIC (debug_category);
 #define GST_CAT_DEFAULT debug_category
@@ -175,14 +173,14 @@ static void *app_function (void *userdata) {
 	// data->pipeline = gst_parse_launch("videotestsrc ! warptv ! videoconvert ! autovideosink", &error);
 
 	// construct pipeline elements
-    GstElement *nicesrc = gst_element_factory_make ("nicesrc", "nicesrc");
+    GstElement *udpsrc = gst_element_factory_make ("udpsrc", "udpsrc");
 	GstElement *rtph264depay = gst_element_factory_make ("rtph264depay", "rtph264depay");
 	GstElement *avdec_h264 = gst_element_factory_make ("avdec_h264", "avdec_h264");
 	GstElement *videoconvert = gst_element_factory_make ("videoconvert", "videoconvert");
 	GstElement *autovideosink = gst_element_factory_make ("autovideosink", "autovideosink");
 	//GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", "videotestsrc");
 
-    PBPRINTF("nicesrc %p\n",nicesrc);
+    PBPRINTF("udpsrc %p\n", udpsrc);
     PBPRINTF("rtph264depay %p\n",rtph264depay);
     PBPRINTF("avdec_h264 %p\n",avdec_h264);
     PBPRINTF("videoconvert %p\n",videoconvert);
@@ -190,16 +188,14 @@ static void *app_function (void *userdata) {
     //PBPRINTF("videotestsrc %p\n",videotestsrc);
 
 
-	g_object_set (nicesrc, "agent", gst_agent, NULL);
-	g_object_set (nicesrc, "stream", gst_stream_id, NULL);
-	g_object_set (nicesrc, "component", 1, NULL);
-	GstCaps *nicesrc_caps = gst_caps_from_string("application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=96");
+	g_object_set (udpsrc, "port", udp_port, NULL);
+	GstCaps *udpsrc_caps = gst_caps_from_string("application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=96");
 
 	data->pipeline = gst_pipeline_new ("receive-pipeline");
 
-	gst_bin_add_many (GST_BIN (data->pipeline), nicesrc, rtph264depay, avdec_h264, videoconvert, autovideosink,  NULL);
+	gst_bin_add_many (GST_BIN (data->pipeline), udpsrc, rtph264depay, avdec_h264, videoconvert, autovideosink,  NULL);
 	//gst_bin_add_many (GST_BIN (data->pipeline), videotestsrc, videoconvert, autovideosink,  NULL);
-	if (!gst_element_link_filtered( nicesrc, rtph264depay, nicesrc_caps)) {
+	if (!gst_element_link_filtered( udpsrc, rtph264depay, udpsrc_caps)) {
 		GST_ERROR ("Failed to link 1");
 		return NULL;
 	}
@@ -265,10 +261,9 @@ static void *app_function (void *userdata) {
 
 /* Instruct the native code to create its internal data structure, pipeline and thread */
 
-static void gst_play_with_agent(JNIEnv* env, jobject thiz, jlong jagent, jint jstream_id) {
-    gst_agent = (NiceAgent*)jagent;
-    gst_stream_id = jstream_id;
-    PBPRINTF("PLAYWITH AGENT %p %d\n",gst_agent,gst_stream_id);
+static void gst_play_with_agent(JNIEnv* env, jobject thiz, jint port) {
+    udp_port = port;
+    PBPRINTF("Starting with UDP port: %d\n", udp_port);
 	pthread_create (&gst_app_thread, NULL, &app_function, GET_CUSTOM_DATA (env, thiz, custom_data_field_id));
 }
 
@@ -379,7 +374,7 @@ static void gst_native_surface_finalize (JNIEnv *env, jobject thiz) {
 /* List of implemented native methods */
 static JNINativeMethod native_methods[] = {
 	{ "nativeInit", "()V", (void *) gst_native_init},
-	{ "nativePlayAgent", "(JI)V", (void *) gst_play_with_agent},
+	{ "nativePlayAgent", "(I)V", (void *) gst_play_with_agent},
 	{ "nativeFinalize", "()V", (void *) gst_native_finalize},
 	{ "nativePlay", "()V", (void *) gst_native_play},
 	{ "nativePause", "()V", (void *) gst_native_pause},
