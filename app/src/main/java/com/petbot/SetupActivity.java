@@ -118,6 +118,7 @@ public class SetupActivity extends Activity {
 			WifiManager wifi = (WifiManager) getSystemService(WIFI_SERVICE);
 			String IP = Formatter.formatIpAddress(wifi.getConnectionInfo().getIpAddress());
 			ApplicationState state = (ApplicationState) getApplicationContext();
+			state.IP = IP;
 			try {
 				ServerSocket socket = new ServerSocket(0);
 				socket.setReuseAddress(true);
@@ -128,9 +129,7 @@ public class SetupActivity extends Activity {
 			}
 
 			// open activity to display QR code
-			String username = getIntent().getExtras().getString("username");
-			String email = getIntent().getExtras().getString("email");
-			String image_url =  "https://petbot.ca:5000/PB_QRCODE/SETUP:" + username + ":" + email + ":" + network + ":" + password +
+			String image_url =  "https://petbot.ca:5000/PB_QRCODE/TESTVID:" + network + ":" + password +
 			                    ":" + IP + ":" + Integer.toString(state.port);
 			Intent open_qr = new Intent(SetupActivity.this, QRViewer.class);
 			open_qr.putExtra("image_url", image_url);

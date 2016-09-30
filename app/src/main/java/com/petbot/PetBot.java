@@ -64,43 +64,15 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 		//pb.initGlib(); //setup the context and launch main run loop
 
 		//start up a read thread
-		Thread read_thread = new Thread() {
+		Thread play_thread = new Thread() {
 			@Override
 			public void run() {
-				while (true) {
-					final PBMsg m = pb.readPBMsg();
-					if ((m.pbmsg_type ^  (PBMsg.PBMSG_SUCCESS | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_ICE | PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_STRING))==0) {
-						final int port = ((ApplicationState) getApplicationContext()).port;
-						Log.w("petbot", "READ" + m.toString() + " START STREAM WITH UDPSRC PORT: " + Integer.toString(port));		//start up a read thread
-						Thread negotiate_thread = new Thread() {
-							@Override
-							public void run() {
-								nativePlayAgent(port);
-							}
-						};
-						negotiate_thread.start();
-					} else {
-						Log.w("petbot", "READ" + m.toString());
-					}
-				}
+				final int port = ((ApplicationState) getApplicationContext()).port;
+				Log.w("petbot", " START STREAM WITH UDPSRC PORT: " + Integer.toString(port));        //start up a read thread
+				nativePlayAgent(port);
 			}
 		};
-		read_thread.start();
 
-		pb.startNiceThread(0);
-
-		//start up a read thread
-		Thread request_thread = new Thread() {
-			@Override
-			public void run() {
-				Log.w("petbot", "ANDROID - ICE REQUEST ");
-				pb.iceRequest();
-				Log.w("petbot", "ANDROID - ICE REQUEST DONE");
-			}
-		};
-		request_thread.start();
-
-		Log.w("petbot", String.valueOf(pb.ptr_pbs));
 		//pb.connectToServerWithKey(JNIEnv* env,jobject thiz, jstring hostname, int portno, jstring key );
 		//System.out.println(wtf);
 
@@ -230,6 +202,7 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 		//this.findViewById(R.id.button_stop).setEnabled(false);
 
 		nativeInit();
+		play_thread.start();
 	}
 
 	public void onConfigurationChanged(Configuration newConfig) {

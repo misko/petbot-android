@@ -3,13 +3,16 @@ package com.petbot;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.app.Activity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -43,8 +46,8 @@ public class QRViewer extends Activity {
 						mQRView.setImageBitmap(bitmap);
 					}
 				},
-				200,
-				200,
+				500,
+				500,
 				ImageView.ScaleType.CENTER_INSIDE,
 				Bitmap.Config.RGB_565,
 				new Response.ErrorListener() {
@@ -60,6 +63,21 @@ public class QRViewer extends Activity {
 
 		RequestQueue queue = Volley.newRequestQueue(this);
 		queue.add(qr_request);
+
+		ApplicationState state = (ApplicationState) getApplicationContext();
+
+		TextView IP_text = (TextView) findViewById(R.id.ip_label);
+		IP_text.setText("IP address: " + state.IP + ":" + Integer.toString(state.port));
+
+		Button continue_button = (Button) findViewById(R.id.continue_button);
+		continue_button.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Intent open_main = new Intent(QRViewer.this, PetBot.class);
+				QRViewer.this.startActivity(open_main);
+			}
+		});
+
 	}
 
 	/**

@@ -187,18 +187,20 @@ static void *app_function (void *userdata) {
     PBPRINTF("autovideosink %p\n",autovideosink);
     //PBPRINTF("videotestsrc %p\n",videotestsrc);
 
-
-	g_object_set (udpsrc, "port", udp_port, NULL);
+	g_object_set (G_OBJECT(udpsrc), "port", udp_port, NULL);
 	GstCaps *udpsrc_caps = gst_caps_from_string("application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=96");
-
+PBPRINTF("!!! HERE !!!\n");
 	data->pipeline = gst_pipeline_new ("receive-pipeline");
-
+PBPRINTF("??? THERE ???\n");
 	gst_bin_add_many (GST_BIN (data->pipeline), udpsrc, rtph264depay, avdec_h264, videoconvert, autovideosink,  NULL);
+PBPRINTF("<<< WHERE >>>\n");
 	//gst_bin_add_many (GST_BIN (data->pipeline), videotestsrc, videoconvert, autovideosink,  NULL);
 	if (!gst_element_link_filtered( udpsrc, rtph264depay, udpsrc_caps)) {
 		GST_ERROR ("Failed to link 1");
 		return NULL;
 	}
+PBPRINTF("SHOOBA\n");
+
 	if (!gst_element_link_many(rtph264depay,avdec_h264,videoconvert,autovideosink,NULL)) {
 		GST_ERROR ("Failed to link 2");
 		return NULL;
@@ -207,20 +209,19 @@ static void *app_function (void *userdata) {
 	//g_object_set( G_OBJECT(nicesrc), "port", udp_port,NULL);
 	g_object_set( G_OBJECT(autovideosink), "sync", FALSE, NULL);
 
-
   //data->pipeline = gst_parse_launch("videotestsrc ! videoconvert ! autovideosink", &error);
 
 	/* Set the pipeline to READY, so it can already accept a window handle, if we have one */
 	if (gst_element_set_state(data->pipeline, GST_STATE_PLAYING)==GST_STATE_CHANGE_FAILURE) {
         PBPRINTF("FAILED TO CHANGE STATE!!!\n");
 	}
-
+	PBPRINTF("SHABADA\n");
 	data->video_sink = gst_bin_get_by_interface(GST_BIN(data->pipeline), GST_TYPE_VIDEO_OVERLAY);
 	if (!data->video_sink) {
 		GST_ERROR ("Could not retrieve video sink");
 		return NULL;
 	}
-
+	PBPRINTF("YOYOYOYOYO\n");
 	/* Instruct the bus to emit signals for each received message, and connect to the interesting signals */
 	bus = gst_element_get_bus (data->pipeline);
 	bus_source = gst_bus_create_watch (bus);
@@ -231,7 +232,7 @@ static void *app_function (void *userdata) {
 	g_signal_connect (G_OBJECT (bus), "message::error", (GCallback)error_cb, data);
 	g_signal_connect (G_OBJECT (bus), "message::state-changed", (GCallback)state_changed_cb, data);
 	gst_object_unref (bus);
-
+	PBPRINTF("YAYAYAYAYA\n");
 
 	//return NULL;
 	/* Create a GLib Main Loop and set it to run */

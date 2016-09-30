@@ -40,7 +40,8 @@
             android:background="@color/PBButtonColor"
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_alignParentEnd="true"
+            android:visibility="gone" />
 
         <Button
             android:layout_width="wrap_content"
@@ -51,7 +52,8 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:textColor="@color/PBButtonTextColor"
-            android:background="@color/PBButtonColor" />
+            android:background="@color/PBButtonColor"
+            android:visibility="gone" />
 
         <Button
             android:layout_width="wrap_content"
@@ -62,7 +64,8 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:background="@color/PBButtonColor"
-            android:textColor="@color/PBButtonTextColor" />
+            android:textColor="@color/PBButtonTextColor"
+            android:visibility="gone" />
 
         <Button
             android:layout_width="wrap_content"
@@ -74,7 +77,8 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:textColor="@color/PBButtonTextColor"
-            android:clickable="true" />
+            android:clickable="true"
+            android:visibility="gone" />
 
     </RelativeLayout>
 

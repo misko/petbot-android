@@ -18,11 +18,6 @@
         android:theme="@android:style/Theme.DeviceDefault.Light.DarkActionBar"
         android:name=".ApplicationState">
         <activity android:name=".LoginActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
         </activity>
         <activity
             android:name=".PetBot"
@@ -39,11 +34,11 @@
         </activity>
         <activity
             android:name=".SetupActivity"
-            android:label="@string/title_activity_setup"
-            android:parentActivityName=".SetupActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.petbot.RegistrationActivity"/>
+            android:label="@string/title_activity_setup">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
         </activity>
         <activity
             android:name=".QRViewer"
