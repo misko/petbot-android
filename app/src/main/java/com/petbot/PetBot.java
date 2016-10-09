@@ -59,7 +59,7 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 		//pb.stringFromJNI();
 		//byte[] wtf=  pb.newByteArray();
 		Log.w("petbot", "no network");
-		final PBConnector pb = new PBConnector("159.203.252.147",8888,"A20PETBOTX1");
+		//final PBConnector pb = new PBConnector("159.203.252.147",8888,"A20PETBOTX1");
 
 		//pb.initGlib(); //setup the context and launch main run loop
 
@@ -91,7 +91,7 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 		//petbot_secret = getIntent().getExtras().getString("secret");
 		final String petbot_secret = "A20PETBOTX1";
 
-		Button cookieButton = (Button) this.findViewById(R.id.cookieButton);
+		/*Button cookieButton = (Button) this.findViewById(R.id.cookieButton);
 		cookieButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				pb.sendCookie();
@@ -166,7 +166,7 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 		);
 
 		RequestQueue queue = Volley.newRequestQueue(this);
-		queue.add(sounds_request);
+		queue.add(sounds_request);*/
 
 
 		/*ImageButton play = (ImageButton) this.findViewById(R.id.button_play);
@@ -266,7 +266,8 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 		System.loadLibrary("ssl");
 		System.loadLibrary("gstreamer_android");
 		System.loadLibrary("tutorial-3");
-		System.loadLibrary("PBConnector");
+		Log.d("petbot", "Try to make pbconnector");
+		//System.loadLibrary("PBConnector");
 		nativeClassInit();
 	}
 
