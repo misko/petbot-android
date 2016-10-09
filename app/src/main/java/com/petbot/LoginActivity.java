@@ -53,13 +53,14 @@ import com.petbot.R;
  */
 public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
+	private static final String HTTPS_ADDRESS_AUTH = "https://petbot.ca:5000/AUTH";
 	/**
 	 * Id to identity READ_CONTACTS permission request.
 	 */
 	private static final int REQUEST_READ_CONTACTS = 0;
 
 	// UI references.
-	private AutoCompleteTextView mEmailView;
+	private AutoCompleteTextView mUsernameView;
 	private EditText mPasswordView;
 	private View mProgressView;
 	private View mLoginFormView;
@@ -69,7 +70,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
 		// Set up the login form.
-		mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
+		mUsernameView = (AutoCompleteTextView) findViewById(R.id.username);
 		populateAutoComplete();
 
 		mPasswordView = (EditText) findViewById(R.id.password);
@@ -84,8 +85,8 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 			}
 		});
 
-		Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-		mEmailSignInButton.setOnClickListener(new OnClickListener() {
+		Button mUsernameSignInButton = (Button) findViewById(R.id.username_sign_in_button);
+		mUsernameSignInButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				attemptLogin();
@@ -127,18 +128,6 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 		return false;
 	}
 
-	/**
-	 * Callback received when a permissions request has been completed.
-	 */
-	/*@Override
-	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-										   @NonNull int[] grantResults) {
-		if (requestCode == REQUEST_READ_CONTACTS) {
-			if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-				populateAutoComplete();
-			}
-		}
-	}*.
 
 
 	/**
@@ -149,11 +138,11 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 	private void attemptLogin() {
 
 		// Reset errors.
-		mEmailView.setError(null);
+		mUsernameView.setError(null);
 		mPasswordView.setError(null);
 
 		// Store values at the time of the login attempt.
-		String email = mEmailView.getText().toString();
+		String username = mUsernameView.getText().toString();
 		String password = mPasswordView.getText().toString();
 
 		boolean cancel = false;
@@ -167,13 +156,13 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 		}
 
 		// Check for a valid email address.
-		if (TextUtils.isEmpty(email)) {
-			mEmailView.setError(getString(R.string.error_field_required));
-			focusView = mEmailView;
+		if (TextUtils.isEmpty(username)) {
+			mUsernameView.setError(getString(R.string.error_field_required));
+			focusView = mUsernameView;
 			cancel = true;
-		} else if (!isEmailValid(email)) {
-			mEmailView.setError(getString(R.string.error_invalid_email));
-			focusView = mEmailView;
+		} else if (!isEmailValid(username)) {
+			mUsernameView.setError(getString(R.string.error_invalid_email));
+			focusView = mUsernameView;
 			cancel = true;
 		}
 
@@ -188,7 +177,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
 			JSONObject login_info = new JSONObject();
 			try {
-				login_info.put("username", email);
+				login_info.put("username", username);
 				login_info.put("password", password);
 				login_info.put("deviceID", "TODODEVICEID-ANDROID"); //TODO
 			} catch (JSONException error) {
@@ -197,7 +186,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
 			JsonObjectRequest login_request = new JsonObjectRequest(
 					Request.Method.POST,
-					"https://petbot.ca:5000/AUTH",
+					HTTPS_ADDRESS_AUTH,
 					login_info,
 					new Response.Listener<JSONObject>() {
 						@Override
@@ -215,13 +204,18 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 							if (success) {
 								finish();
 								Intent open_main = new Intent(LoginActivity.this, PetBot.class);
+								//open_main.putExtra("json",response.toString());
 								try {
-									open_main.putExtra("secret", response.getString("secret"));
+									JSONObject pbserver = response.getJSONObject("pubsubserver");
+									open_main.putExtra("pbserver_secret", pbserver.getString("secret"));
+									open_main.putExtra("pbserver_server", pbserver.getString("server"));
+									open_main.putExtra("pbserver_port", pbserver.getInt("port"));
+									open_main.putExtra("pbserver_username", pbserver.getString("username"));
+									Log.e("petbot",response.toString());
+									LoginActivity.this.startActivity(open_main);
 								} catch (JSONException error) {
-									//TODO: this will fail for every user but "misko", should handle failure regardless
 									Log.e("petbot", error.toString());
 								}
-								LoginActivity.this.startActivity(open_main);
 							} else {
 								mPasswordView.setError(getString(R.string.error_incorrect_password));
 								mPasswordView.requestFocus();
@@ -334,7 +328,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 				new ArrayAdapter<>(LoginActivity.this,
 						android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
 
-		mEmailView.setAdapter(adapter);
+		mUsernameView.setAdapter(adapter);
 	}
 
 

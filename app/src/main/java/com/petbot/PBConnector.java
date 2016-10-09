@@ -7,6 +7,7 @@ import android.util.Log;
  */
 public class PBConnector {
     static {
+        Log.d("petbot", "Try to make pbconnector x2");
         System.loadLibrary("crypto");
         System.loadLibrary("ssl");
         System.loadLibrary("PBConnector");

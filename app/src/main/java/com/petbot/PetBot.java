@@ -55,11 +55,23 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+		//String json = getIntent().getExtras().getString("json");
+		//String pbserver_server, pbserver_secret;
+		//int pbserver_port;
+		String pbserver_server = getIntent().getExtras().getString("pbserver_server");
+		String pbserver_secret = getIntent().getExtras().getString("pbserver_secret");
+		String pbserver_username = getIntent().getExtras().getString("pbserver_username");
+		int pbserver_port = getIntent().getExtras().getInt("pbserver_port");
+
+
+		Log.w("petbot",pbserver_server);
+		Log.w("petbot",pbserver_secret);
+		Log.w("petbot",pbserver_username);
 		//PBConnector pb = new PBConnector();
 		//pb.stringFromJNI();
 		//byte[] wtf=  pb.newByteArray();
 		Log.w("petbot", "no network");
-		final PBConnector pb = new PBConnector("159.203.252.147",8888,"A20PETBOTX1");
+		final PBConnector pb = new PBConnector(pbserver_server,pbserver_port,pbserver_secret);
 
 		//pb.initGlib(); //setup the context and launch main run loop
 
