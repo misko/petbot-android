@@ -49,6 +49,10 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 	private long native_custom_data;      // Native code will use this to keep private data
 
 	private String petbot_secret;
+	private String pbserver_server;
+	private String pbserver_secret;
+	private String pbserver_username;
+	private int pbserver_port;
 
 	// Called when the activity is first created.
 	@Override
@@ -58,10 +62,10 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 		//String json = getIntent().getExtras().getString("json");
 		//String pbserver_server, pbserver_secret;
 		//int pbserver_port;
-		String pbserver_server = getIntent().getExtras().getString("pbserver_server");
-		String pbserver_secret = getIntent().getExtras().getString("pbserver_secret");
-		String pbserver_username = getIntent().getExtras().getString("pbserver_username");
-		int pbserver_port = getIntent().getExtras().getInt("pbserver_port");
+		pbserver_server = getIntent().getExtras().getString("pbserver_server");
+		pbserver_secret = getIntent().getExtras().getString("pbserver_secret");
+		pbserver_username = getIntent().getExtras().getString("pbserver_username");
+		 pbserver_port = getIntent().getExtras().getInt("pbserver_port");
 
 
 		Log.w("petbot",pbserver_server);
@@ -131,7 +135,7 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 
 		//TODO: server does not return secret, must be commented out
 		//petbot_secret = getIntent().getExtras().getString("secret");
-		final String petbot_secret = "A20PETBOTX1";
+		//final String petbot_secret = "A20PETBOTX1";
 
 		Button cookieButton = (Button) this.findViewById(R.id.cookieButton);
 		cookieButton.setOnClickListener(new OnClickListener() {
@@ -153,7 +157,7 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 
 		JsonObjectRequest sounds_request = new JsonObjectRequest(
 				Request.Method.POST,
-				"https://petbot.ca:5000/FILES_LS/" + petbot_secret,
+				"https://petbot.ca:5000/FILES_LS/" + pbserver_secret,
 				sounds_info,
 				new Response.Listener<JSONObject>() {
 					@Override
@@ -175,7 +179,7 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 									soundButton.setOnClickListener(new OnClickListener() {
 										public void onClick(View v) {
 
-											String url = "https://petbot.ca:5000/FILES_DL/" + petbot_secret + "/" + file_id;
+											String url = "https://petbot.ca:5000/FILES_DL/" + pbserver_secret + "/" + file_id;
 											//String url = "https://goo.gl/XJuOUW";
 											MediaPlayer mediaPlayer = new MediaPlayer();
 											mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
