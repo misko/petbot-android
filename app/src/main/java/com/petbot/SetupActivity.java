@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -74,6 +75,17 @@ public class SetupActivity extends Activity {
 		});
 
 		mRegistrationFormView = findViewById(R.id.network_form);
+
+		SharedPreferences pref = getSharedPreferences("FACTORYTEST",MODE_PRIVATE);
+		String networkssid = pref.getString("NETWORKSSID", null);
+		if (networkssid!=null) {
+			mNetworkView.setText(networkssid);
+		}
+		String networkkey = pref.getString("NETWORKKEY", null);
+		if (networkkey!=null) {
+			mPasswordView.setText(networkkey);
+		}
+
 	}
 
 
@@ -91,6 +103,12 @@ public class SetupActivity extends Activity {
 		// Store values at the time of the login attempt.
 		String network = mNetworkView.getText().toString();
 		String password = mPasswordView.getText().toString();
+
+		getSharedPreferences("FACTORYTEST",MODE_PRIVATE)
+				.edit()
+				.putString("NETWORKSSID", network)
+				.putString("NETWORKKEY", password)
+				.commit();
 
 		boolean cancel = false;
 		View focusView = null;
@@ -119,14 +137,16 @@ public class SetupActivity extends Activity {
 			String IP = Formatter.formatIpAddress(wifi.getConnectionInfo().getIpAddress());
 			ApplicationState state = (ApplicationState) getApplicationContext();
 			state.IP = IP;
-			try {
+			state.port = 59995;
+			/*try {
+				//TODO THIS IS TCP, we are using UDP ? maybe just fix a port?
 				ServerSocket socket = new ServerSocket(0);
 				socket.setReuseAddress(true);
 				state.port = socket.getLocalPort();
 				socket.close();
 			} catch (Exception error) {
 				Log.e("petbot", error.toString());
-			}
+			}*/
 
 			// open activity to display QR code
 			String image_url =  "https://petbot.ca:5000/PB_QRCODE/TESTVID:" + network + ":" + password +

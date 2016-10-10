@@ -13,12 +13,19 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Button;
 
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 
 import org.freedesktop.gstreamer.GStreamer;
@@ -33,6 +40,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.petbot.PBConnector;
+import com.petbot.QRViewer;
 
 import com.petbot.R;
 
@@ -55,15 +63,8 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		//PBConnector pb = new PBConnector();
-		//pb.stringFromJNI();
-		//byte[] wtf=  pb.newByteArray();
-		Log.w("petbot", "no network");
-		//final PBConnector pb = new PBConnector("159.203.252.147",8888,"A20PETBOTX1");
 
-		//pb.initGlib(); //setup the context and launch main run loop
-
-		//start up a read thread
+		//start up a read thread for UDP streaming
 		Thread play_thread = new Thread() {
 			@Override
 			public void run() {
@@ -72,9 +73,6 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 				nativePlayAgent(port);
 			}
 		};
-
-		//pb.connectToServerWithKey(JNIEnv* env,jobject thiz, jstring hostname, int portno, jstring key );
-		//System.out.println(wtf);
 
 		// Initialize GStreamer and warn if it fails
 		try {
@@ -87,119 +85,124 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 
 		setContentView(R.layout.main);
 
-		//TODO: server does not return secret, must be commented out
-		//petbot_secret = getIntent().getExtras().getString("secret");
-		final String petbot_secret = "A20PETBOTX1";
 
-		/*Button cookieButton = (Button) this.findViewById(R.id.cookieButton);
-		cookieButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				pb.sendCookie();
-			}
-		});
+		final ApplicationState state = (ApplicationState) getApplicationContext();
+		Thread server_thread = new Thread() {
+			@Override
+			public void run() {
+				try {
+					int led_test = 1;
+					int motor_test =2;
+					int wifi_test =3;
+					int microphone_test =4;
+					int streaming_test =5;
+					final int test_strings = 6;
 
-		final Button soundButton = (Button) this.findViewById(R.id.soundButton);
 
-		JSONObject sounds_info = new JSONObject();
-		try {
-			sounds_info.put("file_type", "mp3");
-			sounds_info.put("start_idx", 0);
-			sounds_info.put("end_idx", 0); //TODO: start_idx and end_idx are not used in server
-		} catch (JSONException error) {
-			//TODO
-		}
 
-		JsonObjectRequest sounds_request = new JsonObjectRequest(
-				Request.Method.POST,
-				"https://petbot.ca:5000/FILES_LS/" + petbot_secret,
-				sounds_info,
-				new Response.Listener<JSONObject>() {
-					@Override
-					public void onResponse(JSONObject response) {
+					final String tests[] = new String[test_strings];
+					final String test_names[] = new String[test_strings];
+					final String test_status[] = new String[test_strings];
+					test_names[0]="TESTING IN PROGRESS...";
+					test_status[0]="";
+					test_names[1]="LED TEST";
+					test_status[1]="?";
+					test_names[2]="motor and IR sensor TEST";
+					test_status[2]="?";
+					test_names[3]="WIFI TEST";
+					test_status[3]="?";
+					test_names[4]="microphone TEST";
+					test_status[4]="?";
+					test_names[5]="streaming TEST";
+					test_status[5]="?";
 
-						Log.e("petbot", response.toString());
-						boolean success = false;
-						try {
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							for (int i=0; i<test_strings; i++){
+								tests[i]=test_status[i]+ "\t"+test_names[i];
+							}
+							ListView listView   = (ListView) findViewById(R.id.testListView);
+							ArrayAdapter<String> adapter = new ArrayAdapter<String>(PetBot.this,android.R.layout.simple_list_item_1, android.R.id.text1, tests);
+							listView.setAdapter(adapter);
+						}
+					});
 
-							success = response.getInt("status") == 1;
-							if (success) {
 
-								JSONArray sound_files = response.getJSONArray("files");
-								if (sound_files.length() > 0) {
-
-									// get the file id of the first sound in the list
-									final String file_id = sound_files.getJSONArray(0).getString(0);
-
-									soundButton.setOnClickListener(new OnClickListener() {
-										public void onClick(View v) {
-
-											String url = "https://petbot.ca:5000/FILES_DL/" + petbot_secret + "/" + file_id;
-											//String url = "https://goo.gl/XJuOUW";
-											MediaPlayer mediaPlayer = new MediaPlayer();
-											mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-											try {
-												mediaPlayer.setDataSource(url);
-												mediaPlayer.prepare(); // might take long! (for buffering, etc)
-											} catch (IOException error) {
-												//TODO
-												Log.e("petbot", error.toString());
-											}
-											mediaPlayer.start();
-											pb.playSound(url);
-										}
-									});
+					ServerSocket ss = new ServerSocket(state.port);
+					ss.setReuseAddress(true);
+					//Server is waiting for client here, if needed
+					Log.e("petbot","waiting for petbot to connect");
+					Socket s = ss.accept();
+					try {
+						BufferedReader in = new BufferedReader(
+								new InputStreamReader(
+										s.getInputStream()));
+						String line = null;
+						while ((line = in.readLine()) != null) {
+							Log.d("ServerActivity", line);
+							String[] parts = line.split(" ");
+							if (parts[0].equalsIgnoreCase("TEST")) {
+								String status = parts[2];
+								int index=0;
+								if (parts[1].equalsIgnoreCase("LED")) {
+									test_status[led_test]=status;
+								} else if (parts[1].equalsIgnoreCase("MOTOR")) {
+									test_status[motor_test]=status;
+								} else if (parts[1].equalsIgnoreCase("WIFI")) {
+									test_status[wifi_test]=status;
+								} else if (parts[1].equalsIgnoreCase("MICROPHONE")) {
+									test_status[microphone_test]=status;
+								} else if (parts[1].equalsIgnoreCase("STREAMING")) {
+									test_status[streaming_test]=status;
 								}
 							}
-						} catch (JSONException error) {
-							//TODO
-							Log.e("petbot", error.toString());
+							//update UI
+							runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									for (int i=0; i<test_strings; i++){
+										tests[i]=test_status[i]+ "\t\t"+test_names[i];
+									}
+									ListView listView   = (ListView) findViewById(R.id.testListView);
+									ArrayAdapter<String> adapter = new ArrayAdapter<String>(PetBot.this,android.R.layout.simple_list_item_1, android.R.id.text1, tests);
+									listView.setAdapter(adapter);
+								}
+							});
 						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					s.close();
+					ss.close();
 
-					}
-				},
-				new Response.ErrorListener() {
-					@Override
-					public void onErrorResponse(VolleyError error) {
-						Log.e("petbot", error.toString());
-					}
+					Log.e("petbot","petbot connected");
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							Intent open_main = new Intent(PetBot.this,QRViewer.class);
+							open_main.putExtra("image_url", getIntent().getExtras().getString("image_url"));
+							PetBot.this.startActivity(open_main);
+						}
+					});
+
+				} catch (UnknownHostException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-		);
-
-		RequestQueue queue = Volley.newRequestQueue(this);
-		queue.add(sounds_request);*/
-
-
-		/*ImageButton play = (ImageButton) this.findViewById(R.id.button_play);
-		play.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				is_playing_desired = true;
-				nativePlay();
 			}
-		});
+		};
+		server_thread.start();
 
-		ImageButton pause = (ImageButton) this.findViewById(R.id.button_stop);
-		pause.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				is_playing_desired = false;
-				nativePause();
-			}
-		});*/
+
+
 
 		SurfaceView sv = (SurfaceView) this.findViewById(R.id.surface_video);
 		SurfaceHolder sh = sv.getHolder();
 		sh.addCallback(this);
-
-		/*if (savedInstanceState != null) {
-			is_playing_desired = savedInstanceState.getBoolean("playing");
-			Log.i ("GStreamer", "Activity created. Saved state is playing:" + is_playing_desired);
-		} else {
-			is_playing_desired = false;
-			Log.i ("GStreamer", "Activity created. There is no saved state, playing: false");
-		}*/
-
-		// Start with disabled buttons, until native code is initialized
-		//this.findViewById(R.id.button_play).setEnabled(false);
-		//this.findViewById(R.id.button_stop).setEnabled(false);
 
 		nativeInit();
 		play_thread.start();
@@ -210,22 +213,15 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 
 		// Checks the orientation of the screen
 		if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-			//Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
-			// for example the width of a layout
 			int width = 300;
 			int height = LayoutParams.WRAP_CONTENT;
-			//SurfaceView sv = (SurfaceView) this.findViewById(R.id.surface_video);
-			//sv.setLayoutParams(new LayoutParams(width, height));
-			//childLayout.setLayoutParams(new LayoutParams(width, height));
 		} else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
 			//Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show();
 		}
-		Log.w("petbot","WTF CONFIG CHANGE?");
 	}
 
 	protected void onSaveInstanceState (Bundle outState) {
 		Log.d ("GStreamer", "Saving state, playing:" );
-		//outState.putBoolean("playing", is_playing_desired);
 	}
 
 	protected void onDestroy() {
@@ -262,12 +258,8 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 	}
 
 	static {
-		System.loadLibrary("crypto");
-		System.loadLibrary("ssl");
 		System.loadLibrary("gstreamer_android");
 		System.loadLibrary("tutorial-3");
-		Log.d("petbot", "Try to make pbconnector");
-		//System.loadLibrary("PBConnector");
 		nativeClassInit();
 	}
 
