@@ -11,17 +11,31 @@ OPENSSL_ROOT := openssl-1.0.2
 #GSTREAMER_ROOT := /Users/miskodzamba/research/petbot/petbot_2015/gstreamer-1.0-android-$(TARGET_ARCH)-1.9.1
 GSTREAMER_ROOT_ANDROID := /Users/miskodzamba/research/petbot/petbot_2015/gstreamer-1.0-android-universal-1.9.90
 
-include $(CLEAR_VARS)
-LOCAL_MODULE := ssl
-LOCAL_SRC_FILES := $(OPENSSL_ROOT)/$(APP_ABI)/lib/libssl.so
-LOCAL_EXPORT_C_INCLUDES += $(LOCAL_PATH)/$(OPENSSL_ROOT)/include
-include $(PREBUILT_SHARED_LIBRARY)
+#include $(CLEAR_VARS)
+#LOCAL_MODULE := ssl
+#LOCAL_SRC_FILES := $(OPENSSL_ROOT)/$(APP_ABI)/lib/libssl.so
+#LOCAL_EXPORT_C_INCLUDES += $(LOCAL_PATH)/$(OPENSSL_ROOT)/include
+#include $(PREBUILT_SHARED_LIBRARY)
 
+#include $(CLEAR_VARS)
+#LOCAL_MODULE := crypto
+#LOCAL_SRC_FILES := $(OPENSSL_ROOT)/$(APP_ABI)/lib/libcrypto.so
+#LOCAL_EXPORT_CFLAGS := -DWAZA
+#include $(PREBUILT_SHARED_LIBRARY)
+
+# Prepare the SSL static library
 include $(CLEAR_VARS)
-LOCAL_MODULE := crypto
-LOCAL_SRC_FILES := $(OPENSSL_ROOT)/$(APP_ABI)/lib/libcrypto.so
-LOCAL_EXPORT_CFLAGS := -DWAZA
-include $(PREBUILT_SHARED_LIBRARY)
+LOCAL_MODULE := libssl-prebuilt
+LOCAL_SRC_FILES := $(OPENSSL_ROOT)/$(APP_ABI)/lib/libssl.a
+LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/$(OPENSSL_ROOT)/include
+include $(PREBUILT_STATIC_LIBRARY)
+
+# Prepare the CRYPTO static library
+include $(CLEAR_VARS)
+LOCAL_MODULE := libcrypto-prebuilt
+LOCAL_SRC_FILES := $(OPENSSL_ROOT)/$(APP_ABI)/lib/libcrypto.a
+LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/$(OPENSSL_ROOT)/include
+include $(PREBUILT_STATIC_LIBRARY)
 
 #GSTREAMER
 ifndef GSTREAMER_ROOT_ANDROID
@@ -49,7 +63,9 @@ include $(GSTREAMER_NDK_BUILD_PATH)/gstreamer-1.0.mk
 include $(CLEAR_VARS)
 LOCAL_MODULE := PBConnector
 LOCAL_SRC_FILES := PBConnector.c pb.c tcp_utils.c nice_utils.c
-LOCAL_SHARED_LIBRARIES := gstreamer_android ssl crypto
+LOCAL_SHARED_LIBRARIES := gstreamer_android
+#ssl crypto
+LOCAL_STATIC_LIBRARIES := libssl-prebuilt libcrypto-prebuilt
 LOCAL_LDLIBS := -llog -landroid
 LOCAL_CFLAGS := -std=c11 -DANDROID -DPBSSL -DPBTHREADS
 include $(BUILD_SHARED_LIBRARY)
