@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">GStreamer tutorial 3</string>
+    <string name="app_name">PetBot TEST</string>
     <string name="button_play">Play</string>
     <string name="button_stop">Stop</string>
     <string name="title_activity_login">Sign in</string>
@@ -19,7 +19,7 @@
     </string>
     <string name="title_activity_login2">Sign in</string>
     <string name="title_activity_registration">Sign Up</string>
-    <string name="title_activity_setup">Setup</string>
+    <string name="title_activity_setup">PetBot TEST</string>
     <string name="cookie">Cookie</string>
     <string name="title_activity_qrviewer">QRViewer</string>
 </resources>
