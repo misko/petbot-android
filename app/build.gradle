@@ -1,68 +1,50 @@
 import org.apache.tools.ant.taskdefs.condition.Os
 
-apply plugin: 'com.android.model.application'
+apply plugin: 'com.android.application'
 
-model {
-    android {
-        compileSdkVersion = 22
-        buildToolsVersion "22.0.1"
 
-        defaultConfig {
-            applicationId = 'com.petbot'
-            minSdkVersion.apiLevel = 14
-            targetSdkVersion.apiLevel = 22
+android {
+    compileSdkVersion = 22
+    buildToolsVersion "22.0.1"
+
+    defaultConfig {
+        applicationId = 'com.petbot'
+        minSdkVersion 14
+        targetSdkVersion 22
+
+        ndk {
+            abiFilters 'armeabi-v7a'
         }
-
-        sources.main {
-            jni {
-                source {
-                    srcDirs = ['src/main/none']
-                }
-            }
-
-            jniLibs {
-                source {
-                    srcDirs = ['src/main/libs']
-                }
+    }
+//, 'arm64-v8a', 'x86', 'x86_64', 'mips', 'mips64', 'armeabi'
+    /*sources.main {
+        jni {
+            source {
+                srcDirs = ['src/main/none']
             }
         }
 
-        buildTypes {
-            release {
-                minifyEnabled = false
-                proguardFiles.add(file('proguard-rules.txt'))
+        jniLibs {
+            source {
+                srcDirs = ['src/main/libs']
             }
         }
-        productFlavors {
-            // for detailed abiFilter descriptions, refer to "Supported ABIs" @
-            // https://developer.android.com/ndk/guides/abis.html#sa
-            create("arm") {
-                ndk.abiFilters.add("armeabi")
-            }
-            create("arm7") {
-                ndk.abiFilters.add("armeabi-v7a")
-            }
-            create("arm8") {
-                ndk.abiFilters.add("arm64-v8a")
-            }
-            create("x86") {
-                ndk.abiFilters.add("x86")
-            }
-            create("x86-64") {
-                ndk.abiFilters.add("x86_64")
-            }
-            create("mips") {
-                ndk.abiFilters.add("mips")
-            }
-            create("mips-64") {
-                ndk.abiFilters.add("mips64")
-            }
-            // To include all cpu architectures, leaves abiFilters empty
-            create("all")
+    }*/
+
+    buildTypes {
+        release {
+            minifyEnabled = false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 
+    externalNativeBuild {
+        ndkBuild {
+            path 'src/main/jni/Android.mk'
+        }
+    }
 }
+
 
 dependencies {
     //compile 'com.android.support:appcompat-v7:18.0.+'
@@ -75,11 +57,14 @@ dependencies {
     //compile 'com.android.support:support-annotations:+'
     compile 'com.android.support:support-annotations:22.0.0'
     compile 'com.android.volley:volley:1.0.0'
-    compile 'com.google.android.gms:play-services-appindexing:8.1.0'
+    compile 'com.google.android.gms:play-services-appindexing:9.8.0'
+
+    compile 'com.google.firebase:firebase-core:9.8.0'
+    compile 'com.google.firebase:firebase-messaging:9.8.0'
 }
 
 // call regular ndk-build(.cmd) script from app directory
-task ndkBuild(type: Exec) {
+/*task ndkBuild(type: Exec) {
 
     // get NDK directory
     Properties properties = new Properties()
@@ -95,16 +80,19 @@ task ndkBuild(type: Exec) {
 
 tasks.withType(JavaCompile) {
     compileTask -> compileTask.dependsOn ndkBuild
-}
+}*/
 
-task ndkLibsToJar(type: Zip, dependsOn: 'ndkBuild', description: 'Create a JAR of the native libs') {
-    destinationDir new File(buildDir, 'libs')
-    baseName 'ndk-libs'
-    extension 'jar'
-    from(new File(buildDir, 'libs')) { include '**/*.so' }
-    into 'lib/'
-}
+//task ndkLibsToJar(type: Zip, dependsOn: 'ndkBuild', description: 'Create a JAR of the native libs') {
+//    destinationDir new File(buildDir, 'libs')
+//    baseName 'ndk-libs'
+//    extension 'jar'
+//    from(new File(buildDir, 'libs')) { include '**/*.so' }
+//    into 'lib/'
+//}
 
-tasks.withType(JavaCompile) {
-    compileTask -> compileTask.dependsOn ndkLibsToJar
-}
+//tasks.withType(JavaCompile) {
+//    compileTask -> compileTask.dependsOn ndkLibsToJar
+//}
+
+apply plugin: 'com.google.gms.google-services' // for firebase
+

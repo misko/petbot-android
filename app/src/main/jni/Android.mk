@@ -7,9 +7,9 @@ CURRENT_PATH := $(LOCAL_PATH)
 OPENSSL_ROOT := openssl-1.0.2
 
 # might need to include the gstreamer libs in the jni folder, similar to openssl
-#GSTREAMER_ROOT := /home/ssitwell/gstreamer-arm
+GSTREAMER_ANDROID_DIR := /home/ssitwell/gstreamer-android
 #GSTREAMER_ROOT := /Users/miskodzamba/research/petbot/petbot_2015/gstreamer-1.0-android-$(TARGET_ARCH)-1.9.1
-GSTREAMER_ROOT_ANDROID := /Users/miskodzamba/research/petbot/petbot_2015/gstreamer-1.0-android-universal-1.9.90
+# GSTREAMER_ANDROID_DIR := /Users/miskodzamba/research/petbot/petbot_2015/gstreamer-1.0-android-universal-1.9.90
 
 #include $(CLEAR_VARS)
 #LOCAL_MODULE := ssl
@@ -38,19 +38,20 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/$(OPENSSL_ROOT)/include
 include $(PREBUILT_STATIC_LIBRARY)
 
 #GSTREAMER
-ifndef GSTREAMER_ROOT_ANDROID
-$(error GSTREAMER_ROOT_ANDROID is not defined!)
+# GSTREAMER_ROOT must be set for the gstreamer-android makefiles to work
+ifndef GSTREAMER_ANDROID_DIR
+$(error GSTREAMER_ANDROID_DIR is not defined!)
 endif
 ifeq ($(TARGET_ARCH_ABI),armeabi)
-GSTREAMER_ROOT        := $(GSTREAMER_ROOT_ANDROID)/arm
+GSTREAMER_ROOT        := $(GSTREAMER_ANDROID_DIR)/arm
 else ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
-GSTREAMER_ROOT        := $(GSTREAMER_ROOT_ANDROID)/armv7
+GSTREAMER_ROOT        := $(GSTREAMER_ANDROID_DIR)/armv7
 else ifeq ($(TARGET_ARCH_ABI),arm64-v8a)
-GSTREAMER_ROOT        := $(GSTREAMER_ROOT_ANDROID)/arm64
+GSTREAMER_ROOT        := $(GSTREAMER_ANDROID_DIR)/arm64
 else ifeq ($(TARGET_ARCH_ABI),x86)
-GSTREAMER_ROOT        := $(GSTREAMER_ROOT_ANDROID)/x86
+GSTREAMER_ROOT        := $(GSTREAMER_ANDROID_DIR)/x86
 else ifeq ($(TARGET_ARCH_ABI),x86_64)
-GSTREAMER_ROOT        := $(GSTREAMER_ROOT_ANDROID)/x86_64
+GSTREAMER_ROOT        := $(GSTREAMER_ANDROID_DIR)/x86_64
 else
 $(error Target arch ABI not supported: $(TARGET_ARCH_ABI))
 endif

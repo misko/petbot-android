@@ -43,6 +43,9 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.FirebaseInstanceIdService;
+
 import com.petbot.PBConnector;
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -69,6 +72,10 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
+
+		String refreshedToken = FirebaseInstanceId.getInstance().getToken();
+		Log.d("petbot", "Refreshed token: " + refreshedToken);
+
 		// Set up the login form.
 		mUsernameView = (AutoCompleteTextView) findViewById(R.id.username);
 		populateAutoComplete();

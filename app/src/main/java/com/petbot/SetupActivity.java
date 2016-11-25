@@ -86,13 +86,13 @@ public class SetupActivity extends Activity {
 
 		// Store values at the time of the login attempt.
 		String network = mNetworkView.getText().toString();
-		String password = mPasswordView.getText().toString();
+		String network_key = mPasswordView.getText().toString();
 
 		boolean cancel = false;
 		View focusView = null;
 
 		// Check for a valid password, if the user entered one.
-		if (TextUtils.isEmpty(password)) {
+		if (TextUtils.isEmpty(network_key)) {
 			mPasswordView.setError(getString(R.string.error_field_required));
 			focusView = mPasswordView;
 			cancel = true;
@@ -114,7 +114,11 @@ public class SetupActivity extends Activity {
 			// open activity to display QR code
 			String username = getIntent().getExtras().getString("username");
 			String email = getIntent().getExtras().getString("email");
-			String image_url =  "https://petbot.ca:5000/PB_QRCODE/SETUP:" + username + ":" + email + ":" + network + ":" + password;
+			String password = getIntent().getExtras().getString("password");
+			String wait_time = "40";
+			String image_url =  "https://petbot.ca:5000/PB_QRCODE/SETUP:" + username.length() + ":" + username + ":" + email.length() + ":" + email + ":"
+					+ password.length() + ":" + password + ":" + network.length() + ":" + network + ":" + network_key.length() + ":" + network_key + ":"
+					+ wait_time.length() + ":" + wait_time;
 			Intent open_qr = new Intent(SetupActivity.this, QRViewer.class);
 			open_qr.putExtra("image_url", image_url);
 			SetupActivity.this.startActivity(open_qr);

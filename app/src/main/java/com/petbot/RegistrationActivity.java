@@ -154,7 +154,7 @@ public class RegistrationActivity extends Activity implements LoaderCallbacks<Cu
 		// Store values at the time of the login attempt.
 		final String username = mUsernameView.getText().toString();
 		final String email = mEmailView.getText().toString();
-		String password = mPasswordView.getText().toString();
+		final String password = mPasswordView.getText().toString();
 
 		boolean cancel = false;
 		View focusView = null;
@@ -216,6 +216,7 @@ public class RegistrationActivity extends Activity implements LoaderCallbacks<Cu
 								Intent open_setup = new Intent(RegistrationActivity.this, SetupActivity.class);
 								open_setup.putExtra("username", username);
 								open_setup.putExtra("email", email);
+								open_setup.putExtra("password", password);
 								RegistrationActivity.this.startActivity(open_setup);
 
 							} else {
