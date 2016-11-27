@@ -33,14 +33,14 @@ public class PBConnector {
         sendPBMsg(m);
     }
 	public void playSound(String url) {
-		PBMsg m = new PBMsg(url, PBMsg.PBMSG_SOUND | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
+        String command = "PLAYURL "+url;
+		PBMsg m = new PBMsg(command, PBMsg.PBMSG_SOUND | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
 		sendPBMsg(m);
 	}
 
     public void close () {
         Log.w("petbot", "ANDROID - JAVA PBCONNECTOR - CLOSE ");
         nativeClose();
-
     }
     public static native String stringFromJNI();
     public native byte[] newByteArray();

@@ -51,16 +51,19 @@ typedef enum {
 	PBMSG_ALL = (1<<14),
 	PBMSG_CONFIG_SET = (1<<15),
 	PBMSG_CONFIG_GET = (1<<16),
-	PBMSG_CONNECTED = (1<<17),
-	PBMSG_DISCONNECTED = (1<<18),
-	PBMSG_STRING = (1<<19),
-	PBMSG_PTR = (1<<20),
-	PBMSG_BIN = (1<<21),
-	PBMSG_FILE = (1<<22),
-	PBMSG_KEEP_ALIVE = (1<<23)
+        PBMSG_CONNECTED = (1<<17),
+        PBMSG_DISCONNECTED = (1<<18),
+        PBMSG_STRING = (1<<19),
+        PBMSG_PTR = (1<<20),
+        PBMSG_BIN = (1<<21),
+        PBMSG_FILE = (1<<22),
+	PBMSG_KEEP_ALIVE = (1<<23),
+	PBMSG_GPIO = (1<<24),
+	PBMSG_UPDATE = (1<<25),
+	PBMSG_SYSTEM = (1<<26)
 } pbmsg_type;
 
-#define PBMSG_MAX_TYPE 23
+#define PBMSG_MAX_TYPE 26
 
 typedef struct pbmsg {
 	uint32_t pbmsg_type;
@@ -74,8 +77,9 @@ typedef struct pbsock {
 #endif
 #ifdef PBTHREADS
 	pthread_t keep_alive_thread;
-	pthread_mutex_t send_mutex; 
-	pthread_mutex_t recv_mutex; 
+	pthread_mutex_t send_mutex;
+	pthread_mutex_t recv_mutex;
+	pthread_mutex_t waiting_threads_mutex;
 	pthread_cond_t cond;
 	int keep_alive_time;
 	int waiting_threads; //need to hold pbs->send_mutex to modify this!
@@ -83,6 +87,10 @@ typedef struct pbsock {
 	int client_sock;
 	pbsock_state state;
 } pbsock;
+
+#if defined __cplusplus
+extern "C" {
+#endif
 
 void free_pbsock(pbsock *pbs);
 
@@ -93,6 +101,10 @@ pbsock_state pbsock_get_state(pbsock *pbs);
 #ifdef PBTHREADS
 void *keep_alive_handler(void * v );
 pbsock_state pbsock_wait_state(pbsock * pbs);
+
+int increment_waiting_threads(pbsock * pbs);
+int decrement_waiting_threads(pbsock * pbs);
+
 #endif
 
 #ifdef PBSSL
@@ -104,6 +116,7 @@ pbsock* new_pbsock(int client_sock);
 pbsock* connect_to_server_with_key(const char * hostname, int portno, const char * key);
 pbsock* connect_to_server(const char * hostname, int portno);
 #endif
+char * pbsock_state_to_string(pbsock * pbs) ;
 
 extern char * bb_new_user;
 
@@ -129,4 +142,10 @@ int write_file(const char *fn , char * buffer, size_t len);
 
 char * pbmsg_type_to_string(pbmsg *m) ;
 int pbmsg_has_type(pbmsg *m, int ty);
+#endif
+
+unsigned int pbmsg_hash(const char *str);
+
+#if defined __cplusplus
+};
 #endif

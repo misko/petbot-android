@@ -80,11 +80,17 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 		//pb.initGlib(); //setup the context and launch main run loop
 
 		//start up a read thread
-		Thread read_thread = new Thread() {
+		final Thread read_thread = new Thread() {
 			@Override
 			public void run() {
 				while (true) {
+					Log.w("petbot", "ANDROID - READ MSG");
 					final PBMsg m = pb.readPBMsg();
+					Log.w("petbot", "ANDROID - READ MSG -DONE");
+					if (m==null) {
+						Log.w("petbot", "ANDROID - LEAVE READ THREAD");
+						break;
+					}
 					if ((m.pbmsg_type ^  (PBMsg.PBMSG_SUCCESS | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_ICE | PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_STRING))==0) {
 						Log.w("petbot", "READ" + m.toString() +" MOVE TO ICE NEGOTIATE!");		//start up a read thread
 						Thread negotiate_thread = new Thread() {
@@ -96,6 +102,7 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 								nativePlayAgent(pb.ptr_agent,pb.stream_id);
 							}
 						};
+						negotiate_thread.setDaemon(true);
 						negotiate_thread.start();
 					} else {
 						Log.w("petbot", "READ" + m.toString());
@@ -103,6 +110,7 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 				}
 			}
 		};
+		read_thread.setDaemon(true);
 		read_thread.start();
 
 		pb.startNiceThread(0);
@@ -116,6 +124,7 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 				Log.w("petbot", "ANDROID - ICE REQUEST DONE");
 			}
 		};
+		request_thread.setDaemon(true);
 		request_thread.start();
 
 		Log.w("petbot", String.valueOf(pb.ptr_pbs));
@@ -141,6 +150,27 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 		cookieButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				pb.sendCookie();
+			}
+		});
+
+		Button selfieButton = (Button) this.findViewById(R.id.selfieButton);
+		selfieButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				pb.takeSelfie();
+			}
+		});
+
+		Button logoutButton = (Button) this.findViewById(R.id.logoutButton);
+		logoutButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				//read_thread.stop();
+				pb.close();
+				nativePause();
+				finish();
+				Intent open_main = new Intent(PetBot.this, LoginActivity.class);
+				//open_main.putExtra("json",response.toString());
+				PetBot.this.startActivity(open_main);
+
 			}
 		});
 
@@ -329,6 +359,7 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		Log.d("GStreamer", "Surface destroyed");
 		nativeSurfaceFinalize ();
+		Log.d("GStreamer", "Surface destroyed - done");
 	}
 
 }
