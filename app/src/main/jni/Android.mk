@@ -7,9 +7,9 @@ CURRENT_PATH := $(LOCAL_PATH)
 OPENSSL_ROOT := openssl-1.0.2
 
 # might need to include the gstreamer libs in the jni folder, similar to openssl
-GSTREAMER_ANDROID_DIR := /home/ssitwell/gstreamer-android
+#GSTREAMER_ANDROID_DIR := /home/ssitwell/gstreamer-android
 #GSTREAMER_ROOT := /Users/miskodzamba/research/petbot/petbot_2015/gstreamer-1.0-android-$(TARGET_ARCH)-1.9.1
-# GSTREAMER_ANDROID_DIR := /Users/miskodzamba/research/petbot/petbot_2015/gstreamer-1.0-android-universal-1.9.90
+GSTREAMER_ANDROID_DIR := /Users/miskodzamba/research/petbot/petbot_2015/gstreamer-1.0-android-universal-1.9.90
 
 #include $(CLEAR_VARS)
 #LOCAL_MODULE := ssl
@@ -63,7 +63,7 @@ include $(GSTREAMER_NDK_BUILD_PATH)/gstreamer-1.0.mk
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := PBConnector
-LOCAL_SRC_FILES := PBConnector.c pb.c tcp_utils.c nice_utils.c
+LOCAL_SRC_FILES := PBConnector.c  tcp_utils.c nice_utils.c pb.h #pb.c
 LOCAL_SHARED_LIBRARIES := gstreamer_android
 #ssl crypto
 LOCAL_STATIC_LIBRARIES := libssl-prebuilt libcrypto-prebuilt
@@ -74,7 +74,7 @@ include $(BUILD_SHARED_LIBRARY)
 include $(CLEAR_VARS)
 LOCAL_PATH := $(CURRENT_PATH)
 LOCAL_MODULE    := pb_gst
-LOCAL_SRC_FILES := pb_gst.c pb.c
+LOCAL_SRC_FILES := pb_gst.c pb.h #pb.c
 LOCAL_SHARED_LIBRARIES := gstreamer_android
 LOCAL_LDLIBS := -llog -landroid
 LOCAL_CFLAGS := -std=c11 -DANDROID

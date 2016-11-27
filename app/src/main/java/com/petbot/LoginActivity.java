@@ -56,7 +56,7 @@ import com.petbot.R;
  */
 public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
-	private static final String HTTPS_ADDRESS_AUTH = "https://petbot.ca:5000/AUTH";
+	//private static final String HTTPS_ADDRESS_AUTH = "https://petbot.ca:5000/AUTH";
 	/**
 	 * Id to identity READ_CONTACTS permission request.
 	 */
@@ -193,7 +193,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
 			JsonObjectRequest login_request = new JsonObjectRequest(
 					Request.Method.POST,
-					HTTPS_ADDRESS_AUTH,
+					PetBot.HTTPS_ADDRESS_AUTH,
 					login_info,
 					new Response.Listener<JSONObject>() {
 						@Override

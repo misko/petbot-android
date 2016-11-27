@@ -38,6 +38,8 @@ import com.petbot.R;
 
 public class PetBot extends Activity implements SurfaceHolder.Callback {
 
+	public static final String HTTPS_ADDRESS_AUTH = "https://petbot.ca:5000/AUTH";
+
 	private native void nativeInit();     // Initialize native code, build pipeline, etc
 	private native void nativePlayAgent(long jagent, int jstream_id);     // Initialize native code, build pipeline, etc
 	private native void nativeFinalize(); // Destroy pipeline and shutdown native code
@@ -339,8 +341,8 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 	static {
 		System.loadLibrary("crypto");
 		System.loadLibrary("ssl");
+		System.loadLibrary("gstreamer_android");
 		System.loadLibrary("pb_gst");
-		System.loadLibrary("tutorial-3");
 		System.loadLibrary("PBConnector");
 		nativeClassInit();
 	}
