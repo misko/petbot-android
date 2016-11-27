@@ -73,8 +73,8 @@ include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_PATH := $(CURRENT_PATH)
-LOCAL_MODULE    := tutorial-3
-LOCAL_SRC_FILES := tutorial-3.c pb.c
+LOCAL_MODULE    := pb_gst
+LOCAL_SRC_FILES := pb_gst.c pb.c
 LOCAL_SHARED_LIBRARIES := gstreamer_android
 LOCAL_LDLIBS := -llog -landroid
 LOCAL_CFLAGS := -std=c11 -DANDROID

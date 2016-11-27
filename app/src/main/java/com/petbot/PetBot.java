@@ -339,7 +339,7 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 	static {
 		System.loadLibrary("crypto");
 		System.loadLibrary("ssl");
-		System.loadLibrary("gstreamer_android");
+		System.loadLibrary("pb_gst");
 		System.loadLibrary("tutorial-3");
 		System.loadLibrary("PBConnector");
 		nativeClassInit();
