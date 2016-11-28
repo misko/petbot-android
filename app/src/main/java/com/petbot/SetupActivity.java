@@ -116,11 +116,11 @@ public class SetupActivity extends Activity {
 			String email = getIntent().getExtras().getString("email");
 			String password = getIntent().getExtras().getString("password");
 			String wait_time = "40";
-			String image_url =  "https://petbot.ca:5000/PB_QRCODE/SETUP:" + username.length() + ":" + username + ":" + email.length() + ":" + email + ":"
+			String qr_text =  "SETUP:" + username.length() + ":" + username + ":" + email.length() + ":" + email + ":"
 					+ password.length() + ":" + password + ":" + network.length() + ":" + network + ":" + network_key.length() + ":" + network_key + ":"
 					+ wait_time.length() + ":" + wait_time;
 			Intent open_qr = new Intent(SetupActivity.this, QRViewer.class);
-			open_qr.putExtra("image_url", image_url);
+			open_qr.putExtra("qr_text", qr_text);
 			SetupActivity.this.startActivity(open_qr);
 
 		}

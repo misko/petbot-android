@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.app.Activity;
@@ -11,15 +12,21 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class QRViewer extends Activity {
 
 	private View mProgressView;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -31,35 +38,46 @@ public class QRViewer extends Activity {
 		mProgressView = findViewById(R.id.qr_progress);
 
 		// TODO: better to download image to temp and display in gallery?
+		String qr_text = getIntent().getExtras().getString("qr_text");
+		final JSONObject qr_info = new JSONObject();
+		try {
+			qr_info.put("text", qr_text);
+		} catch (JSONException error) {
+			//TODO
+		}
 
 		showProgress(true);
 		final ImageView mQRView = (ImageView) findViewById(R.id.qr_code);
-		ImageRequest qr_request = new ImageRequest(
-				getIntent().getExtras().getString("image_url"),
-				new Response.Listener<Bitmap>() {
+
+
+		JsonObjectRequest login_request = new JsonObjectRequest(
+				Request.Method.POST,
+				PetBot.HTTPS_ADDRESS_QRCODE_JSON,
+				qr_info,
+				new Response.Listener<JSONObject>() {
 					@Override
-					public void onResponse(Bitmap bitmap) {
+					public void onResponse(JSONObject response) {
 						showProgress(false);
-						mQRView.setImageBitmap(bitmap);
 					}
 				},
-				200,
-				200,
-				ImageView.ScaleType.CENTER_INSIDE,
-				Bitmap.Config.RGB_565,
 				new Response.ErrorListener() {
 					@Override
 					public void onErrorResponse(VolleyError error) {
-						// TODO: display error?
 						Log.e("asdfasdfasdf", error.toString());
-						Log.e("asdfasdfasdf", error.networkResponse.toString());
 						showProgress(false);
 					}
 				}
-		);
+		){
+			@Override
+			protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
+				Bitmap bmp = BitmapFactory.decodeByteArray(response.data, 0, response.data.length);
+				mQRView.setImageBitmap(bmp);
+				return null;
+			}
+		};
 
 		RequestQueue queue = Volley.newRequestQueue(this);
-		queue.add(qr_request);
+		queue.add(login_request);
 	}
 
 	/**
