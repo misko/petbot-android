@@ -38,7 +38,22 @@ import com.petbot.R;
 
 public class PetBot extends Activity implements SurfaceHolder.Callback {
 
-	public static final String HTTPS_ADDRESS_AUTH = "https://petbot.ca:5000/AUTH";
+	//public static final String HTTPS_ADDRESS_AUTH = "https://petbot.ca:5000/AUTH";
+	public static final String  HTTPS_ADDRESS = "https://petbot.ca:5000/";
+	public static final String  HTTPS_ADDRESS_AUTH = HTTPS_ADDRESS + "AUTH";
+	public static final String  HTTPS_ADDRESS_QRCODE_JSON = HTTPS_ADDRESS + "PB_QRCODE_JSON";
+	public static final String  HTTPS_ADDRESS_SETUP_CHECK = HTTPS_ADDRESS + "SETUP/CHECK";
+	public static final String  HTTPS_ADDRESS_PB_REGISTER = HTTPS_ADDRESS + "PB_REGISTER";
+	public static final String  HTTPS_ADDRESS_PB_LISTEN = HTTPS_ADDRESS + "SETUP/LISTEN";
+	public static final String  HTTPS_ADDRESS_PB_PING = HTTPS_ADDRESS + "SETUP/PING";
+	public static final String  HTTPS_ADDRESS_PB_LS = HTTPS_ADDRESS + "FILES_LS/";
+	public static final String  HTTPS_ADDRESS_PB_DL = HTTPS_ADDRESS + "FILES_DL/";
+	public static final String  HTTPS_ADDRESS_PB_UL = HTTPS_ADDRESS + "FILES_UL/";
+	public static final String  HTTPS_ADDRESS_PB_SELFIE = HTTPS_ADDRESS + "FILES_SELFIE/";
+	public static final String  HTTPS_ADDRESS_PB_RM = HTTPS_ADDRESS + "FILES_RM/";
+	public static final String  HTTPS_ADDRESS_PB_WAIT = HTTPS_ADDRESS + "WAIT";
+	public static final String  HTTPS_ADDRESS_PB_SELFIE_COUNT = HTTPS_ADDRESS + "FILES_SELFIE_COUNT/";
+	public static final String  HTTPS_ADDRESS_PB_SELFIE_LAST = HTTPS_ADDRESS + "FILES_SELFIE_LAST/";
 
 	private native void nativeInit();     // Initialize native code, build pipeline, etc
 	private native void nativePlayAgent(long jagent, int jstream_id);     // Initialize native code, build pipeline, etc
