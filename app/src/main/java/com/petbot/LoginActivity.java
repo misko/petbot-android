@@ -73,9 +73,6 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
 
-		String refreshedToken = FirebaseInstanceId.getInstance().getToken();
-		Log.d("petbot", "Refreshed token: " + refreshedToken);
-
 		// Set up the login form.
 		mUsernameView = (AutoCompleteTextView) findViewById(R.id.username);
 		populateAutoComplete();
@@ -186,7 +183,8 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 			try {
 				login_info.put("username", username);
 				login_info.put("password", password);
-				login_info.put("deviceID", "TODODEVICEID-ANDROID"); //TODO
+				login_info.put("deviceID", FirebaseInstanceId.getInstance().getToken());
+				login_info.put("notifier", "firebase");
 			} catch (JSONException error) {
 				//TODO
 			}
