@@ -22,4 +22,5 @@
     <string name="title_activity_setup">Setup</string>
     <string name="cookie">Cookie</string>
     <string name="title_activity_qrviewer">QRViewer</string>
+    <string name="title_activity_selfie">SelfieActivity</string>
 </resources>
