@@ -92,12 +92,13 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 			public void run() {
 				try {
 					int version_test = 1;
-					int led_test = 2;
-					int motor_test =3;
-					int wifi_test =4;
-					int microphone_test =5;
-					int streaming_test =6;
-					final int test_strings = 7;
+					int ir_test = 2;
+					int led_test = 3;
+					int motor_test =4;
+					int wifi_test =5;
+					int microphone_test =6;
+					int streaming_test =7;
+					final int test_strings = 8;
 
 
 
@@ -109,16 +110,18 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 					test_status[0]="";
 					test_names[1]="VERSION";
 					test_status[1]="?";
-					test_names[2]="LED TEST";
+					test_names[2]="IR TEST";
 					test_status[2]="?";
-					test_names[3]="motor and IR sensor TEST";
+					test_names[3]="LED TEST";
 					test_status[3]="?";
-					test_names[4]="WIFI TEST";
+					test_names[4]="motor and IR sensor TEST";
 					test_status[4]="?";
-					test_names[5]="microphone TEST";
+					test_names[5]="WIFI TEST";
 					test_status[5]="?";
-					test_names[6]="streaming TEST";
+					test_names[6]="microphone TEST";
 					test_status[6]="?";
+					test_names[7]="streaming TEST";
+					test_status[7]="?";
 
 					runOnUiThread(new Runnable() {
 						@Override
@@ -153,6 +156,8 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 									test_status[led_test]=status;
 								} else if (parts[1].equalsIgnoreCase("MOTOR")) {
 									test_status[motor_test]=status;
+								} else if (parts[1].equalsIgnoreCase("IR")) {
+									test_status[ir_test]=status;
 								} else if (parts[1].equalsIgnoreCase("WIFI")) {
 									test_status[wifi_test]=status;
 								} else if (parts[1].equalsIgnoreCase("MICROPHONE")) {
