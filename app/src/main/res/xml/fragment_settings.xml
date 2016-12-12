@@ -1,0 +1,34 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="System">
+
+        <Preference
+            android:title="Version"
+            android:summary="foo"/>
+
+        <Preference
+            android:title="Help"
+            android:summary="Our online manual and troubleshooting guide">
+            <intent android:action="android.intent.action.VIEW"
+                    android:data="http://www.petbot.com"/>
+        </Preference>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Selfie">
+
+        <SwitchPreference
+            android:title="Enable"
+            android:summary="Take selfies automatically" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Sound">
+
+        <com.petbot.SeekBarPreference
+            android:title="Volume"
+            android:summary="Sound level on PetBot" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
