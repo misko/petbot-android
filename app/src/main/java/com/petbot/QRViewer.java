@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.app.Activity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -23,7 +24,7 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class QRViewer extends Activity {
+public class QRViewer extends AppCompatActivity {
 
 	private View mProgressView;
 
@@ -33,7 +34,7 @@ public class QRViewer extends Activity {
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_qrviewer);
-		getActionBar().setDisplayHomeAsUpEnabled(true);
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 		mProgressView = findViewById(R.id.qr_progress);
 

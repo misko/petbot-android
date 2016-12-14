@@ -6,6 +6,8 @@ import android.content.res.Configuration;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -36,7 +38,7 @@ import com.petbot.PBConnector;
 
 import com.petbot.R;
 
-public class PetBot extends Activity implements SurfaceHolder.Callback {
+public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback {
 
 	//public static final String HTTPS_ADDRESS_AUTH = "https://petbot.ca:5000/AUTH";
 	public static final String  HTTPS_ADDRESS = "https://petbot.ca:5000/";
@@ -163,21 +165,21 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 		//petbot_secret = getIntent().getExtras().getString("secret");
 		//final String petbot_secret = "A20PETBOTX1";
 
-		Button cookieButton = (Button) this.findViewById(R.id.cookieButton);
+		FloatingActionButton cookieButton = (FloatingActionButton) this.findViewById(R.id.cookieButton);
 		cookieButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				pb.sendCookie();
 			}
 		});
 
-		Button selfieButton = (Button) this.findViewById(R.id.selfieButton);
+		FloatingActionButton selfieButton = (FloatingActionButton) this.findViewById(R.id.selfieButton);
 		selfieButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				pb.takeSelfie();
 			}
 		});
 
-		Button logoutButton = (Button) this.findViewById(R.id.logoutButton);
+		FloatingActionButton logoutButton = (FloatingActionButton) this.findViewById(R.id.logoutButton);
 		logoutButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				//read_thread.stop();
@@ -191,7 +193,16 @@ public class PetBot extends Activity implements SurfaceHolder.Callback {
 			}
 		});
 
-		final Button soundButton = (Button) this.findViewById(R.id.soundButton);
+		FloatingActionButton settingsButton = (FloatingActionButton) findViewById(R.id.settingsButton);
+		settingsButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Intent open_settings = new Intent(PetBot.this, SettingsActivity.class);
+				PetBot.this.startActivity(open_settings);
+			}
+		});
+
+		final FloatingActionButton soundButton = (FloatingActionButton) this.findViewById(R.id.soundButton);
 
 		JSONObject sounds_info = new JSONObject();
 		try {
