@@ -160,7 +160,7 @@ public class RegistrationActivity extends Activity implements LoaderCallbacks<Cu
 		View focusView = null;
 
 		// field validation
-		if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+		if (TextUtils.isEmpty(password) || !isPasswordValid(password)) {
 			mPasswordView.setError(getString(R.string.error_invalid_password));
 			focusView = mPasswordView;
 			cancel = true;
@@ -253,7 +253,7 @@ public class RegistrationActivity extends Activity implements LoaderCallbacks<Cu
 
 	private boolean isPasswordValid(String password) {
 		//TODO: Replace this with your own logic
-		return password.length() > 4;
+		return password.length() >= 8;
 	}
 
 
