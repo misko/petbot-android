@@ -1,7 +1,5 @@
-import org.apache.tools.ant.taskdefs.condition.Os
 
 apply plugin: 'com.android.application'
-
 
 android {
     compileSdkVersion = 22
@@ -11,6 +9,7 @@ android {
         applicationId = 'com.petbot'
         minSdkVersion 14
         targetSdkVersion 22
+        multiDexEnabled true
 
         ndk {
             abiFilters 'armeabi-v7a'
@@ -60,8 +59,8 @@ dependencies {
     compile 'com.android.support:support-annotations:22.2.1'
     compile 'com.android.volley:volley:1.0.0'
     compile 'com.google.android.gms:play-services-appindexing:9.8.0'
-    compile 'com.google.firebase:firebase-core:10.0.0'
-    compile 'com.google.firebase:firebase-messaging:10.0.0'
+    compile 'com.google.firebase:firebase-core:9.8.0'
+    compile 'com.google.firebase:firebase-messaging:9.8.0'
     compile 'com.android.support:support-v4:22.2.1'
 }
 
