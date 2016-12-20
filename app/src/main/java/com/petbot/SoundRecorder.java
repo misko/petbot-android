@@ -174,26 +174,19 @@ public class SoundRecorder extends LinearLayout
 
 		switch (mRecorder.state()) {
 			case Recorder.IDLE_STATE:
+
+				mRecordButton.setEnabled(true);
+				mRecordButton.setFocusable(true);
+				mStopButton.setEnabled(false);
+				mStopButton.setFocusable(false);
+
 				if (mRecorder.sampleLength() == 0) {
-					mRecordButton.setEnabled(true);
-					mRecordButton.setFocusable(true);
 					mPlayButton.setEnabled(false);
 					mPlayButton.setFocusable(false);
-					mStopButton.setEnabled(false);
-					mStopButton.setFocusable(false);
 					mRecordButton.requestFocus();
-
-					mStateProgressBar.setVisibility(View.INVISIBLE);
-
 				} else {
-					mRecordButton.setEnabled(true);
-					mRecordButton.setFocusable(true);
 					mPlayButton.setEnabled(true);
 					mPlayButton.setFocusable(true);
-					mStopButton.setEnabled(false);
-					mStopButton.setFocusable(false);
-
-					mStateProgressBar.setVisibility(View.INVISIBLE);
 				}
 
 				break;
@@ -206,9 +199,8 @@ public class SoundRecorder extends LinearLayout
 				mStopButton.setEnabled(true);
 				mStopButton.setFocusable(true);
 
-				mStateProgressBar.setVisibility(View.VISIBLE);
-
 				break;
+
 			case Recorder.PLAYING_STATE:
 				mRecordButton.setEnabled(true);
 				mRecordButton.setFocusable(true);
@@ -216,8 +208,6 @@ public class SoundRecorder extends LinearLayout
 				mPlayButton.setFocusable(false);
 				mStopButton.setEnabled(true);
 				mStopButton.setFocusable(true);
-
-				mStateProgressBar.setVisibility(View.VISIBLE);
 
 				break;
 		}

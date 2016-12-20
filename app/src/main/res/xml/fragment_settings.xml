@@ -1,4 +1,5 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:preference="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory android:title="System">
 
@@ -21,6 +22,22 @@
             android:title="Enable"
             android:summary="Take selfies automatically" />
 
+        <com.petbot.NumberPickerPreference
+            android:title="Timeout"
+            android:summary="Minimum time between selfies"
+            android:dialogTitle="Hours"
+            preference:minValue="1"
+            preference:maxValue="24"
+            preference:wrapSelectorWheel="false"/>
+
+        <com.petbot.NumberPickerPreference
+            android:title="Duration"
+            android:summary="Length of selfie video"
+            android:dialogTitle="Seconds"
+            preference:minValue="15"
+            preference:maxValue="50"
+            preference:wrapSelectorWheel="false"/>
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Sound">
@@ -28,6 +45,18 @@
         <com.petbot.SeekBarPreference
             android:title="Volume"
             android:summary="Sound level on PetBot" />
+
+        <ListPreference
+            android:title="Alert Sound"
+            android:summary="Played when sound alert button pressed"/>
+
+        <ListPreference
+            android:title="Selfie Sound"
+            android:summary="Sound played on PetBot when selfie triggered"/>
+
+        <com.petbot.SoundRecorderPreference
+            android:title="Record"
+            android:summary="Upload recording for alert or selfie sound"/>
 
     </PreferenceCategory>
 

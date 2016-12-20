@@ -78,9 +78,6 @@
                 android:textStyle="bold"
                 android:onClick="register"/>
 
-            <com.petbot.SoundRecorder android:layout_width="wrap_content"
-                                      android:layout_height="wrap_content"></com.petbot.SoundRecorder>
-
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
