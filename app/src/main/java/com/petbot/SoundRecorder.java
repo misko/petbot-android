@@ -24,7 +24,6 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.util.AttributeSet;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -70,6 +69,11 @@ public class SoundRecorder extends LinearLayout
 		init(context);
 	}
 
+	public SoundRecorder(Context context, AttributeSet attrs, int defStyle) {
+		super(context, attrs, defStyle);
+		init(context);
+	}
+
 	public void init(Context context){
 
 		inflate(context, R.layout.sound_recorder, this);
@@ -78,13 +82,16 @@ public class SoundRecorder extends LinearLayout
 			mRequestedType = AUDIO_3GPP;
 		}
 
-		mRecorder = new Recorder();
-		mRecorder.setOnStateChangedListener(this);
-
 		PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
 		mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "SoundRecorder");
 		initResourceRefs();
 
+		setRecorder(new Recorder());
+	}
+
+	public void setRecorder(Recorder recorder){
+		mRecorder = recorder;
+		mRecorder.setOnStateChangedListener(this);
 		updateUi();
 	}
 
@@ -159,7 +166,7 @@ public class SoundRecorder extends LinearLayout
 		int state = mRecorder.state();
 
 		boolean ongoing = state == Recorder.RECORDING_STATE || state == Recorder.PLAYING_STATE;
-		long total_time = state == Recorder.RECORDING_STATE ? 10 : mRecorder.sampleLength();
+		long total_time = state == Recorder.RECORDING_STATE ? mRecorder.maxSampleLength : mRecorder.sampleLength();
 
 		if (ongoing) {
 			mStateProgressBar.setProgress((int)(100 * mRecorder.progress() / total_time));
@@ -192,6 +199,7 @@ public class SoundRecorder extends LinearLayout
 				break;
 
 			case Recorder.RECORDING_STATE:
+
 				mRecordButton.setEnabled(false);
 				mRecordButton.setFocusable(false);
 				mPlayButton.setEnabled(false);
@@ -202,6 +210,7 @@ public class SoundRecorder extends LinearLayout
 				break;
 
 			case Recorder.PLAYING_STATE:
+
 				mRecordButton.setEnabled(true);
 				mRecordButton.setFocusable(true);
 				mPlayButton.setEnabled(false);
@@ -256,4 +265,5 @@ public class SoundRecorder extends LinearLayout
 					.show();
 		}
 	}
+
 }

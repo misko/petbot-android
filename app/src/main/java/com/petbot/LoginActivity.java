@@ -191,7 +191,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
 			JsonObjectRequest login_request = new JsonObjectRequest(
 					Request.Method.POST,
-					PetBot.HTTPS_ADDRESS_AUTH,
+					ApplicationState.auth_address,
 					login_info,
 					new Response.Listener<JSONObject>() {
 						@Override
@@ -212,10 +212,10 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 								//open_main.putExtra("json",response.toString());
 								try {
 									JSONObject pbserver = response.getJSONObject("pubsubserver");
-									open_main.putExtra("pbserver_secret", pbserver.getString("secret"));
-									open_main.putExtra("pbserver_server", pbserver.getString("server"));
-									open_main.putExtra("pbserver_port", pbserver.getInt("port"));
-									open_main.putExtra("pbserver_username", pbserver.getString("username"));
+									open_main.putExtra("server_secret", pbserver.getString("secret"));
+									open_main.putExtra("server", pbserver.getString("server"));
+									open_main.putExtra("server_port", pbserver.getInt("port"));
+									open_main.putExtra("username", pbserver.getString("username"));
 									Log.e("petbot",response.toString());
 									LoginActivity.this.startActivity(open_main);
 								} catch (JSONException error) {

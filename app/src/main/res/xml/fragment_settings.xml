@@ -11,7 +11,7 @@
             android:title="Help"
             android:summary="Our online manual and troubleshooting guide">
             <intent android:action="android.intent.action.VIEW"
-                    android:data="http://www.petbot.com"/>
+                    android:data="http://www.petbot.com/help"/>
         </Preference>
 
     </PreferenceCategory>
@@ -47,10 +47,12 @@
             android:summary="Sound level on PetBot" />
 
         <ListPreference
+            android:key="alert_sounds"
             android:title="Alert Sound"
             android:summary="Played when sound alert button pressed"/>
 
         <ListPreference
+            android:key="selfie_sounds"
             android:title="Selfie Sound"
             android:summary="Sound played on PetBot when selfie triggered"/>
 

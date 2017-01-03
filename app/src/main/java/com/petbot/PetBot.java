@@ -1,11 +1,14 @@
 package com.petbot;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -14,14 +17,11 @@ import android.view.SurfaceView;
 import android.view.ViewGroup.LayoutParams;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Button;
 
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.freedesktop.gstreamer.GStreamer;
 import org.json.JSONArray;
@@ -34,28 +34,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.petbot.PBConnector;
-
-import com.petbot.R;
 
 public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback {
 
 	//public static final String HTTPS_ADDRESS_AUTH = "https://petbot.ca:5000/AUTH";
-	public static final String  HTTPS_ADDRESS = "https://petbot.ca:5000/";
-	public static final String  HTTPS_ADDRESS_AUTH = HTTPS_ADDRESS + "AUTH";
-	public static final String  HTTPS_ADDRESS_QRCODE_JSON = HTTPS_ADDRESS + "PB_QRCODE_JSON";
-	public static final String  HTTPS_ADDRESS_SETUP_CHECK = HTTPS_ADDRESS + "SETUP/CHECK";
-	public static final String  HTTPS_ADDRESS_PB_REGISTER = HTTPS_ADDRESS + "PB_REGISTER";
-	public static final String  HTTPS_ADDRESS_PB_LISTEN = HTTPS_ADDRESS + "SETUP/LISTEN";
-	public static final String  HTTPS_ADDRESS_PB_PING = HTTPS_ADDRESS + "SETUP/PING";
-	public static final String  HTTPS_ADDRESS_PB_LS = HTTPS_ADDRESS + "FILES_LS/";
-	public static final String  HTTPS_ADDRESS_PB_DL = HTTPS_ADDRESS + "FILES_DL/";
-	public static final String  HTTPS_ADDRESS_PB_UL = HTTPS_ADDRESS + "FILES_UL/";
-	public static final String  HTTPS_ADDRESS_PB_SELFIE = HTTPS_ADDRESS + "FILES_SELFIE/";
-	public static final String  HTTPS_ADDRESS_PB_RM = HTTPS_ADDRESS + "FILES_RM/";
-	public static final String  HTTPS_ADDRESS_PB_WAIT = HTTPS_ADDRESS + "WAIT";
-	public static final String  HTTPS_ADDRESS_PB_SELFIE_COUNT = HTTPS_ADDRESS + "FILES_SELFIE_COUNT/";
-	public static final String  HTTPS_ADDRESS_PB_SELFIE_LAST = HTTPS_ADDRESS + "FILES_SELFIE_LAST/";
+
 
 	private native void nativeInit();     // Initialize native code, build pipeline, etc
 	private native void nativePlayAgent(long jagent, int jstream_id);     // Initialize native code, build pipeline, etc
@@ -68,33 +51,34 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	private long native_custom_data;      // Native code will use this to keep private data
 
 	private String petbot_secret;
-	private String pbserver_server;
-	private String pbserver_secret;
-	private String pbserver_username;
-	private int pbserver_port;
+	private String server;
+	private String username;
+	private int server_port;
+
+	PBConnector pb;
 
 	// Called when the activity is first created.
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		//String json = getIntent().getExtras().getString("json");
-		//String pbserver_server, pbserver_secret;
-		//int pbserver_port;
-		pbserver_server = getIntent().getExtras().getString("pbserver_server");
-		pbserver_secret = getIntent().getExtras().getString("pbserver_secret");
-		pbserver_username = getIntent().getExtras().getString("pbserver_username");
-		 pbserver_port = getIntent().getExtras().getInt("pbserver_port");
+
+		ApplicationState state = (ApplicationState) this.getApplicationContext();
+
+		server = getIntent().getExtras().getString("server");
+		state.server_secret = getIntent().getExtras().getString("server_secret");
+		username = getIntent().getExtras().getString("username");
+		server_port = getIntent().getExtras().getInt("server_port");
 
 
-		Log.w("petbot",pbserver_server);
-		Log.w("petbot",pbserver_secret);
-		Log.w("petbot",pbserver_username);
+		Log.w("petbot", server);
+		Log.w("petbot", state.server_secret);
+		Log.w("petbot", username);
 		//PBConnector pb = new PBConnector();
 		//pb.stringFromJNI();
 		//byte[] wtf=  pb.newByteArray();
 		Log.w("petbot", "no network");
-		final PBConnector pb = new PBConnector(pbserver_server,pbserver_port,pbserver_secret);
+		pb = new PBConnector(server, server_port, state.server_secret);
 
 		//pb.initGlib(); //setup the context and launch main run loop
 
@@ -202,110 +186,94 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 			}
 		});
 
-		final FloatingActionButton soundButton = (FloatingActionButton) this.findViewById(R.id.soundButton);
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+		if(preferences.contains("alert_sounds")){
+			setSound(preferences.getString("alert_sounds", ""));
+		} else {
 
-		JSONObject sounds_info = new JSONObject();
-		try {
-			sounds_info.put("file_type", "mp3");
-			sounds_info.put("start_idx", 0);
-			sounds_info.put("end_idx", 0); //TODO: start_idx and end_idx are not used in server
-		} catch (JSONException error) {
-			//TODO
-		}
 
-		JsonObjectRequest sounds_request = new JsonObjectRequest(
-				Request.Method.POST,
-				"https://petbot.ca:5000/FILES_LS/" + pbserver_secret,
-				sounds_info,
-				new Response.Listener<JSONObject>() {
-					@Override
-					public void onResponse(JSONObject response) {
+			JSONObject sounds_info = new JSONObject();
+			try {
+				sounds_info.put("file_type", "mp3");
+				sounds_info.put("start_idx", 0);
+				sounds_info.put("end_idx", 0); //TODO: start_idx and end_idx are not used in server
+			} catch (JSONException error) {
+				//TODO
+			}
 
-						Log.e("petbot", response.toString());
-						boolean success = false;
-						try {
+			final String server_secret = state.server_secret;
+			JsonObjectRequest sounds_request = new JsonObjectRequest(
+					Request.Method.POST,
+					"https://petbot.ca:5000/FILES_LS/" + state.server_secret,
+					sounds_info,
+					new Response.Listener<JSONObject>() {
+						@Override
+						public void onResponse(JSONObject response) {
 
-							success = response.getInt("status") == 1;
-							if (success) {
+							Log.e("petbot", response.toString());
+							boolean success = false;
+							try {
 
-								JSONArray sound_files = response.getJSONArray("files");
-								if (sound_files.length() > 0) {
+								success = response.getInt("status") == 1;
+								if (success) {
 
-									// get the file id of the first sound in the list
-									final String file_id = sound_files.getJSONArray(0).getString(0);
+									JSONArray sound_files = response.getJSONArray("files");
+									if (sound_files.length() > 0) {
 
-									soundButton.setOnClickListener(new OnClickListener() {
-										public void onClick(View v) {
+										// get the file id of the first sound in the list
+										final String file_id = sound_files.getJSONArray(0).getString(0);
+										setSound(file_id);
 
-											String url = "https://petbot.ca:5000/FILES_DL/" + pbserver_secret + "/" + file_id;
-											//String url = "https://goo.gl/XJuOUW";
-											MediaPlayer mediaPlayer = new MediaPlayer();
-											mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-											try {
-												mediaPlayer.setDataSource(url);
-												mediaPlayer.prepare(); // might take long! (for buffering, etc)
-											} catch (IOException error) {
-												//TODO
-												Log.e("petbot", error.toString());
-											}
-											mediaPlayer.start();
-											pb.playSound(url);
-										}
-									});
+									}
 								}
+							} catch (JSONException error) {
+								//TODO
+								Log.e("petbot", error.toString());
 							}
-						} catch (JSONException error) {
-							//TODO
+
+						}
+					},
+					new Response.ErrorListener() {
+						@Override
+						public void onErrorResponse(VolleyError error) {
 							Log.e("petbot", error.toString());
 						}
-
 					}
-				},
-				new Response.ErrorListener() {
-					@Override
-					public void onErrorResponse(VolleyError error) {
-						Log.e("petbot", error.toString());
-					}
-				}
-		);
+			);
 
-		RequestQueue queue = Volley.newRequestQueue(this);
-		queue.add(sounds_request);
+			RequestQueue queue = Volley.newRequestQueue(this);
+			queue.add(sounds_request);
 
-
-		/*ImageButton play = (ImageButton) this.findViewById(R.id.button_play);
-		play.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				is_playing_desired = true;
-				nativePlay();
-			}
-		});
-
-		ImageButton pause = (ImageButton) this.findViewById(R.id.button_stop);
-		pause.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				is_playing_desired = false;
-				nativePause();
-			}
-		});*/
+		}
 
 		SurfaceView sv = (SurfaceView) this.findViewById(R.id.surface_video);
 		SurfaceHolder sh = sv.getHolder();
 		sh.addCallback(this);
 
-		/*if (savedInstanceState != null) {
-			is_playing_desired = savedInstanceState.getBoolean("playing");
-			Log.i ("GStreamer", "Activity created. Saved state is playing:" + is_playing_desired);
-		} else {
-			is_playing_desired = false;
-			Log.i ("GStreamer", "Activity created. There is no saved state, playing: false");
-		}*/
-
-		// Start with disabled buttons, until native code is initialized
-		//this.findViewById(R.id.button_play).setEnabled(false);
-		//this.findViewById(R.id.button_stop).setEnabled(false);
-
 		nativeInit();
+	}
+
+	public void setSound(final String sound_ID){
+
+		final ApplicationState application = (ApplicationState) getApplicationContext();
+		FloatingActionButton soundButton = (FloatingActionButton) this.findViewById(R.id.soundButton);
+		soundButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+
+				String url = "https://petbot.ca:5000/FILES_DL/" + application.server_secret + "/" + sound_ID;
+				MediaPlayer mediaPlayer = new MediaPlayer();
+				mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+				try {
+					mediaPlayer.setDataSource(url);
+					mediaPlayer.prepare(); // might take long! (for buffering, etc)
+				} catch (IOException error) {
+					//TODO
+					Log.e("petbot", error.toString());
+				}
+				mediaPlayer.start();
+				pb.playSound(url);
+			}
+		});
 	}
 
 	public void onConfigurationChanged(Configuration newConfig) {

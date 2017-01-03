@@ -27,15 +27,18 @@
               android:maxLines="4" />
 
     <com.petbot.SoundRecorder
+        android:id="@+id/sound_recorder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
     <EditText
+        android:id="@+id/filename"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="enter sound name" />
 
     <Button
+        android:id="@+id/upload"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="upload" />

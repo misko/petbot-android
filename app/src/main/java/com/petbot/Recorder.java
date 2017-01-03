@@ -25,7 +25,8 @@ import android.media.MediaPlayer.OnErrorListener;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
-public class Recorder implements OnCompletionListener, OnErrorListener {
+
+public class Recorder implements OnCompletionListener, OnErrorListener, MediaRecorder.OnInfoListener {
 	static final String SAMPLE_PREFIX = "recording";
 	static final String SAMPLE_PATH_KEY = "sample_path";
 	static final String SAMPLE_LENGTH_KEY = "sample_length";
@@ -34,6 +35,7 @@ public class Recorder implements OnCompletionListener, OnErrorListener {
 	public static final int PLAYING_STATE = 2;
 
 	int mState = IDLE_STATE;
+
 	public static final int NO_ERROR = 0;
 	public static final int SDCARD_ACCESS_ERROR = 1;
 	public static final int INTERNAL_ERROR = 2;
@@ -47,6 +49,7 @@ public class Recorder implements OnCompletionListener, OnErrorListener {
 
 	long mSampleStart = 0;       // time at which latest record or play operation started
 	int mSampleLength = 0;      // length of current sample
+	int maxSampleLength = 10;
 	File mSampleFile = null;
 
 	MediaRecorder mRecorder = null;
@@ -154,6 +157,8 @@ public class Recorder implements OnCompletionListener, OnErrorListener {
 		mRecorder.setOutputFormat(outputfileformat);
 		mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 		mRecorder.setOutputFile(mSampleFile.getAbsolutePath());
+		mRecorder.setMaxDuration(maxSampleLength * 1000);
+		mRecorder.setOnInfoListener(this);
 		// Handle IOException
 		try {
 			mRecorder.prepare();
@@ -237,8 +242,13 @@ public class Recorder implements OnCompletionListener, OnErrorListener {
 		setError(SDCARD_ACCESS_ERROR);
 		return true;
 	}
+
 	public void onCompletion(MediaPlayer mp) {
 		stop();
+	}
+
+	public void onInfo(MediaRecorder mr, int what, int extra) {
+		stopRecording();
 	}
 
 	private void setState(int state) {
