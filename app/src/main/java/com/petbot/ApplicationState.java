@@ -26,6 +26,9 @@ public class ApplicationState extends Application {
 	public static final String  HTTPS_ADDRESS_PB_SELFIE_LAST = HTTPS_ADDRESS + "FILES_SELFIE_LAST/";
 
 	RequestQueue request_queue;
+	String server;
+	int port;
+	String username;
 	String server_secret;
 
 	@Override

@@ -1,6 +1,7 @@
 package com.petbot;
 
 import android.content.Context;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -13,12 +14,25 @@ import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
+import com.android.volley.error.VolleyError;
+import com.android.volley.request.SimpleMultiPartRequest;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
 
 import static com.petbot.Recorder.RECORDING_STATE;
 
 public class SoundRecorderPreference extends Preference {
+
+	public interface OnSoundUploadedListener {
+		void onSoundUploaded(String name, String fileID);
+	}
+	private OnSoundUploadedListener onSoundUploadedListener = null;
+	public void setOnSoundUploadedListener(OnSoundUploadedListener listener){
+		onSoundUploadedListener = listener;
+	}
 
 	Recorder recorder = new Recorder();
 
@@ -58,21 +72,51 @@ public class SoundRecorderPreference extends Preference {
 				} else if (TextUtils.isEmpty(filename.getText().toString())){
 					toast = Toast.makeText(getContext(), "Sound name can not be blank.", Toast.LENGTH_SHORT) ;
 				} else {
-					StringRequest upload_request = new StringRequest(
-						Request.Method.POST,
-						application.upload_address + application.server_secret,
-						new Response.Listener<String>() {
-							@Override
-							public void onResponse(String response) {
 
-							}
-						},
-						new Response.ErrorListener() {
-							@Override
-							public void onErrorResponse(VolleyError error) {
+					// rename file to user entered name
+					final String sound_name = filename.getText().toString();
+					File sound_file = new File(recorder.sampleFile().getParent(), sound_name + ".3gpp");
+					boolean foo = recorder.sampleFile().renameTo(sound_file);
+					Log.e("asdfasdf", "file rename success; " + foo);
 
+					SimpleMultiPartRequest upload_request = new SimpleMultiPartRequest(
+							Request.Method.POST,
+							application.upload_address + application.server_secret,
+							new Response.Listener<String>() {
+								@Override
+								public void onResponse(String json_string) {
+
+									try {
+										JSONObject response = new JSONObject(json_string);
+										boolean success = response.getInt("status") == 1;
+
+										if(success) {
+											String fileID = response.getString("fileid");
+											if(onSoundUploadedListener != null){
+												onSoundUploadedListener.onSoundUploaded(sound_name, fileID);
+											}
+										}
+
+									} catch (JSONException exc){
+										exc.printStackTrace();
+									}
+
+									Toast toast = Toast.makeText(getContext(), "Sound uploaded.", Toast.LENGTH_SHORT);
+									toast.setGravity(Gravity.CENTER, 0, 0);
+									toast.show();
+								}
+							},
+							new Response.ErrorListener() {
+								@Override
+								public void onErrorResponse(VolleyError error) {
+									Log.e("asdfasdf", error.toString());
+								}
 							}
-						});
+					);
+
+					Log.e("asdfasdf", sound_file.getPath());
+					upload_request.addFile("file", sound_file.getPath());
+					application.request_queue.add(upload_request);
 				}
 
 				if(toast != null){

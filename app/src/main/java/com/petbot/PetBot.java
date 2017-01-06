@@ -31,8 +31,8 @@ import org.json.JSONObject;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.error.VolleyError;
+import com.android.volley.request.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
 public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback {
@@ -50,11 +50,6 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	private native void nativeSurfaceFinalize();
 	private long native_custom_data;      // Native code will use this to keep private data
 
-	private String petbot_secret;
-	private String server;
-	private String username;
-	private int server_port;
-
 	PBConnector pb;
 
 	// Called when the activity is first created.
@@ -65,22 +60,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 
 		ApplicationState state = (ApplicationState) this.getApplicationContext();
 
-		server = getIntent().getExtras().getString("server");
-		state.server_secret = getIntent().getExtras().getString("server_secret");
-		username = getIntent().getExtras().getString("username");
-		server_port = getIntent().getExtras().getInt("server_port");
-
-
-		Log.w("petbot", server);
-		Log.w("petbot", state.server_secret);
-		Log.w("petbot", username);
-		//PBConnector pb = new PBConnector();
-		//pb.stringFromJNI();
-		//byte[] wtf=  pb.newByteArray();
-		Log.w("petbot", "no network");
-		pb = new PBConnector(server, server_port, state.server_secret);
-
-		//pb.initGlib(); //setup the context and launch main run loop
+		pb = new PBConnector(state.server, state.port, state.server_secret);
 
 		//start up a read thread
 		final Thread read_thread = new Thread() {

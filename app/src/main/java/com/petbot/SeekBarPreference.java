@@ -69,6 +69,10 @@ public class SeekBarPreference extends Preference implements OnSeekBarChangeList
 		}
 	}
 
+	public int getValue(){
+		return mProgress;
+	}
+
 	@Override
 	protected Object onGetDefaultValue(TypedArray a, int index) {
 		return a.getInt(index, 0);

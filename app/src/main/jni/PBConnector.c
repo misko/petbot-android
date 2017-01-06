@@ -223,7 +223,6 @@ pbmsg * jpbmsg_to_pbmsg(JNIEnv* env,jobject jpbmsg) {
 
        //TODO assert lengths are correct...
        int alen = (*env)->GetArrayLength( env, jary );
-       assert(1==0);
        assert(alen==len);
        char * ray = (char*)malloc(sizeof(char)*len);
        for (int i=0; i<len; i++) {

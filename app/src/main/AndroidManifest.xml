@@ -66,7 +66,8 @@
 
         <activity
             android:name=".SelfieActivity"
-            android:label="@string/title_activity_selfie">
+            android:label="@string/title_activity_selfie"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
             <intent-filter>
                 <action android:name="com.petbot.SELFIE"/>
 
@@ -75,7 +76,11 @@
         </activity>
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings">
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".PetBot">
+            <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.petbot.PetBot"/>
         </activity>
     </application>
 

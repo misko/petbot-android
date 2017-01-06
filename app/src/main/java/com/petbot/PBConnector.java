@@ -24,14 +24,26 @@ public class PBConnector {
         initGlib();
     }
 
+	public void getSettings(){
+		PBMsg m = new PBMsg("all", PBMsg.PBMSG_CONFIG_GET | PBMsg.PBMSG_STRING | PBMsg.PBMSG_REQUEST);
+		sendPBMsg(m);
+	}
+
+	public void set(String property, String value){
+		PBMsg m = new PBMsg(property + "\t" + value, PBMsg.PBMSG_CONFIG_SET | PBMsg.PBMSG_STRING | PBMsg.PBMSG_REQUEST);
+		sendPBMsg(m);
+	}
+
     public void takeSelfie() {
         PBMsg m = new PBMsg("selfie", PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
         sendPBMsg(m);
     }
+
     public void sendCookie() {
         PBMsg m = new PBMsg("cookie",PBMsg.PBMSG_COOKIE | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
         sendPBMsg(m);
     }
+
 	public void playSound(String url) {
         String command = "PLAYURL "+url;
 		PBMsg m = new PBMsg(command, PBMsg.PBMSG_SOUND | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);

@@ -3,6 +3,8 @@ package com.petbot;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
@@ -33,8 +35,8 @@ import android.widget.TextView;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.error.VolleyError;
+import com.android.volley.request.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
@@ -189,6 +191,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 				//TODO
 			}
 
+			final Context context = this.getApplicationContext();
 			JsonObjectRequest login_request = new JsonObjectRequest(
 					Request.Method.POST,
 					ApplicationState.auth_address,
@@ -212,11 +215,14 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 								//open_main.putExtra("json",response.toString());
 								try {
 									JSONObject pbserver = response.getJSONObject("pubsubserver");
-									open_main.putExtra("server_secret", pbserver.getString("secret"));
-									open_main.putExtra("server", pbserver.getString("server"));
-									open_main.putExtra("server_port", pbserver.getInt("port"));
-									open_main.putExtra("username", pbserver.getString("username"));
-									Log.e("petbot",response.toString());
+									ApplicationState state = (ApplicationState) getApplicationContext();
+									state.server_secret = pbserver.getString("secret");
+									state.server = pbserver.getString("server");
+									state.port = pbserver.getInt("port");
+									state.username = pbserver.getString("username");
+									Log.e("asdfasdf", pbserver.toString());
+									Log.e("asdfasdf", pbserver.getString("server"));
+									Log.e("asdfasdf", state.server);
 									LoginActivity.this.startActivity(open_main);
 								} catch (JSONException error) {
 									Log.e("petbot", error.toString());
