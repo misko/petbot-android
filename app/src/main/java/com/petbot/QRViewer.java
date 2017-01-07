@@ -31,6 +31,53 @@ public class QRViewer extends Activity {
 	private View mProgressView;
 
 	@Override
+	protected void onResume() {
+
+		super.onResume();
+		final ApplicationState state = (ApplicationState) getApplicationContext();
+
+		TextView IP_text = (TextView) findViewById(R.id.ip_label);
+		IP_text.setText("IP address: " + state.IP + ":" + Integer.toString(state.port));
+
+		Thread server_thread = new Thread() {
+			@Override
+			public void run() {
+				try {
+					Boolean end = false;
+					ServerSocket ss = new ServerSocket(state.port);
+					ss.setReuseAddress(true);
+					//Server is waiting for client here, if needed
+					Log.e("petbot","waiting for petbot to connect");
+					Socket s = ss.accept();
+					s.close();
+
+					Log.e("petbot","petbot connected");
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							//TextView t=(TextView)findViewById(R.id.petbot_status);
+							//t.setText("CONNECTED");
+							Intent open_main = new Intent(QRViewer.this, PetBot.class);
+							open_main.putExtra("image_url", getIntent().getExtras().getString("image_url"));
+							QRViewer.this.startActivity(open_main);
+						}
+
+					});
+					ss.close();
+
+				} catch (UnknownHostException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		};
+		server_thread.start();
+	}
+
+	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
@@ -70,47 +117,8 @@ public class QRViewer extends Activity {
 		RequestQueue queue = Volley.newRequestQueue(this);
 		queue.add(qr_request);
 
-		final ApplicationState state = (ApplicationState) getApplicationContext();
 
-		TextView IP_text = (TextView) findViewById(R.id.ip_label);
-		IP_text.setText("IP address: " + state.IP + ":" + Integer.toString(state.port));
 
-		Thread server_thread = new Thread() {
-			@Override
-			public void run() {
-				try {
-					Boolean end = false;
-					ServerSocket ss = new ServerSocket(state.port);
-					ss.setReuseAddress(true);
-					//Server is waiting for client here, if needed
-					Log.e("petbot","waiting for petbot to connect");
-					Socket s = ss.accept();
-					s.close();
-
-					Log.e("petbot","petbot connected");
-					runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							TextView t=(TextView)findViewById(R.id.petbot_status);
-							t.setText("CONNECTED");
-							Intent open_main = new Intent(QRViewer.this, PetBot.class);
-							open_main.putExtra("image_url", getIntent().getExtras().getString("image_url"));
-							QRViewer.this.startActivity(open_main);
-						}
-
-					});
-					ss.close();
-
-				} catch (UnknownHostException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		};
-		server_thread.start();
 
 
 		/*Button continue_button = (Button) findViewById(R.id.continue_button);
