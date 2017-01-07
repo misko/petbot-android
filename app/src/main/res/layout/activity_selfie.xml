@@ -10,13 +10,19 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.petbot.SelfieActivity">
+    tools:context="com.petbot.SelfieActivity"
+    android:layout_centerHorizontal="false"
+    android:layout_centerVertical="false"
+    android:layout_centerInParent="false"
+    android:layout_gravity="center">
 
     <VideoView
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:id="@+id/video_view"
-        android:layout_weight="1"/>
+        android:layout_weight="1"
+        android:layout_gravity="center"
+        android:saveEnabled="false" />
 
     <LinearLayout
         android:orientation="horizontal"
@@ -30,8 +36,17 @@
             android:layout_height="wrap_content"
             android:id="@+id/save"
             android:layout_weight="1"
-            style="@style/Widget.AppCompat.Button.Borderless"
+            style="@style/Widget.AppCompat.Button"
             android:onClick="save"/>
+
+        <Button
+            android:text="share"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/share"
+            android:layout_weight="1"
+            style="@style/Widget.AppCompat.Button"
+            android:onClick="share" />
 
         <Button
             android:text="delete"
@@ -39,7 +54,8 @@
             android:layout_height="wrap_content"
             android:id="@+id/delete"
             android:layout_weight="1"
-            style="@style/Widget.AppCompat.Button.Borderless"/>
+            style="@style/Widget.AppCompat.Button"
+            android:onClick="delete" />
 
     </LinearLayout>
 

@@ -8,7 +8,7 @@ android {
     defaultConfig {
         applicationId = 'com.petbot'
         minSdkVersion 14
-        targetSdkVersion 22
+        targetSdkVersion 20
         multiDexEnabled true
 
         ndk {

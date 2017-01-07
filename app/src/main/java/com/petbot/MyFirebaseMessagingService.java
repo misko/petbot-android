@@ -28,6 +28,13 @@ import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.petbot.SelfieActivity;
+
+import java.util.Map;
+
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
 	private static final String TAG = "MyFirebaseMsgService";
@@ -62,37 +69,57 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 		// Check if message contains a notification payload.
 		if (remoteMessage.getNotification() != null) {
 			Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
+			sendNotification( remoteMessage);
 		}
 
 		// Also if you intend on generating your own notifications as a result of a received FCM
 		// message, here is where that should be initiated. See sendNotification method below.
+
+		/*sendNotification(remoteMessage.getNotification().getBody());
+
+
+		String remote_data = remoteMessage.getNotification().getBody();
+		try {
+			JSONObject remote_json = new JSONObject(remote_data);
+			Intent open_selfie = new Intent(MyFirebaseMessagingService.this, SelfieActivity.class);
+			//open_main.putExtra("json",response.toString());
+			open_selfie.putExtra("media_url", remote_json.getString("media_url"));
+			open_selfie.putExtra("rm_url", remote_json.getString("rm_url"));
+			MyFirebaseMessagingService.this.startActivity(open_selfie);
+		} catch (JSONException error) {
+
+		}*/
 	}
 	// [END receive_message]
 
 	/**
 	 * Create and show a simple notification containing the received FCM message.
 	 *
-	 * @param messageBody FCM message body received.
+	 * @param remoteMessage FCM message
 	 */
-	private void sendNotification(String messageBody) {
-		//Intent intent = new Intent(this, MainActivity.class);
-		//intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-		//PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-		//		PendingIntent.FLAG_ONE_SHOT);
+	private void sendNotification(RemoteMessage remoteMessage) {
+		Intent intent = new Intent(this, SelfieActivity.class);
 
-		//Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-		//NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-		//		.setSmallIcon(R.drawable.ic_stat_ic_notification)
-		//		.setContentTitle("FCM Message")
-		//		.setContentText(messageBody)
-		//		.setAutoCancel(true)
-		//		.setSound(defaultSoundUri)
-		//		.setContentIntent(pendingIntent);
+		Map<String, String> hmap ;
+		hmap = remoteMessage.getData();
+		//hmap.get("data_info");
+		intent.putExtra("media_url", hmap.get("media_url"));
+		intent.putExtra("rm_url", hmap.get("rm_url"));
+		intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-		//NotificationManager notificationManager =
-		//		(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-		//notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
+				PendingIntent.FLAG_ONE_SHOT);
+
+		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
+		notificationBuilder.setSmallIcon(R.mipmap.pblogo)
+				.setContentTitle(remoteMessage.getNotification().getTitle())
+				.setContentText(remoteMessage.getNotification().getBody())
+				.setAutoCancel(true)
+				.setContentIntent(pendingIntent);
+
+		NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		notificationManager.notify(0, notificationBuilder.build());
 	}
 }
 
