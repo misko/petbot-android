@@ -6,7 +6,9 @@ import android.annotation.TargetApi;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.app.Activity;
@@ -69,6 +71,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 	private EditText mPasswordView;
 	private View mProgressView;
 	private View mLoginFormView;
+	private SharedPreferences sharedPreferences;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +104,15 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
 		mLoginFormView = findViewById(R.id.login_form);
 		mProgressView = findViewById(R.id.login_progress);
+
+		// Get SharedPreferences
+		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		// set UI
+		String strusername = sharedPreferences.getString("username", "");
+		String strpassword = sharedPreferences.getString("password", "");
+		mUsernameView.setText(strusername);
+		mPasswordView.setText(strpassword);
+
 
 	}
 
@@ -148,8 +160,8 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 		mPasswordView.setError(null);
 
 		// Store values at the time of the login attempt.
-		String username = mUsernameView.getText().toString();
-		String password = mPasswordView.getText().toString();
+		final String username = mUsernameView.getText().toString();
+		final String password = mPasswordView.getText().toString();
 
 		boolean cancel = false;
 		View focusView = null;
@@ -210,6 +222,11 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 							}
 
 							if (success) {
+								SharedPreferences.Editor editor = sharedPreferences.edit();
+								editor.putString("username", username);
+								editor.putString("password", password);
+								editor.commit();
+
 								finish();
 								Intent open_main = new Intent(LoginActivity.this, PetBot.class);
 								//open_main.putExtra("json",response.toString());
