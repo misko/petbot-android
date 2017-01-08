@@ -17,4 +17,31 @@
     <style name="MediaButton" parent="@android:style/MediaButton">
         <item name="android:background">@android:drawable/btn_default</item>
     </style>
+    <style name="PBHollowButton" parent="@android:style/MediaButton">
+        <item name="android:background">@drawable/pbhollowbutton_shape</item>
+        <item name="android:textColor">@color/PBBlueColor</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="PBButton" parent="@android:style/MediaButton">
+        <item name="android:background">@drawable/pbbutton_shape</item>
+        <item name="android:textColor">@color/PBTextWhite</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_height">48dp</item>
+    </style>
+    <style name="PetBotButtonText" parent="@android:style/TextAppearance.Medium">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/PBBlueColor</item>
+        <item name="android:typeface">monospace</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textScaleX">1.1</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+    <style name="PBEditText" parent="@android:style/Widget.EditText">
+        <item name="android:background">@drawable/pbtextedit_shape</item>
+        <item name="android:textColor">@color/PBBlueColor</item>
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">45dp</item>
+    </style>
 </resources>

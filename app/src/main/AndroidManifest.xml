@@ -24,7 +24,10 @@
             android:resource="@mipmap/pblogo" />
         <meta-data android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/solid_black" />
-        <activity android:name=".LoginActivity">
+        <activity android:name=".LoginActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 

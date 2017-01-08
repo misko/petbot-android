@@ -31,7 +31,7 @@
         android:layout_height="wrap_content"
         android:text="BYE :("
         android:id="@+id/logoutButton"
-        android:src="@drawable/abc_ic_clear_mtrl_alpha"
+        android:src="@drawable/ic_close"
         app:backgroundTint="@color/PBButtonColor"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
@@ -40,18 +40,8 @@
     <android.support.design.widget.FloatingActionButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/settingsButton"
-        android:src="@drawable/settings"
-        app:backgroundTint="@color/PBButtonColor"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:id="@+id/cookieButton"
-        android:src="@drawable/treat"
+        android:src="@drawable/ic_bone"
         app:backgroundTint="@color/PBButtonColor"
         android:textColor="@color/PBButtonTextColor"
         android:layout_alignParentBottom="true"
@@ -61,25 +51,33 @@
     <android.support.design.widget.FloatingActionButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/selfie"
+        android:src="@drawable/ic_video"
         app:backgroundTint="@color/PBButtonColor"
-        android:layout_marginTop="-10dp"
-        android:layout_marginBottom="-30dp"
         android:id="@+id/selfieButton"
         android:layout_above="@+id/cookieButton"
         android:layout_alignParentRight="true"
-        android:textColor="@color/PBButtonTextColor" />
+        android:textColor="@color/PBButtonTextColor"
+        android:layout_marginBottom="25dp" />
 
     <android.support.design.widget.FloatingActionButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/bell"
+        android:src="@drawable/ic_bell"
         app:backgroundTint="@color/PBButtonColor"
         app:fabSize="normal"
-        android:layout_marginTop="-10dp"
-        android:layout_marginBottom="-20dp"
         android:id="@+id/soundButton"
         android:layout_above="@+id/selfieButton"
-        android:layout_alignParentRight="true" />
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="25dp" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/settingsButton"
+        android:src="@drawable/ic_gear"
+        app:backgroundTint="@color/PBButtonColor"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>

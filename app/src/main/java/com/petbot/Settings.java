@@ -24,6 +24,13 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 	boolean settings_retrieved = false;
 
 	@Override
+	public void onDestroy() {
+		Log.w("asdfasdf", "ANDROID - DESTROY SETTINGS");
+		super.onDestroy();
+
+	}
+
+	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.fragment_settings);
@@ -93,6 +100,8 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 		application.request_queue.add(sounds_request);
 		startMessageThread();
 	}
+
+
 
 	public void onSoundUploaded(String name, String fileID){
 

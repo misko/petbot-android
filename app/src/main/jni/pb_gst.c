@@ -367,8 +367,8 @@ static void gst_native_surface_finalize (JNIEnv *env, jobject thiz) {
 	GST_DEBUG ("Releasing Native Window %p", data->native_window);
 
 	if (data->video_sink) {
-	gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (data->video_sink), (guintptr)NULL);
-	gst_element_set_state (data->pipeline, GST_STATE_READY);
+		gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (data->video_sink), (guintptr)NULL);
+		//gst_element_set_state (data->pipeline, GST_STATE_READY);
 	}
 
 	ANativeWindow_release (data->native_window);

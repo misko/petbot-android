@@ -57,6 +57,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+		Log.w("petbot", "ANDROID - ON CREATE PETBOT" );
 
 		ApplicationState state = (ApplicationState) this.getApplicationContext();
 
@@ -268,9 +269,12 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 			//SurfaceView sv = (SurfaceView) this.findViewById(R.id.surface_video);
 			//sv.setLayoutParams(new LayoutParams(width, height));
 			//childLayout.setLayoutParams(new LayoutParams(width, height));
+			//setContentView(R.layout.main);
 		} else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
 			//Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show();
+			//setContentView(R.layout.main);
 		}
+
 		Log.w("petbot","WTF CONFIG CHANGE?");
 	}
 
@@ -326,6 +330,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		Log.d("GStreamer", "Surface changed to format " + format + " width "
 				+ width + " height " + height);
 		nativeSurfaceInit (holder.getSurface());
+
 	}
 
 	public void surfaceCreated(SurfaceHolder holder) {
@@ -336,6 +341,13 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		Log.d("GStreamer", "Surface destroyed");
 		nativeSurfaceFinalize ();
 		Log.d("GStreamer", "Surface destroyed - done");
+	}
+
+
+	@Override
+	protected void onResume(){
+		Log.w("petbot", "onResume - petbot JAVA");
+		super.onResume();
 	}
 
 }

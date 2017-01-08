@@ -2,4 +2,11 @@
 <resources>
     <color name="PBButtonColor">#3083fb</color>
     <color name="PBButtonTextColor">#ffffff</color>
+    <color name="PBLoginBackground">#7cffffff</color>
+    <color name="PBBlueColor">#4156d5</color>
+    <color name="PBRedColor">#db5d5d</color>
+    <color name="PBGreenColor">#5acd75</color>
+    <color name="PBGrayColor">#c2c9d1</color>
+    <color name="PBBlackColor">#464646</color>
+    <color name="PBTextWhite">#ffffff</color>
 </resources>

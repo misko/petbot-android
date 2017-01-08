@@ -17,10 +17,25 @@ public class SettingsActivity extends Activity {
 	}
 
 	@Override
+	protected void onPause(){
+		Log.w("petbot", "onPause - settings activity");
+		super.onPause();
+	}
+
+	@Override
 	public void onBackPressed(){
-		finish();
-		Intent open_main = new Intent(SettingsActivity.this, PetBot.class);
-		startActivity(open_main);
+		Log.w("petbot", "onBackPressed -settings activity");
+		if (getFragmentManager().getBackStackEntryCount() > 0) {
+			Log.w("petbot", "onBackPressed -settings activity - fragment");
+			getFragmentManager().popBackStack();
+		} else {
+			Log.w("petbot", "onBackPressed -settings activity - not frag");
+			super.onBackPressed();
+		}
+		//super.onBackPressed();
+		//finish();
+		//Intent open_main = new Intent(SettingsActivity.this, PetBot.class);
+		//startActivity(open_main);
 		/*Log.e("asdfasdf", "activity here");
 		FragmentTransaction transaction = getFragmentManager().beginTransaction();
 		transaction.remove(getFragmentManager().findFragmentById(R.id.settings));
