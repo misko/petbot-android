@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.petbot"
-          android:versionCode="1"
-          android:versionName="1.0">
+          package="com.atos.petbot"
+          android:versionCode="8"
+          android:versionName="7.1">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -81,7 +81,7 @@
             android:label="@string/title_activity_selfie"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
             <intent-filter>
-                <action android:name="com.petbot.SELFIE"/>
+                <action android:name="com.atos.petbot.SELFIE"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>

@@ -8,7 +8,7 @@ import android.view.View;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
-import com.petbot.R;
+import com.atos.petbot.R;
 
 public class SeekBarPreference extends Preference implements OnSeekBarChangeListener {
 	private SeekBar mSeekBar;

@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.NumberPicker;
 
-import com.petbot.R;
+import com.atos.petbot.R;
 
 /**
  * A {@link android.preference.Preference} that displays a number picker as a dialog.

@@ -17,7 +17,7 @@ import android.widget.TextView;
 
 //import com.android.volley.VolleyError;
 //import com.android.volley.toolbox.ImageRequest;
-import com.petbot.R;
+import com.atos.petbot.R;
 
 /**
  * A login screen that offers login via email/password.

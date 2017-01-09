@@ -30,7 +30,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
-import com.petbot.R;
+import com.atos.petbot.R;
 
 
 public class SoundRecorder extends LinearLayout

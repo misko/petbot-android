@@ -8,7 +8,7 @@ import android.app.Activity;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
-import com.petbot.R;
+import com.atos.petbot.R;
 
 public class SettingsActivity extends Activity {
 

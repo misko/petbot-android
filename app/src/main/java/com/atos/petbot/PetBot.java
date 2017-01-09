@@ -35,7 +35,7 @@ import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.petbot.R;
+import com.atos.petbot.R;
 
 public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback {
 
