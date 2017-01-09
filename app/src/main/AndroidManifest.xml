@@ -15,7 +15,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
     <application
-        android:name=".ApplicationState"
+        android:name="com.atos.petbot.ApplicationState"
         android:icon="@mipmap/pblogo"
         android:label="@string/app_name"
         android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
@@ -24,7 +24,7 @@
             android:resource="@mipmap/pblogo" />
         <meta-data android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/solid_black" />
-        <activity android:name=".LoginActivity"
+        <activity android:name="com.atos.petbot.LoginActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.NoActionBar">
 
@@ -35,45 +35,45 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".PetBot"
+            android:name="com.atos.petbot.PetBot"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/app_name"
             android:theme="@style/Theme.AppCompat.NoActionBar">
         </activity>
         <activity
-            android:name=".RegistrationActivity"
+            android:name="com.atos.petbot.RegistrationActivity"
             android:label="@string/title_activity_registration"
-            android:parentActivityName=".LoginActivity">
+            android:parentActivityName="com.atos.petbot.LoginActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.petbot.LoginActivity"/>
+                android:value="com.atos.petbot.LoginActivity"/>
         </activity>
         <activity
-            android:name=".SetupActivity"
+            android:name="com.atos.petbot.SetupActivity"
             android:label="@string/title_activity_setup">
         </activity>
         <activity
-            android:name=".QRViewer"
+            android:name="com.atos.petbot.QRViewer"
             android:label="@string/title_activity_qrviewer"
-            android:parentActivityName=".SetupActivity">
+            android:parentActivityName="com.atos.petbot.SetupActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.petbot.SetupActivity"/>
+                android:value="com.atos.petbot.SetupActivity"/>
         </activity>
 
-        <service android:name=".MyFirebaseInstanceIDService">
+        <service android:name="com.atos.petbot.MyFirebaseInstanceIDService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
             </intent-filter>
         </service>
-        <service android:name=".MyFirebaseMessagingService">
+        <service android:name="com.atos.petbot.MyFirebaseMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
         </service>
 
         <activity
-            android:name=".SelfieActivity"
+            android:name="com.atos.petbot.SelfieActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_selfie"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
@@ -83,12 +83,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SettingsActivity"
+            android:name="com.atos.petbot.SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".PetBot">
+            android:parentActivityName="com.atos.petbot.PetBot">
             <meta-data
             android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.petbot.PetBot"/>
+                android:value="com.atos.petbot.PetBot"/>
         </activity>
     </application>
 

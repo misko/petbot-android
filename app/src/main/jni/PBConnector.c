@@ -71,7 +71,7 @@ pbsock * get_pbsock(JNIEnv* env,jobject thiz) {
 
 
 
-void Java_com_petbot_PBConnector_iceRequest(JNIEnv * env, jobject thiz) {
+void Java_com_atos_petbot_PBConnector_iceRequest(JNIEnv * env, jobject thiz) {
 
         jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
         jfieldID ice_to_child_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ice_thread_pipes_to_child", "J");
@@ -92,7 +92,7 @@ void Java_com_petbot_PBConnector_iceRequest(JNIEnv * env, jobject thiz) {
 }
 
 
-void Java_com_petbot_PBConnector_iceNegotiate(JNIEnv * env, jobject thiz, jobject jpbmsg) {
+void Java_com_atos_petbot_PBConnector_iceNegotiate(JNIEnv * env, jobject thiz, jobject jpbmsg) {
 
         jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
         jfieldID ice_to_child_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ice_thread_pipes_to_child", "J");
@@ -137,7 +137,7 @@ static void * start_GMain(void * x) {
         //TODO cleanup? Thread join?
 }
 
-void Java_com_petbot_PBConnector_initGlib(JNIEnv * env, jobject thiz) {
+void Java_com_atos_petbot_PBConnector_initGlib(JNIEnv * env, jobject thiz) {
         GMainLoop * main_loop = g_main_loop_new (NULL, FALSE);
 
         jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
@@ -162,7 +162,7 @@ void Java_com_petbot_PBConnector_initGlib(JNIEnv * env, jobject thiz) {
         PBPRINTF("PBCONNECTOR EXIT MAIN LOOP\n");
 }*/
 
-void Java_com_petbot_PBConnector_startNiceThread(JNIEnv * env, jobject thiz, jint s) {
+void Java_com_atos_petbot_PBConnector_startNiceThread(JNIEnv * env, jobject thiz, jint s) {
 
         jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
         jfieldID ice_to_child_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ice_thread_pipes_to_child", "J");
@@ -190,7 +190,7 @@ void Java_com_petbot_PBConnector_startNiceThread(JNIEnv * env, jobject thiz, jin
         start_nice_thread(0,ice_thread_pipes_from_child,ice_thread_pipes_to_child);
 }
 
-void Java_com_petbot_PBConnector_nativeClose(JNIEnv* env,jobject thiz) {
+void Java_com_atos_petbot_PBConnector_nativeClose(JNIEnv* env,jobject thiz) {
 
         pbsock * pbs = get_pbsock(env,thiz);
         free_pbsock(pbs);
@@ -208,7 +208,7 @@ void Java_com_petbot_PBConnector_nativeClose(JNIEnv* env,jobject thiz) {
 }
 
 pbmsg * jpbmsg_to_pbmsg(JNIEnv* env,jobject jpbmsg) {
-       jclass pbmsg_cls = (*env)->FindClass(env, "com/petbot/PBMsg");
+       jclass pbmsg_cls = (*env)->FindClass(env, "com/atos/petbot/PBMsg");
         //get the fields for the jpbmsg
        jfieldID pbmsg_len_fid = (*env)->GetFieldID(env,pbmsg_cls, "pbmsg_len", "I");
        jfieldID pbmsg_type_fid = (*env)->GetFieldID(env,pbmsg_cls, "pbmsg_type", "I");
@@ -237,7 +237,7 @@ pbmsg * jpbmsg_to_pbmsg(JNIEnv* env,jobject jpbmsg) {
         return m;
 }
 
-void Java_com_petbot_PBConnector_sendPBMsg(JNIEnv* env,jobject thiz, jobject jpbmsg) {
+void Java_com_atos_petbot_PBConnector_sendPBMsg(JNIEnv* env,jobject thiz, jobject jpbmsg) {
         pbsock * pbs = get_pbsock(env,thiz);
         //lets get the fields and such...
         pbmsg * m = jpbmsg_to_pbmsg(env,jpbmsg);
@@ -246,9 +246,9 @@ void Java_com_petbot_PBConnector_sendPBMsg(JNIEnv* env,jobject thiz, jobject jpb
 
 }
 
-jobject Java_com_petbot_PBConnector_readPBMsg(JNIEnv* env,jobject thiz) {
+jobject Java_com_atos_petbot_PBConnector_readPBMsg(JNIEnv* env,jobject thiz) {
     LOGD("IN PBMSG\n");
-    jclass pbmsg_cls = (*env)->FindClass(env, "com/petbot/PBMsg");
+    jclass pbmsg_cls = (*env)->FindClass(env, "com/atos/petbot/PBMsg");
     jmethodID constructor = (*env)->GetMethodID(env, pbmsg_cls,"<init>","()V"); //call the basic constructor
     jobject jpbmsg = (*env)->NewObject(env, pbmsg_cls, constructor);
     LOGD("IN PBMSG 2\n");
@@ -296,7 +296,7 @@ jobject Java_com_petbot_PBConnector_readPBMsg(JNIEnv* env,jobject thiz) {
     return jpbmsg;
 }
 
-  void Java_com_petbot_PBConnector_connectToServerWithKey(JNIEnv* env,jobject thiz, jstring hostname, int portno, jstring key ) {
+  void Java_com_atos_petbot_PBConnector_connectToServerWithKey(JNIEnv* env,jobject thiz, jstring hostname, int portno, jstring key ) {
 
         const char* hostname_str = (*env)->GetStringUTFChars(env,hostname,0);
         const char* key_str = (*env)->GetStringUTFChars(env,key,0);
@@ -327,7 +327,7 @@ jobject Java_com_petbot_PBConnector_readPBMsg(JNIEnv* env,jobject thiz) {
         (*env)->ReleaseStringUTFChars(env,key,key_str);
   }
 
-  jbyteArray Java_com_petbot_PBConnector_newByteArray(JNIEnv* env,jobject thiz ) {
+  jbyteArray Java_com_atos_petbot_PBConnector_newByteArray(JNIEnv* env,jobject thiz ) {
     int size = 12;
     char * ray = (char*)malloc(sizeof(char)*size);
     jbyteArray jArray = (*env)->NewByteArray(env, size);
@@ -353,7 +353,7 @@ jobject Java_com_petbot_PBConnector_readPBMsg(JNIEnv* env,jobject thiz) {
  }
 
 JNIEXPORT jstring JNICALL
-Java_com_petbot_PBConnector_stringFromJNI( JNIEnv* env,
+Java_com_atos_petbot_PBConnector_stringFromJNI( JNIEnv* env,
                                                   jobject thiz )
 {
 #if defined(__arm__)
