@@ -2,12 +2,14 @@ package com.petbot;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -52,6 +54,8 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	private long native_custom_data;      // Native code will use this to keep private data
 
 	PBConnector pb;
+
+	Vibrator vibrator;
 
 	// Called when the activity is first created.
 	@Override
@@ -130,10 +134,13 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		//TODO: server does not return secret, must be commented out
 		//petbot_secret = getIntent().getExtras().getString("secret");
 		//final String petbot_secret = "A20PETBOTX1";
+		// Get instance of Vibrator from current Context
+		vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
 		FloatingActionButton cookieButton = (FloatingActionButton) this.findViewById(R.id.cookieButton);
 		cookieButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+				vibrator.vibrate(400);
 				pb.sendCookie();
 			}
 		});
@@ -141,6 +148,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		FloatingActionButton selfieButton = (FloatingActionButton) this.findViewById(R.id.selfieButton);
 		selfieButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+				vibrator.vibrate(400);
 				pb.takeSelfie();
 			}
 		});
@@ -155,9 +163,11 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 				Intent open_main = new Intent(PetBot.this, LoginActivity.class);
 				//open_main.putExtra("json",response.toString());
 				PetBot.this.startActivity(open_main);
-
 			}
 		});
+
+
+
 
 		FloatingActionButton settingsButton = (FloatingActionButton) findViewById(R.id.settingsButton);
 		settingsButton.setOnClickListener(new OnClickListener() {
@@ -241,7 +251,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		FloatingActionButton soundButton = (FloatingActionButton) this.findViewById(R.id.soundButton);
 		soundButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-
+				vibrator.vibrate(400);
 				String url = "https://petbot.ca:5000/FILES_DL/" + application.server_secret + "/" + sound_ID;
 				MediaPlayer mediaPlayer = new MediaPlayer();
 				mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -328,11 +338,17 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	}
 
 	static {
+		Log.w("Petbot", "library crypto load");
 		System.loadLibrary("crypto");
+		Log.w("Petbot", "library ssl load");
 		System.loadLibrary("ssl");
+		Log.w("Petbot", "library gstreamer_android load");
 		System.loadLibrary("gstreamer_android");
+		Log.w("Petbot", "library pb_gst load");
 		System.loadLibrary("pb_gst");
+		Log.w("Petbot", "library PBConnector load");
 		System.loadLibrary("PBConnector");
+		Log.w("Petbot", "library init");
 		nativeClassInit();
 	}
 
@@ -350,6 +366,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		Log.d("GStreamer", "Surface destroyed");
+		//nativeFinalize();
 		nativeSurfaceFinalize ();
 		Log.d("GStreamer", "Surface destroyed - done");
 	}

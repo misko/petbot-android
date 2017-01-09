@@ -1,7 +1,6 @@
 package com.petbot;
 
 import android.content.Context;
-import android.preference.ListPreference;
 import android.preference.Preference;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -81,7 +80,7 @@ public class SoundRecorderPreference extends Preference {
 
 					SimpleMultiPartRequest upload_request = new SimpleMultiPartRequest(
 							Request.Method.POST,
-							application.upload_address + application.server_secret,
+							application.HTTPS_ADDRESS_PB_UL + application.server_secret,
 							new Response.Listener<String>() {
 								@Override
 								public void onResponse(String json_string) {
