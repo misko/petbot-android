@@ -1,4 +1,4 @@
-package com.petbot;
+package com.atos.petbot;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.firebase.iid.FirebaseInstanceId;
+
+import com.petbot.R;
 
 /**
  * A login screen that offers login via email/password.

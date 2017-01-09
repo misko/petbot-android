@@ -1,4 +1,4 @@
-package com.petbot;
+package com.atos.petbot;
 
 import android.content.Context;
 import android.preference.Preference;
@@ -15,13 +15,14 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.SimpleMultiPartRequest;
+import com.petbot.R;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 
-import static com.petbot.Recorder.RECORDING_STATE;
+import static com.atos.petbot.Recorder.RECORDING_STATE;
 
 public class SoundRecorderPreference extends Preference {
 

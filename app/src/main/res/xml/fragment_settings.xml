@@ -23,7 +23,7 @@
             android:title="Enable"
             android:summary="Take selfies automatically" />-->
 
-        <com.petbot.NumberPickerPreference
+        <com.atos.petbot.NumberPickerPreference
             android:key="selfie_timeout"
             android:title="Timeout"
             android:summary="Minimum time between selfies"
@@ -32,7 +32,7 @@
             preference:maxValue="24"
             preference:wrapSelectorWheel="false"/>
 
-        <com.petbot.NumberPickerPreference
+        <com.atos.petbot.NumberPickerPreference
             android:key="selfie_length"
             android:title="Duration"
             android:summary="Length of selfie video"
@@ -45,7 +45,7 @@
 
     <PreferenceCategory android:title="Sound">
 
-        <com.petbot.SeekBarPreference
+        <com.atos.petbot.SeekBarPreference
             android:key="master_volume"
             android:title="Volume"
             android:summary="Sound level on PetBot" />
@@ -60,7 +60,7 @@
             android:title="Selfie Sound"
             android:summary="Sound played on PetBot when selfie triggered"/>
 
-        <com.petbot.SoundRecorderPreference
+        <com.atos.petbot.SoundRecorderPreference
             android:key="recorder"
             android:title="Record"
             android:summary="Upload recording for alert or selfie sound"/>

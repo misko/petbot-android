@@ -1,4 +1,4 @@
-package com.petbot;
+package com.atos.petbot;
 
 /**
  * Copyright 2016 Google Inc. All Rights Reserved.
@@ -20,18 +20,13 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import com.petbot.SelfieActivity;
+import com.petbot.R;
 
 import java.util.Map;
 

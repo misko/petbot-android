@@ -1,4 +1,4 @@
-package com.petbot;
+package com.atos.petbot;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+
+import com.petbot.R;
 
 public class SettingsActivity extends Activity {
 
