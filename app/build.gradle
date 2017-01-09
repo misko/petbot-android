@@ -6,7 +6,7 @@ android {
     buildToolsVersion "22.0.1"
 
     defaultConfig {
-        applicationId = 'com.petbot'
+        applicationId = 'com.atos.petbot'
         minSdkVersion 14
         targetSdkVersion 20
         multiDexEnabled true

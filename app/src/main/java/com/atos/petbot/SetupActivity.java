@@ -14,9 +14,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-
-//import com.android.volley.VolleyError;
-//import com.android.volley.toolbox.ImageRequest;
 import com.petbot.R;
 
 /**

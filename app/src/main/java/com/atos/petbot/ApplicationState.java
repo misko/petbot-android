@@ -1,11 +1,9 @@
 package com.atos.petbot;
 
 import android.app.Application;
-import android.content.Context;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
-import com.google.firebase.FirebaseApp;
 
 public class ApplicationState extends Application {
 

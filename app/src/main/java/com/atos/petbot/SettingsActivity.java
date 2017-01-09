@@ -1,11 +1,7 @@
 package com.atos.petbot;
 
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.content.Intent;
 import android.os.Bundle;
 import android.app.Activity;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.petbot.R;

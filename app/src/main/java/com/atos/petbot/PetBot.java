@@ -35,9 +35,6 @@ import com.petbot.R;
 
 public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback {
 
-	//public static final String HTTPS_ADDRESS_AUTH = "https://petbot.ca:5000/AUTH";
-
-
 	private native void nativeInit();     // Initialize native code, build pipeline, etc
 	private native void nativePlayAgent(long jagent, int jstream_id);     // Initialize native code, build pipeline, etc
 	private native void nativeFinalize(); // Destroy pipeline and shutdown native code
@@ -110,8 +107,6 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		request_thread.start();
 
 		Log.w("petbot", String.valueOf(pb.ptr_pbs));
-		//pb.connectToServerWithKey(JNIEnv* env,jobject thiz, jstring hostname, int portno, jstring key );
-		//System.out.println(wtf);
 
 		// Initialize GStreamer and warn if it fails
 		try {
@@ -123,10 +118,6 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		}
 
 		setContentView(R.layout.main);
-
-		//TODO: server does not return secret, must be commented out
-		//petbot_secret = getIntent().getExtras().getString("secret");
-		//final String petbot_secret = "A20PETBOTX1";
 
 		FloatingActionButton cookieButton = (FloatingActionButton) this.findViewById(R.id.cookieButton);
 		cookieButton.setOnClickListener(new OnClickListener() {
@@ -145,14 +136,11 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		FloatingActionButton logoutButton = (FloatingActionButton) this.findViewById(R.id.logoutButton);
 		logoutButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				//read_thread.stop();
 				pb.close();
 				nativePause();
 				finish();
 				Intent open_main = new Intent(PetBot.this, LoginActivity.class);
-				//open_main.putExtra("json",response.toString());
 				PetBot.this.startActivity(open_main);
-
 			}
 		});
 
@@ -350,7 +338,6 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		nativeSurfaceFinalize ();
 		Log.d("GStreamer", "Surface destroyed - done");
 	}
-
 
 	@Override
 	protected void onResume(){
