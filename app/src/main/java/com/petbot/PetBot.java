@@ -17,6 +17,7 @@ import android.view.SurfaceView;
 import android.view.ViewGroup.LayoutParams;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -260,21 +261,41 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 
+		FloatingActionButton selfieButton = (FloatingActionButton) this.findViewById(R.id.selfieButton);
+		FloatingActionButton soundButton = (FloatingActionButton) this.findViewById(R.id.soundButton);
+		FloatingActionButton settingsButton = (FloatingActionButton) this.findViewById(R.id.settingsButton);
+
+		RelativeLayout.LayoutParams selfie_layout = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+		RelativeLayout.LayoutParams sound_layout = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+		RelativeLayout.LayoutParams settings_layout = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+
 		// Checks the orientation of the screen
 		if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-			//Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
-			// for example the width of a layout
-			int width = 300;
-			int height = LayoutParams.WRAP_CONTENT;
-			//SurfaceView sv = (SurfaceView) this.findViewById(R.id.surface_video);
-			//sv.setLayoutParams(new LayoutParams(width, height));
-			//childLayout.setLayoutParams(new LayoutParams(width, height));
-			//setContentView(R.layout.main);
+
+			selfie_layout.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+			selfie_layout.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
+
+			sound_layout.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+			sound_layout.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
+
+			settings_layout.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+			settings_layout.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
+
 		} else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
-			//Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show();
-			//setContentView(R.layout.main);
+
+			selfie_layout.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+			selfie_layout.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
+
+			sound_layout.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+			sound_layout.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
+
+			settings_layout.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
+			settings_layout.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
 		}
 
+		selfieButton.setLayoutParams(selfie_layout);
+		soundButton.setLayoutParams(sound_layout);
+		settingsButton.setLayoutParams(settings_layout);
 		Log.w("petbot","WTF CONFIG CHANGE?");
 	}
 
@@ -303,17 +324,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	// Called from native code. Native code calls this once it has created its pipeline and
 	// the main loop is running, so it is ready to accept commands.
 	private void onGStreamerInitialized () {
-
 		nativePlay();
-
-		// Re-enable buttons, now that GStreamer is initialized
-		final Activity activity = this;
-		runOnUiThread(new Runnable() {
-			public void run() {
-				//activity.findViewById(R.id.button_play).setEnabled(true);
-				//activity.findViewById(R.id.button_stop).setEnabled(true);
-			}
-		});
 	}
 
 	static {
