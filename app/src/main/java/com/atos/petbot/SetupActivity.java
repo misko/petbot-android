@@ -1,15 +1,9 @@
-package com.petbot;
+package com.atos.petbot;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 
 import android.view.KeyEvent;
 import android.view.View;
@@ -18,15 +12,12 @@ import android.view.inputmethod.EditorInfo;
 
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 //import com.android.volley.VolleyError;
 //import com.android.volley.toolbox.ImageRequest;
-import com.android.volley.toolbox.Volley;
+import com.petbot.R;
 
 /**
  * A login screen that offers login via email/password.

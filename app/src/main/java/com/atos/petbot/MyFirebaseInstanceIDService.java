@@ -1,4 +1,4 @@
-package com.petbot;
+package com.atos.petbot;
 
 /**
  * Copyright 2016 Google Inc. All Rights Reserved.

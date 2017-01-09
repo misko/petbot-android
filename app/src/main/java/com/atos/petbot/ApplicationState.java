@@ -1,4 +1,4 @@
-package com.petbot;
+package com.atos.petbot;
 
 import android.app.Application;
 import android.content.Context;

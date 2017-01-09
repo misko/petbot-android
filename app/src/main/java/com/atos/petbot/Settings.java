@@ -1,4 +1,4 @@
-package com.petbot;
+package com.atos.petbot;
 
 import android.os.Bundle;
 import android.preference.ListPreference;
@@ -10,6 +10,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
+import com.petbot.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;

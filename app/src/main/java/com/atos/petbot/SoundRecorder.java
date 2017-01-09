@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.petbot;
+package com.atos.petbot;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -29,6 +29,8 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+
+import com.petbot.R;
 
 
 public class SoundRecorder extends LinearLayout

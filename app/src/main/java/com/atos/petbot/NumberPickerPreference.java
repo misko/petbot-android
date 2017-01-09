@@ -1,4 +1,4 @@
-package com.petbot;
+package com.atos.petbot;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.NumberPicker;
+
+import com.petbot.R;
 
 /**
  * A {@link android.preference.Preference} that displays a number picker as a dialog.
