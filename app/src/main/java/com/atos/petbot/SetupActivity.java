@@ -14,7 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.petbot.R;
+import com.atos.petbot.R;
 
 /**
  * A login screen that offers login via email/password.

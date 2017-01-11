@@ -15,7 +15,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.SimpleMultiPartRequest;
-import com.petbot.R;
+import com.atos.petbot.R;
 
 import org.json.JSONException;
 import org.json.JSONObject;

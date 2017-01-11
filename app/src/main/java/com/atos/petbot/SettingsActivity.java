@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.util.Log;
 
-import com.petbot.R;
+import com.atos.petbot.R;
 
 public class SettingsActivity extends Activity {
 

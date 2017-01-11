@@ -85,7 +85,8 @@
         <activity
             android:name="com.atos.petbot.SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName="com.atos.petbot.PetBot">
+            android:parentActivityName="com.atos.petbot.PetBot"
+            android:windowSoftInputMode="adjustPan">
             <meta-data
             android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.atos.petbot.PetBot"/>
