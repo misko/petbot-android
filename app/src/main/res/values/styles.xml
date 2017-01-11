@@ -25,6 +25,7 @@
     </style>
     <style name="PBButton" parent="@android:style/MediaButton">
         <item name="android:background">@drawable/pbbutton_shape</item>
+        <item name="android:colorBackground">@color/PBButtonColor</item>
         <item name="android:textColor">@color/PBTextWhite</item>
         <item name="android:textStyle">bold</item>
         <item name="android:layout_height">48dp</item>

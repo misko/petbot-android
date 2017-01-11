@@ -16,13 +16,25 @@
     android:layout_centerInParent="false"
     android:layout_gravity="center">
 
-    <VideoView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/video_view"
-        android:layout_weight="1"
-        android:layout_gravity="center"
-        android:saveEnabled="false" />
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content">
+
+        <VideoView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/video_view"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:saveEnabled="false" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+
+    </FrameLayout>
 
     <LinearLayout
         android:orientation="horizontal"
@@ -30,31 +42,34 @@
         android:layout_height="wrap_content"
         style="@style/Widget.AppCompat.ButtonBar">
 
-        <Button
+        <ImageButton
             android:text="save"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/save"
             android:layout_weight="1"
-            style="@style/Widget.AppCompat.Button"
+            style="@style/PBButton"
+            android:src="@drawable/ic_save_white_24dp"
+            android:id="@+id/save"
             android:onClick="save"/>
 
-        <Button
+        <ImageButton
             android:text="share"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/share"
             android:layout_weight="1"
-            style="@style/Widget.AppCompat.Button"
+            style="@style/PBButton"
+            android:src="@drawable/ic_share_white_24dp"
+            android:id="@+id/share"
             android:onClick="share" />
 
-        <Button
+        <ImageButton
             android:text="delete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/delete"
             android:layout_weight="1"
-            style="@style/Widget.AppCompat.Button"
+            style="@style/PBButton"
+            android:src="@drawable/ic_delete_white_24dp"
+            android:id="@+id/delete"
             android:onClick="delete" />
 
     </LinearLayout>
