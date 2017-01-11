@@ -53,7 +53,7 @@ public class QRViewer extends AppCompatActivity {
 
 		JsonObjectRequest login_request = new JsonObjectRequest(
 				Request.Method.POST,
-				ApplicationState.qrcode_address,
+				ApplicationState.HTTPS_ADDRESS_QRCODE_JSON,
 				qr_info,
 				new Response.Listener<JSONObject>() {
 					@Override

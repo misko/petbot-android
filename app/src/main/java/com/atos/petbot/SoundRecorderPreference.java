@@ -81,7 +81,7 @@ public class SoundRecorderPreference extends Preference {
 
 					SimpleMultiPartRequest upload_request = new SimpleMultiPartRequest(
 							Request.Method.POST,
-							application.upload_address + application.server_secret,
+							application.HTTPS_ADDRESS_PB_UL + application.server_secret,
 							new Response.Listener<String>() {
 								@Override
 								public void onResponse(String json_string) {

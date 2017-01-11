@@ -2,9 +2,14 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'PetBotKeys'
+            storeFile file('/Users/miskodzamba/StudioProjects/petbot-android/keys/apk_keys.jks')
+        }
+    }
     compileSdkVersion = 22
     buildToolsVersion "22.0.1"
-
     defaultConfig {
         applicationId = 'com.atos.petbot'
         minSdkVersion 14
@@ -15,14 +20,12 @@ android {
             abiFilters 'armeabi-v7a'
         }
     }
-
     buildTypes {
         release {
             minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
     externalNativeBuild {
         ndkBuild {
             path 'src/main/jni/Android.mk'
@@ -32,7 +35,6 @@ android {
 
 
 dependencies {
-
     compile 'com.android.support:appcompat-v7:22.2.1'
     compile 'com.android.support:design:22.2.1'
     compile 'com.android.support:support-annotations:22.2.1'

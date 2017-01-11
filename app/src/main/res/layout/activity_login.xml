@@ -73,13 +73,16 @@
                     android:text="username"
                     android:id="@+id/textView"
                     style="@style/PetBotButtonText"
-                    android:layout_marginStart="8dp" />
-                <AutoCompleteTextView
+                    android:layout_marginStart="8dp"
+                    android:layout_marginLeft="8dp"
+                    />
+
+                <EditText
                     android:id="@+id/username"
                     android:layout_width="match_parent"
                     android:maxLines="1"
                     android:singleLine="true"
-                    android:inputType="text"
+                    android:inputType="text|textNoSuggestions|textFilter"
                     style="@style/PBEditText"
                     android:layout_margin="5dp"
                     android:paddingStart="10dp"
@@ -91,7 +94,8 @@
                     android:text="password"
                     android:id="@+id/textView2"
                     style="@style/PetBotButtonText"
-                    android:layout_marginStart="8dp" />
+                    android:layout_marginStart="8dp"
+                    android:layout_marginLeft="8dp" />
                 <EditText
                     android:id="@+id/password"
                     android:layout_width="match_parent"
@@ -133,7 +137,6 @@
                     android:layout_width="match_parent"
                     android:text="Set up device"
                     android:textStyle="bold"
-                    android:onClick="register"
                     style="@style/PBHollowButton"
                     android:layout_margin="10dp"
                     android:layout_weight="1"

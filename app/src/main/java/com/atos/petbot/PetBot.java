@@ -1,11 +1,13 @@
 package com.atos.petbot;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -46,6 +48,8 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	private long native_custom_data;      // Native code will use this to keep private data
 
 	PBConnector pb;
+
+	Vibrator vibrator;
 
 	// Called when the activity is first created.
 	@Override
@@ -119,9 +123,13 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 
 		setContentView(R.layout.main);
 
+		// Get instance of Vibrator from current Context
+		vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
 		FloatingActionButton cookieButton = (FloatingActionButton) this.findViewById(R.id.cookieButton);
 		cookieButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+				vibrator.vibrate(400);
 				pb.sendCookie();
 			}
 		});
@@ -129,6 +137,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		FloatingActionButton selfieButton = (FloatingActionButton) this.findViewById(R.id.selfieButton);
 		selfieButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+				vibrator.vibrate(400);
 				pb.takeSelfie();
 			}
 		});
@@ -226,7 +235,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		FloatingActionButton soundButton = (FloatingActionButton) this.findViewById(R.id.soundButton);
 		soundButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-
+				vibrator.vibrate(400);
 				String url = "https://petbot.ca:5000/FILES_DL/" + application.server_secret + "/" + sound_ID;
 				MediaPlayer mediaPlayer = new MediaPlayer();
 				mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);

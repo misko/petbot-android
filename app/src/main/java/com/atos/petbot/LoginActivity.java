@@ -23,7 +23,9 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -59,7 +61,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 	private static final int REQUEST_READ_CONTACTS = 0;
 
 	// UI references.
-	private AutoCompleteTextView mUsernameView;
+	private EditText mUsernameView;
 	private EditText mPasswordView;
 	private View mProgressView;
 	private View mLoginFormView;
@@ -71,7 +73,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 		setContentView(R.layout.activity_login);
 
 		// Set up the login form.
-		mUsernameView = (AutoCompleteTextView) findViewById(R.id.username);
+		mUsernameView = (EditText) findViewById(R.id.username);
 		populateAutoComplete();
 
 		mPasswordView = (EditText) findViewById(R.id.password);
@@ -94,6 +96,28 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 			}
 		});
 
+
+		Button forgetMeButton = (Button) findViewById(R.id.forgetme);
+		forgetMeButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View view) {
+
+				deauth();
+			}
+		});
+
+		Button registerButton = (Button) findViewById(R.id.setup);
+		registerButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Intent open_registration = new Intent(LoginActivity.this, RegistrationActivity.class);
+				LoginActivity.this.startActivity(open_registration);
+			}
+		});
+
+
+
+
 		mLoginFormView = findViewById(R.id.login_form);
 		mProgressView = findViewById(R.id.login_progress);
 
@@ -106,6 +130,58 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 		mPasswordView.setText(strpassword);
 
 
+	}
+
+	private void deauth() {
+
+
+		Log.e("petbot", "DEAUTH!");
+		//code to forget user here
+		JSONObject json_request = new JSONObject();
+		try {
+			json_request.put("deviceID", FirebaseInstanceId.getInstance().getToken());
+		} catch (JSONException error) {
+			//TODO
+		}
+
+		JsonObjectRequest deauth_request = new JsonObjectRequest(
+				Request.Method.POST,
+				ApplicationState.HTTPS_ADDRESS_DEAUTH,
+				json_request,
+				new Response.Listener<JSONObject>() {
+					@Override
+					public void onResponse(JSONObject response) {
+
+						showProgress(false);
+
+						boolean success = false;
+						try {
+							success = response.getInt("status") == 1;
+						} catch (JSONException error) {
+							//TODO
+						}
+
+						if (success) {
+							SharedPreferences.Editor editor = sharedPreferences.edit();
+							editor.putString("username", "");
+							editor.putString("password", "");
+							editor.commit();
+							mPasswordView.setText("");
+							mUsernameView.setText("");
+						}
+					}
+				},
+				new Response.ErrorListener() {
+					@Override
+					public void onErrorResponse(VolleyError error) {
+						Log.e("asdfasdfasdf", error.toString());
+						showProgress(false);
+					}
+				}
+		);
+
+		RequestQueue queue = Volley.newRequestQueue(this);
+		queue.add(deauth_request);
 	}
 
 	private void populateAutoComplete() {
@@ -139,6 +215,16 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 	}
 
 
+	private void hideKeyboard() {
+		//hide the keyboard
+		View view = this.getCurrentFocus();
+		if (view != null) {
+			Log.w("petbot", "DEAUTH! - hide");
+			InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+			imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+		}
+	}
+
 
 	/**
 	 * Attempts to sign in or register the account specified by the login form.
@@ -146,7 +232,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 	 * errors are presented and no actual login attempt is made.
 	 */
 	private void attemptLogin() {
-
+		hideKeyboard();
 		// Reset errors.
 		mUsernameView.setError(null);
 		mPasswordView.setError(null);
@@ -198,7 +284,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 			final Context context = this.getApplicationContext();
 			JsonObjectRequest login_request = new JsonObjectRequest(
 					Request.Method.POST,
-					ApplicationState.auth_address,
+					ApplicationState.HTTPS_ADDRESS_ATUH,
 					login_info,
 					new Response.Listener<JSONObject>() {
 						@Override
@@ -218,6 +304,8 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 								editor.putString("username", username);
 								editor.putString("password", password);
 								editor.commit();
+
+
 
 								finish();
 								Intent open_main = new Intent(LoginActivity.this, PetBot.class);
@@ -257,10 +345,6 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 		}
 	}
 
-	public void register(View view){
-		Intent open_registration = new Intent(LoginActivity.this, RegistrationActivity.class);
-		LoginActivity.this.startActivity(open_registration);
-	}
 
 	private boolean isEmailValid(String email) {
 		//TODO: Replace this with your own logic
@@ -348,7 +432,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 				new ArrayAdapter<>(LoginActivity.this,
 						android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
 
-		mUsernameView.setAdapter(adapter);
+		//mUsernameView.setAdapter(adapter);
 	}
 
 

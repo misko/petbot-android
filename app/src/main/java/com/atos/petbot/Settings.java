@@ -52,7 +52,7 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 
 		JsonObjectRequest sounds_request = new JsonObjectRequest(
 				Request.Method.POST,
-				application.sound_list_address + application.server_secret,
+				application.HTTPS_ADDRESS_PB_LS + application.server_secret,
 				sounds_info,
 				new Response.Listener<JSONObject>() {
 					@Override
