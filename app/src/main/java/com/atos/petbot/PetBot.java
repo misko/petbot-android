@@ -4,23 +4,33 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.media.AudioManager;
+
+import android.graphics.BitmapFactory;
+
+import java.io.InputStream;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.net.URL;
 
 import org.freedesktop.gstreamer.GStreamer;
 import org.json.JSONArray;
@@ -33,7 +43,13 @@ import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+
+import android.os.AsyncTask;
 import com.atos.petbot.R;
+import com.github.pwittchen.swipe.library.Swipe;
+import com.github.pwittchen.swipe.library.SwipeListener;
+
+import rx.Subscription;
 
 public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback {
 
@@ -48,8 +64,96 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	private long native_custom_data;      // Native code will use this to keep private data
 
 	PBConnector pb;
+	private Swipe swipe;
 
 	Vibrator vibrator;
+
+
+	private class DownLoadImageTask extends AsyncTask<String,Void,Bitmap>{
+		ImageView imageView;
+
+		public DownLoadImageTask(ImageView imageView){
+			this.imageView = imageView;
+		}
+
+		/*
+            doInBackground(Params... params)
+                Override this method to perform a computation on a background thread.
+         */
+		protected Bitmap doInBackground(String...urls){
+			String urlOfImage = urls[0];
+			Bitmap logo = null;
+			try{
+				InputStream is = new URL(urlOfImage).openStream();
+                /*
+                    decodeStream(InputStream is)
+                        Decode an input stream into a bitmap.
+                 */
+				logo = BitmapFactory.decodeStream(is);
+			}catch(Exception e){ // Catch the download exception
+				e.printStackTrace();
+			}
+			return logo;
+		}
+
+		/*
+            onPostExecute(Result result)
+                Runs on the UI thread after doInBackground(Params...).
+         */
+		protected void onPostExecute(Bitmap result){
+			imageView.setImageBitmap(result);
+		}
+	}
+
+	@Override public boolean dispatchTouchEvent(MotionEvent event) {
+		swipe.dispatchTouchEvent(event);
+		return super.dispatchTouchEvent(event);
+	}
+
+	private void start_wait() {
+		//code to forget user here
+		JSONObject json_request = new JSONObject();
+
+		JsonObjectRequest deauth_request = new JsonObjectRequest(
+				Request.Method.POST,
+				ApplicationState.HTTPS_ADDRESS_PB_WAIT,
+				json_request,
+				new Response.Listener<JSONObject>() {
+					@Override
+					public void onResponse(JSONObject response) {
+						boolean success = false;
+						try {
+							success = response.getInt("status") == 1;
+							JSONObject pet = response.getJSONObject("pet");
+							String img = pet.getString("img");
+							String name = pet.getString("name");
+							String story = pet.getString("story");
+							ImageView petImageView = (ImageView) findViewById(R.id.petImageView);
+							new DownLoadImageTask(petImageView).execute(img);
+
+							TextView petName = (TextView) findViewById(R.id.petName);
+							petName.setText(name);
+							TextView petStory = (TextView) findViewById(R.id.petStory);
+							petStory.setText(story);
+						} catch (JSONException error) {
+							//TODO
+						}
+
+						if (success) {
+						}
+					}
+				},
+				new Response.ErrorListener() {
+					@Override
+					public void onErrorResponse(VolleyError error) {
+						Log.e("asdfasdfasdf", error.toString());
+					}
+				}
+		);
+
+		RequestQueue queue = Volley.newRequestQueue(this);
+		queue.add(deauth_request);
+	}
 
 	// Called when the activity is first created.
 	@Override
@@ -57,6 +161,51 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	{
 		super.onCreate(savedInstanceState);
 		Log.w("petbot", "ANDROID - ON CREATE PETBOT" );
+		start_wait();
+
+
+
+		swipe = new Swipe();
+		swipe.addListener(new SwipeListener() {
+			@Override public void onSwipingLeft(final MotionEvent event) {
+			}
+			@Override public void onSwipingRight(final MotionEvent event) {
+			}
+
+			@Override public void onSwipingUp(final MotionEvent event) {
+			}
+
+			@Override public void onSwipingDown(final MotionEvent event) {
+			}
+
+			@Override public void onSwipedLeft(final MotionEvent event) {
+				Log.w("petbot","SWIPED_LEFT");
+				pb.camera_fx_down();
+			}
+
+			@Override public void onSwipedRight(final MotionEvent event) {
+				Log.w("petbot","SWIPED_RIGHT");
+				pb.camera_fx_up();
+			}
+			@Override public void onSwipedUp(final MotionEvent event) {
+				Log.w("petbot","SWIPED_UP");
+				pb.camera_exp_up();
+			}
+
+			@Override public void onSwipedDown(final MotionEvent event) {
+				Log.w("petbot","SWIPED_DOWN");
+				pb.camera_exp_down();
+			}
+		});
+
+
+		/*RelativeLayout myView = (RelativeLayout) findViewById(R.id.mainLayout);
+		myView.setOnTouchListener(new View.OnTouchListener() {
+			public boolean onTouch(View v, MotionEvent event) {
+				// ... Respond to touch events
+				return true;
+			}
+		});*/
 
 		ApplicationState state = (ApplicationState) this.getApplicationContext();
 
@@ -86,7 +235,9 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 								runOnUiThread(new Runnable() {
 									@Override
 									public void run() {
-										findViewById(R.id.progressBar).setVisibility(View.GONE);
+										FrameLayout layout = (FrameLayout)findViewById(R.id.wait_screen);
+										layout.setVisibility(View.GONE); // you can use INVISIBLE also instead of GONE
+										//findViewById(R.id.progressBar).setVisibility(View.GONE);
 									}
 								});
 

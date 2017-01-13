@@ -50,6 +50,27 @@ public class PBConnector {
 		sendPBMsg(m);
 	}
 
+    public void camera_fx_up() {
+        String command = "adjust_fx 1";
+        PBMsg m = new PBMsg(command, PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
+        sendPBMsg(m);
+    }
+    public void camera_fx_down() {
+        String command = "adjust_fx -1";
+        PBMsg m = new PBMsg(command, PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
+        sendPBMsg(m);
+    }
+    public void camera_exp_up() {
+        String command = "adjust_exp 1";
+        PBMsg m = new PBMsg(command, PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
+        sendPBMsg(m);
+    }
+    public void camera_exp_down() {
+        String command = "adjust_exp -1";
+        PBMsg m = new PBMsg(command, PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
+        sendPBMsg(m);
+    }
+
     public void close () {
         Log.w("petbot", "ANDROID - JAVA PBCONNECTOR - CLOSE ");
         nativeClose();

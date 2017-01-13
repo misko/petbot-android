@@ -13,14 +13,7 @@
             android:layout_height="fill_parent"
             android:layout_gravity="center_vertical|center_horizontal" />
 
-        <ProgressBar
-            android:id="@+id/progressBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"/>
-
-        <TextView
+    <TextView
             android:id="@+id/textview_message"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -58,7 +51,8 @@
             android:textColor="@color/PBButtonTextColor"
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"/>
+            android:layout_alignParentEnd="true"
+            app:elevation="0dp" />
 
         <android.support.design.widget.FloatingActionButton
             android:layout_width="wrap_content"
@@ -70,9 +64,9 @@
             android:id="@+id/soundButton"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"/>
+            android:layout_alignParentStart="true" />
 
-        <android.support.design.widget.FloatingActionButton
+    <android.support.design.widget.FloatingActionButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="selfie"
@@ -81,6 +75,63 @@
             android:id="@+id/selfieButton"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:textColor="@color/PBButtonTextColor"/>
+            android:textColor="@color/PBButtonTextColor" />
 
-    </RelativeLayout>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/PBBlackColor"
+        android:elevation="14dp"
+        android:id="@+id/wait_screen">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:layout_margin="20dp">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/petImageView"
+                android:layout_margin="10dp" />
+
+            <TextView
+                android:text="Connecting..."
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView7"
+                android:textColor="@color/PBTextWhite"
+                android:layout_margin="10dp"
+                android:gravity="center_horizontal" />
+
+            <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/petName"
+                android:textColor="@color/PBTextWhite"
+                android:layout_margin="10dp"
+                android:maxWidth="300dp"
+                android:layout_gravity="center_horizontal" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/petStory"
+                android:textColor="@color/PBTextWhite"
+                android:layout_margin="10dp"
+                android:maxWidth="300dp"
+                android:layout_gravity="center_horizontal" />
+        </LinearLayout>
+
+    </FrameLayout>
+
+</RelativeLayout>
