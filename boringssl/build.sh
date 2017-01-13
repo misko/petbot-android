@@ -19,7 +19,7 @@ for arch in $archs; do
 	mkdir ./$build
 	mkdir ./$dist/$arch
 	cd ./$build
-	cmake -DANDROID_ABI=armeabi-v7a \
+	cmake -DANDROID_ABI=$arch \
 	      -DCMAKE_TOOLCHAIN_FILE=../third_party/android-cmake/android.toolchain.cmake \
 	      -DANDROID_NATIVE_API_LEVEL=21 \
 	      -GNinja ..
