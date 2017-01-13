@@ -13,14 +13,12 @@
             android:layout_height="fill_parent"
             android:layout_gravity="center_vertical|center_horizontal" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="0dp"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal" >
-
-        </LinearLayout>
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"/>
 
         <TextView
             android:id="@+id/textview_message"

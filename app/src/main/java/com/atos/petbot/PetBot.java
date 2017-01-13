@@ -70,7 +70,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 					Log.w("petbot", "ANDROID - READ MSG");
 					final PBMsg m = pb.readPBMsg();
 					Log.w("petbot", "ANDROID - READ MSG -DONE");
-					if (m==null) {
+					if (m == null) {
 						Log.w("petbot", "ANDROID - LEAVE READ THREAD");
 						break;
 					}
@@ -82,6 +82,14 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 								Log.w("petbot", "ANDROID - NEGOTIATE  ");
 								pb.iceNegotiate(m);
 								Log.w("petbot", "ANDROID - NEGOTIATE DONE");
+
+								runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										findViewById(R.id.progressBar).setVisibility(View.GONE);
+									}
+								});
+
 								nativePlayAgent(pb.ptr_agent,pb.stream_id);
 							}
 						};

@@ -57,6 +57,7 @@
                 android:layout_height="wrap_content"
                 android:background="@color/button_material_light"
                 android:gravity="center_horizontal" android:orientation="vertical">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -68,6 +69,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="16dp"
                     android:layout_gravity="center_horizontal"/>
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -78,7 +80,9 @@ Show QR code to PetBot\n
 PetBot will say “Thanks!”"
                     android:id="@+id/textView4" android:inputType="textMultiLine"
                     android:gravity="center_horizontal"/>
+
             </LinearLayout>
+
             <Button
                 android:id="@+id/generate_qr_button"
                 style="?android:textAppearanceSmall"
@@ -86,6 +90,15 @@ PetBot will say “Thanks!”"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Generate QR code"
+                android:textStyle="bold"/>
+
+            <Button
+                android:id="@+id/help"
+                style="?android:textAppearanceSmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="help"
                 android:textStyle="bold"/>
 
         </LinearLayout>

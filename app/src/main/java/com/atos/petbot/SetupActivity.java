@@ -2,6 +2,7 @@ package com.atos.petbot;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 
@@ -55,6 +56,14 @@ public class SetupActivity extends Activity {
 			@Override
 			public void onClick(View view) {
 				generateQR();
+			}
+		});
+
+		findViewById(R.id.help).setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				// TODO: use non hard coded string
+				startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse("http://www.petbot.com/help")));
 			}
 		});
 
