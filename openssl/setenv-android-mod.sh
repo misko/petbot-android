@@ -37,7 +37,7 @@ _ANDROID_NDK="android-ndk-r13d"
 # This value is always used.
 # _ANDROID_API="android-14"
 #_ANDROID_API="android-18"
-_ANDROID_API="android-19"
+_ANDROID_API="android-21"
 
 #####################################################################
 

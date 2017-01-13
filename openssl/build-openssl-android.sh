@@ -31,8 +31,15 @@ tar -zxf "$OPENSSL_PATH" -C $BASE_DIR
 rm -rf $DIST_DIR
 mkdir $DIST_DIR
 
-#archs=(armeabi armeabi-v7a arm64-v8a mips mips64 x86 x86_64)
-archs=(armeabi-v7a x86)
+#misko - need to modify!
+#export ANDROID_NDK_ROOT=/usr/local/Cellar/android-ndk/r13b/
+#export ANDROID_NDK_ROOT=~/Library/Android/sdk/ndk-bundle/
+export ANDROID_NDK_ROOT=/Users/miskodzamba/Library/Android/sdk/ndk-bundle/
+
+archs=(armeabi armeabi-v7a arm64-v8a mips mips64 x86 x86_64)
+#archs=(arm64-v8a mips armeabi-v7a x86 armeabi)
+#archs=(mips64) # set android LEVEL to 21
+#archs=(arm64-v8a mips) # set android LEVEL to 21
 
 for arch in ${archs[@]}; do
     xLIB="/lib"
