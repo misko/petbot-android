@@ -30,15 +30,5 @@ public class SettingsActivity extends Activity {
 			Log.w("petbot", "onBackPressed -settings activity - not frag");
 			super.onBackPressed();
 		}
-		//super.onBackPressed();
-		//finish();
-		//Intent open_main = new Intent(SettingsActivity.this, PetBot.class);
-		//startActivity(open_main);
-		/*Log.e("asdfasdf", "activity here");
-		FragmentTransaction transaction = getFragmentManager().beginTransaction();
-		transaction.remove(getFragmentManager().findFragmentById(R.id.settings));
-		transaction.comenu items should specify a title"mmit();
-		Log.e("asdfasdf", "theretherethere");
-		super.onBackPressed();*/
 	}
 }

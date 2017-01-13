@@ -1,30 +1,26 @@
 package com.atos.petbot;
-import android.content.BroadcastReceiver;
-import android.content.Context;
+
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.app.DownloadManager;
+import android.content.res.Configuration;
 import android.media.MediaPlayer;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Activity;
 import android.os.Environment;
+import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
+import android.view.Gravity;
 import android.view.View;
-import android.widget.ProgressBar;
-import android.widget.ShareActionProvider;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.DownloadRequest;
 import com.android.volley.request.StringRequest;
-import com.android.volley.toolbox.Volley;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,7 +32,6 @@ import java.io.OutputStream;
 public class SelfieActivity extends Activity {
 
 	Uri media_url;
-	ShareActionProvider shareActionProvider;
 	File video_file;
 	String rm_url ;
 
@@ -56,38 +51,131 @@ public class SelfieActivity extends Activity {
 		try {
 			video_file = File.createTempFile("selfie", "mp4");
 			DownloadRequest downloader = new DownloadRequest(
-					media_url.toString(),
-					video_file.getPath(),
-					new Response.Listener<String>() {
-						@Override
-						public void onResponse(String response) {
+				media_url.toString(),
+				video_file.getPath(),
+				new Response.Listener<String>() {
+					@Override
+					public void onResponse(String response) {
 
-							VideoView video_view = (VideoView) findViewById(R.id.video_view);
-							video_view.setOnPreparedListener(new MediaPlayer.OnPreparedListener(){
-								@Override
-								public void onPrepared(MediaPlayer player){
-									findViewById(R.id.progressBar).setVisibility(View.GONE);
-									player.setLooping(true);
-									player.start();
-								}
-							});
-							video_view.setVideoPath(video_file.getPath());
-
-							setShareIntent(Uri.fromFile(video_file));
-						}
-					},
-					new Response.ErrorListener() {
-						@Override
-						public void onErrorResponse(VolleyError error) {
-							Log.e("asdfasdf", "selfie downloader on error");
-						}
+						final VideoView video_view = (VideoView) findViewById(R.id.video_view);
+						video_view.setOnPreparedListener(new MediaPlayer.OnPreparedListener(){
+							@Override
+							public void onPrepared(MediaPlayer player){
+								findViewById(R.id.progressBar).setVisibility(View.GONE);
+								player.setLooping(true);
+								player.start();
+							}
+						});
+						video_view.setVideoPath(video_file.getPath());
 					}
+				},
+				new Response.ErrorListener() {
+					@Override
+					public void onErrorResponse(VolleyError error) {
+						Log.e("asdfasdf", "selfie downloader on error");
+					}
+				}
 			);
 
 			((ApplicationState) getApplicationContext()).request_queue.add(downloader);
 
 		} catch (Exception exc){
 
+		}
+	}
+
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+
+		FloatingActionButton saveButton = (FloatingActionButton) findViewById(R.id.save);
+		FloatingActionButton shareButton = (FloatingActionButton) findViewById(R.id.share);
+
+		RelativeLayout.LayoutParams save_layout = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+		RelativeLayout.LayoutParams share_layout = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+
+		// Checks the orientation of the screen
+		if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+
+			save_layout.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
+			save_layout.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+
+			share_layout.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
+			share_layout.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+
+		} else {
+
+			save_layout.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+			save_layout.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
+
+			share_layout.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+			share_layout.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
+		}
+
+		saveButton.setLayoutParams(save_layout);
+		shareButton.setLayoutParams(share_layout);
+	}
+
+	public void delete(View view) {
+
+		if (video_file != null) {
+			video_file.delete();
+		}
+
+		StringRequest stringRequest = new StringRequest(Request.Method.GET, rm_url,
+				new Response.Listener<String>() {
+					@Override
+					public void onResponse(String response) {
+						showToast("Deleted");
+					}
+				},
+				new Response.ErrorListener() {
+					@Override
+					public void onErrorResponse(VolleyError error) {
+						showToast("Failed");
+					}
+				}
+		);
+		((ApplicationState) getApplicationContext()).request_queue.add(stringRequest);
+
+		finish();
+	}
+
+	public void share(View view) {
+		Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND);
+
+		shareIntent.setAction(Intent.ACTION_SEND);
+		shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(video_file));
+		shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "PetSelfie");
+		shareIntent.putExtra(Intent.EXTRA_TEXT, getIntent().getStringExtra("message"));
+		shareIntent.setType("video/mp4");
+
+		startActivity(Intent.createChooser(shareIntent, "Share via"));
+	}
+
+	public void save(View view){
+
+		try {
+			// copy file to movies directory
+			File dest_file = new File(selfie_directory, System.currentTimeMillis() + ".mp4");
+			copy(video_file, dest_file);
+
+			// scan file to make sure it shows up in gallery
+			MediaScannerConnection.scanFile(
+				this,
+				new String[] {dest_file.getParent()},
+				null,
+				new MediaScannerConnection.OnScanCompletedListener(){
+					@Override
+					public void onScanCompleted(String s, Uri uri) {
+						Log.i("petbot", "file added to gallery");
+					}
+				}
+			);
+
+			showToast("Saved");
+
+		} catch (Exception exc){
+			showToast("Failed");
 		}
 	}
 
@@ -105,80 +193,10 @@ public class SelfieActivity extends Activity {
 		out.close();
 	}
 
-	public void delete(View view) {
-
-		if (video_file != null) {
-			video_file.delete();
-		}
-
-		StringRequest stringRequest = new StringRequest(Request.Method.GET, rm_url,
-				new Response.Listener<String>() {
-					@Override
-					public void onResponse(String response) {
-						// Display the first 500 characters of the response string.
-					}
-				},
-				new Response.ErrorListener() {
-					@Override
-					public void onErrorResponse(VolleyError error) {
-					}
-				}
-		);
-		((ApplicationState) getApplicationContext()).request_queue.add(stringRequest);
-
-		finish();
+	private void showToast(String message){
+		Toast toast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
+		toast.setGravity(Gravity.CENTER, 0, 0);
+		toast.show();
 	}
 
-	public void share(View view) {
-		Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
-
-		sharingIntent.setAction(Intent.ACTION_SEND);
-		sharingIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(video_file));
-		sharingIntent.setType("video/mp4");
-
-		String shareBody = "Here is the share content body";
-		sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Subject Here");
-		sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
-		startActivity(Intent.createChooser(sharingIntent, "Share via"));
-	}
-
-	public void save(View view){
-		//set in movies directory
-		File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
-		path = new File(path,"petbot-selfies");
-		path.mkdirs();
-		File dest_file = new File(path, "selfie.mp4");
-		try {
-			copy(video_file,dest_file);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.selfie, menu);
-
-		// Locate MenuItem with ShareActionProvider
-		MenuItem item = menu.findItem(R.id.menu_item_share);
-		shareActionProvider = (ShareActionProvider) item.getActionProvider();
-
-		return true;
-	}
-
-	private void setShareIntent(Uri video) {
-
-		Intent shareIntent = new Intent();
-		shareIntent.setAction(Intent.ACTION_SEND);
-		shareIntent.putExtra(Intent.EXTRA_STREAM, video);
-		shareIntent.setType("video/mp4");
-
-		if (shareActionProvider != null) {
-			shareActionProvider.setShareIntent(shareIntent);
-		} else {
-			Log.w("petbot", "ANDROID - SHARE ACTION WAS NULL!");
-		}
-	}
 }

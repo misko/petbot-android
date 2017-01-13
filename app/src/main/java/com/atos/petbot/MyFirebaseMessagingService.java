@@ -69,21 +69,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
 		// Also if you intend on generating your own notifications as a result of a received FCM
 		// message, here is where that should be initiated. See sendNotification method below.
-
-		/*sendNotification(remoteMessage.getNotification().getBody());
-
-
-		String remote_data = remoteMessage.getNotification().getBody();
-		try {
-			JSONObject remote_json = new JSONObject(remote_data);
-			Intent open_selfie = new Intent(MyFirebaseMessagingService.this, SelfieActivity.class);
-			//open_main.putExtra("json",response.toString());
-			open_selfie.putExtra("media_url", remote_json.getString("media_url"));
-			open_selfie.putExtra("rm_url", remote_json.getString("rm_url"));
-			MyFirebaseMessagingService.this.startActivity(open_selfie);
-		} catch (JSONException error) {
-
-		}*/
 	}
 	// [END receive_message]
 
@@ -95,11 +80,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 	private void sendNotification(RemoteMessage remoteMessage) {
 		Intent intent = new Intent(this, SelfieActivity.class);
 
-		Map<String, String> hmap ;
-		hmap = remoteMessage.getData();
-		//hmap.get("data_info");
-		intent.putExtra("media_url", hmap.get("media_url"));
-		intent.putExtra("rm_url", hmap.get("rm_url"));
+		Map<String, String> data ;
+		data = remoteMessage.getData();
+
+		intent.putExtra("media_url", data.get("media_url"));
+		intent.putExtra("rm_url", data.get("rm_url"));
+		intent.putExtra("message", remoteMessage.getNotification().getBody());
 		intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
 
