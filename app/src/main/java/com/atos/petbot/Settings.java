@@ -21,7 +21,6 @@ import java.util.HashMap;
 public class Settings extends PreferenceFragment implements SoundRecorderPreference.OnSoundUploadedListener {
 
 	PBConnector pb;
-	HashMap<String,String> settings = new HashMap<>();
 	boolean settings_retrieved = false;
 
 	@Override
@@ -33,6 +32,7 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		Log.w("asdfasdf", "ANDROID - CREATE SETTINGS");
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.fragment_settings);
 
@@ -100,6 +100,32 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 
 		application.request_queue.add(sounds_request);
 		startMessageThread();
+
+
+		NumberPickerPreference timeout = (NumberPickerPreference) findPreference("selfie_timeout");
+		timeout.setOnPreferenceChangeListener(
+				new Preference.OnPreferenceChangeListener() {
+				@Override
+				public boolean onPreferenceChange(Preference preference,Object timeout) {
+					Log.w("petbot","setting timeout to " + Integer.toString((Integer)timeout * 3600));
+					pb.set("selfie_timeout", Integer.toString((Integer)timeout * 3600));
+					return true;
+				}
+		});
+
+
+		NumberPickerPreference length = (NumberPickerPreference) findPreference("selfie_length");
+		length.setOnPreferenceChangeListener(
+				new Preference.OnPreferenceChangeListener() {
+					@Override
+					public boolean onPreferenceChange(Preference preference,Object length) {
+						Log.w("petbot","setting length to " + Integer.toString((Integer)length));
+						pb.set("selfie_length", Integer.toString((Integer)length));
+						return true;
+					}
+				});
+
+
 	}
 
 
@@ -180,51 +206,49 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 			String[] setting = pair.split("\t");
 			Log.e("asdfasdf setting", setting[0]);
 			if(setting.length == 2) {
-				settings.put(setting[0], setting[1]);
+				String setting_name = setting[0];
+				String setting_value = setting[1];
+				if (setting_name.equals("VERSION")) {
+					Preference version = findPreference("VERSION");
+					version.setSummary(setting_value);
+				} else if (setting_name.equals("selfie_timeout")) {
+					NumberPickerPreference timeout = (NumberPickerPreference) findPreference("selfie_timeout");
+					timeout.setValue(Integer.parseInt(setting_value) / 3600);
+				} else if (setting_name.equals("selfie_length")) {
+					NumberPickerPreference length = (NumberPickerPreference) findPreference("selfie_length");
+					length.setValue(Integer.parseInt(setting_value));
+				} else if (setting_name.equals("master_volume")) {
+					SeekBarPreference volume = (SeekBarPreference) findPreference("master_volume");
+					volume.setValue(Integer.parseInt(setting_value));
+				}
 			}
 		}
 
-		Preference version = findPreference("VERSION");
-		version.setSummary(settings.get("VERSION"));
 
-		NumberPickerPreference timeout = (NumberPickerPreference) findPreference("selfie_timeout");
-		timeout.setValue(Integer.parseInt(settings.get("selfie_timeout")) / 3600);
 
-		NumberPickerPreference length = (NumberPickerPreference) findPreference("selfie_length");
-		length.setValue(Integer.parseInt(settings.get("selfie_length")));
 
-		SeekBarPreference volume = (SeekBarPreference) findPreference("master_volume");
-		volume.setValue(Integer.parseInt(settings.get("master_volume")));
+
+
+
+
 	}
 
 	void saveSettings(){
-
 		Thread save_thread = new Thread() {
 			@Override
 			public void run() {
-				NumberPickerPreference timeout = (NumberPickerPreference) findPreference("selfie_timeout");
-				pb.set("selfie_timeout", Integer.toString(timeout.getValue() * 3600));
-
-				NumberPickerPreference length = (NumberPickerPreference) findPreference("selfie_length");
-				pb.set("selfie_length", Integer.toString(length.getValue()));
-
 				SeekBarPreference volume = (SeekBarPreference) findPreference("master_volume");
 				pb.set("master_volume", Integer.toString(volume.getValue()));
-				Log.e("asdfasdf","yoyoyoyoyo");
 			}
 		};
-		Log.e("asdfasdf", "yayayayaya");
 		save_thread.start();
-		Log.e("asdfasdf","ffffffff");
 	}
 
 	@Override
 	public void onStop(){
-		Log.e("asdfasdf", "here");
 		if(settings_retrieved){
 			saveSettings();
 		}
-		Log.e("asdfasdf", "pppppp");
 		super.onStop();
 	}
 }
