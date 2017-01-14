@@ -81,8 +81,8 @@
                     android:textColor="@android:color/holo_blue_dark"/>
                 <Space
                     android:layout_width="match_parent"
-                    android:layout_height="16dp"
-                    android:layout_gravity="center_horizontal"/>
+                    android:layout_gravity="center_horizontal"
+                    android:layout_height="8dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -94,7 +94,7 @@ Show QR code to PetBot\n
 PetBot will say “Thanks!”"
                     android:id="@+id/textView4" android:inputType="textMultiLine"
                     android:gravity="center_horizontal"
-                    android:lineSpacingMultiplier="0.5" />
+                    android:lineSpacingMultiplier="0.7" />
 
                 <Button
                     android:id="@+id/help"
