@@ -23,9 +23,13 @@ import android.media.MediaRecorder;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -106,6 +110,8 @@ public class SoundRecorder extends LinearLayout
 		mPlayButton = (ImageButton) findViewById(R.id.playButton);
 		mStopButton = (ImageButton) findViewById(R.id.stopButton);
 
+
+
 		mStateProgressBar = (ProgressBar) findViewById(R.id.stateProgressBar);
 
 		mRecordButton.setOnClickListener(this);
@@ -164,24 +170,33 @@ public class SoundRecorder extends LinearLayout
 	 * progress bar.
 	 */
 	private void updateAudioProgress() {
-
 		int state = mRecorder.state();
 
 		boolean ongoing = state == Recorder.RECORDING_STATE || state == Recorder.PLAYING_STATE;
-		long total_time = state == Recorder.RECORDING_STATE ? mRecorder.maxSampleLength : mRecorder.sampleLength();
+		long total_time = mRecorder.maxSampleLength; //state == Recorder.RECORDING_STATE ? mRecorder.maxSampleLength : mRecorder.sampleLength();
 
 		if (ongoing) {
 			mStateProgressBar.setProgress((int)(100 * mRecorder.progress() / total_time));
 			mHandler.postDelayed(mUpdateTimer, 1000);
+		} else {
+			//mStateProgressBar.setProgress(1);
+			//Log.w("petbot","RECORDER" + Integer.toString(mRecorder.mSampleLength) + " " + Long.toString(total_time));
+			if (total_time>0) {
+				mStateProgressBar.setProgress((int)(100 * mRecorder.mSampleLength / total_time));
+			}
+			//mHandler.postDelayed(mUpdateTimer, 1000);
 		}
+
 	}
 
 	/**
 	 * Shows/hides the appropriate child views for the new state.
 	 */
 	private void updateUi() {
+		Log.w("petbot","IN UPDATEUI");
 
 		switch (mRecorder.state()) {
+
 			case Recorder.IDLE_STATE:
 
 				mRecordButton.setEnabled(true);

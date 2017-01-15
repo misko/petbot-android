@@ -41,6 +41,8 @@ public class Recorder implements OnCompletionListener, OnErrorListener, MediaRec
 	public static final int INTERNAL_ERROR = 2;
 	public static final int IN_CALL_RECORD_ERROR = 3;
 
+	public String filename = "";
+
 	public interface OnStateChangedListener {
 		public void onStateChanged(int state);
 		public void onError(int error);

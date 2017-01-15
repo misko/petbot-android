@@ -2,7 +2,9 @@ package com.atos.petbot;
 
 import android.content.Context;
 import android.preference.Preference;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
@@ -59,6 +61,25 @@ public class SoundRecorderPreference extends Preference {
 		final ApplicationState application = (ApplicationState) getContext().getApplicationContext();
 
 		final EditText filename = (EditText) view.findViewById(R.id.filename);
+		filename.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void afterTextChanged(Editable s) {}
+
+			@Override
+			public void beforeTextChanged(CharSequence s, int start,
+										  int count, int after) {
+			}
+
+			@Override
+			public void onTextChanged(CharSequence s, int start,
+									  int before, int count) {
+				recorder.filename=s.toString();
+			}
+		});
+		if (!recorder.filename.equals("")) {
+			filename.setText(recorder.filename);
+		}
+
 		Button upload_button = (Button) view.findViewById(R.id.upload);
 		upload_button.setOnClickListener(new View.OnClickListener() {
 			@Override
