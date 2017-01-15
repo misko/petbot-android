@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.preference.Preference;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -13,6 +14,8 @@ import com.atos.petbot.R;
 public class SeekBarPreference extends Preference implements OnSeekBarChangeListener {
 	private SeekBar mSeekBar;
 	private int mProgress;
+	private OnSeekBarChangeListener s=null;
+	private int seekMax = 100;
 
 	public SeekBarPreference(Context context) {
 		this(context, null, 0);
@@ -27,16 +30,29 @@ public class SeekBarPreference extends Preference implements OnSeekBarChangeList
 		setLayoutResource(R.layout.preference_seekbar);
 	}
 
+	public void setOnSeekBarChangeListener(OnSeekBarChangeListener s) {
+		Log.w("petbot","SETTING VALUE AT xxx yy zz ");
+		this.s=s;
+	}
+
 	@Override
 	protected void onBindView(View view) {
 		super.onBindView(view);
 		mSeekBar = (SeekBar) view.findViewById(R.id.seekbar);
 		mSeekBar.setProgress(mProgress);
-		mSeekBar.setOnSeekBarChangeListener(this);
+		if (s==null) {
+			Log.w("petbot","SETTING VALUE AT bind null");
+			mSeekBar.setOnSeekBarChangeListener(this);
+		} else {
+			Log.w("petbot","SETTING VALUE AT bind not null");
+			mSeekBar.setOnSeekBarChangeListener(s);
+		}
+		mSeekBar.setMax(seekMax);
 	}
 
 	@Override
 	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+		Log.w("petbot","SETTING VALUE AT xxx" + Integer.toString(progress));
 		if (!fromUser)
 			return;
 
@@ -46,10 +62,12 @@ public class SeekBarPreference extends Preference implements OnSeekBarChangeList
 	@Override
 	public void onStartTrackingTouch(SeekBar seekBar) {
 		// not used
+		Log.w("petbot","SETTING VALUE AT xxx yy ");
 	}
 
 	@Override
 	public void onStopTrackingTouch(SeekBar seekBar) {
+		Log.w("petbot","SETTING VALUE AT xxx yy ");
 		// not used
 	}
 
@@ -58,7 +76,13 @@ public class SeekBarPreference extends Preference implements OnSeekBarChangeList
 		setValue(restoreValue ? getPersistedInt(mProgress) : (Integer) defaultValue);
 	}
 
+	public void setMax(int value) {
+		seekMax=value;
+	}
+
 	public void setValue(int value) {
+
+		Log.w("petbot","SETTING VALUE AT " + Integer.toString(value));
 		if (shouldPersist()) {
 			persistInt(value);
 		}
@@ -67,6 +91,10 @@ public class SeekBarPreference extends Preference implements OnSeekBarChangeList
 			mProgress = value;
 			notifyChanged();
 		}
+	}
+
+	public float getFloatValue() {
+		return ((float)mSeekBar.getProgress())/100;
 	}
 
 	public int getValue(){

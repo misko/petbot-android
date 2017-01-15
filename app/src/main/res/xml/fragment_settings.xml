@@ -41,6 +41,16 @@
             preference:maxValue="50"
             preference:wrapSelectorWheel="false"/>
 
+        <com.atos.petbot.SeekBarPreference
+            android:key="motion_sensitivity_slider"
+            android:title="Motion Sensitivity"
+            android:summary="Threshold for motion" />
+
+        <com.atos.petbot.SeekBarPreference
+            android:key="selfie_sensitivity_slider"
+            android:title="Selfie Sensitivity"
+            android:summary="Threshold on pet-likeness recognition" />
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Sound">
