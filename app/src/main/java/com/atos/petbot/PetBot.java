@@ -28,6 +28,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.content.res.ColorStateList;
 
 import java.io.IOException;
 import java.net.URL;
@@ -155,6 +156,16 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		queue.add(deauth_request);
 	}
 
+	private void enable_selfie_button(boolean x) {
+		final FloatingActionButton selfieButton = (FloatingActionButton) this.findViewById(R.id.selfieButton);
+		selfieButton.setEnabled(x);
+		if (x) {
+			selfieButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.PBBlueColor)));
+		} else {
+			selfieButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.PBGrayColor)));
+		}
+	}
+
 	// Called when the activity is first created.
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -224,7 +235,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 						break;
 					}
 					if ((m.pbmsg_type ^  (PBMsg.PBMSG_SUCCESS | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_ICE | PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_STRING))==0) {
-						Log.w("petbot", "READ" + m.toString() +" MOVE TO ICE NEGOTIATE!");		//start up a read thread
+						Log.w("petbot", "READ" + m.toString() + " MOVE TO ICE NEGOTIATE!");        //start up a read thread
 						Thread negotiate_thread = new Thread() {
 							@Override
 							public void run() {
@@ -235,17 +246,25 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 								runOnUiThread(new Runnable() {
 									@Override
 									public void run() {
-										FrameLayout layout = (FrameLayout)findViewById(R.id.wait_screen);
+										FrameLayout layout = (FrameLayout) findViewById(R.id.wait_screen);
 										layout.setVisibility(View.GONE); // you can use INVISIBLE also instead of GONE
 										//findViewById(R.id.progressBar).setVisibility(View.GONE);
 									}
 								});
 
-								nativePlayAgent(pb.ptr_agent,pb.stream_id);
+								Log.w("petbot", "ANDROID - PLAY AGENT");
+								nativePlayAgent(pb.ptr_agent, pb.stream_id);
 							}
 						};
 						negotiate_thread.setDaemon(true);
 						negotiate_thread.start();
+					} else if ((m.pbmsg_type ^  (PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_STRING | PBMsg.PBMSG_SUCCESS))==0) {
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								enable_selfie_button(true);
+							}
+						});
 					} else {
 						Log.w("petbot", "READ" + m.toString());
 					}
@@ -293,9 +312,10 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 			}
 		});
 
-		FloatingActionButton selfieButton = (FloatingActionButton) this.findViewById(R.id.selfieButton);
+		final FloatingActionButton selfieButton = (FloatingActionButton) this.findViewById(R.id.selfieButton);
 		selfieButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+				selfieButton.setEnabled(false);
 				vibrator.vibrate(400);
 				pb.takeSelfie();
 			}
@@ -321,7 +341,14 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 			}
 		});
 
-		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+		FloatingActionButton soundButton = (FloatingActionButton) this.findViewById(R.id.soundButton);
+		soundButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				playSound();
+			}
+		});
+
+		/*SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 		if(preferences.contains("alert_sounds")){
 			setSound(preferences.getString("alert_sounds", ""));
 		} else {
@@ -378,17 +405,37 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 
 			RequestQueue queue = Volley.newRequestQueue(this);
 			queue.add(sounds_request);
-
-		}
+		}*/
 
 		SurfaceView sv = (SurfaceView) this.findViewById(R.id.surface_video);
 		SurfaceHolder sh = sv.getHolder();
 		sh.addCallback(this);
 
 		nativeInit();
+
+	}
+
+	public void playSound() {
+		final ApplicationState application = (ApplicationState) getApplicationContext();
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+		String sound_ID  = preferences.getString("alert_sounds", "00000000000000000000000000000000");
+		vibrator.vibrate(400);
+		String url = "https://petbot.ca:5000/FILES_DL/" + application.server_secret + "/" + sound_ID;
+		MediaPlayer mediaPlayer = new MediaPlayer();
+		mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+		try {
+			mediaPlayer.setDataSource(url);
+			mediaPlayer.prepare(); // might take long! (for buffering, etc)
+		} catch (IOException error) {
+			//TODO
+			Log.e("petbot", error.toString());
+		}
+		mediaPlayer.start();
+		pb.playSound(url);
 	}
 
 	public void setSound(final String sound_ID){
+
 
 		final ApplicationState application = (ApplicationState) getApplicationContext();
 		FloatingActionButton soundButton = (FloatingActionButton) this.findViewById(R.id.soundButton);
@@ -477,6 +524,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	// Called from native code. Native code calls this once it has created its pipeline and
 	// the main loop is running, so it is ready to accept commands.
 	private void onGStreamerInitialized () {
+		Log.w("petbot","GSTREAMER PLAY!!");
 		nativePlay();
 	}
 
