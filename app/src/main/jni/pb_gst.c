@@ -179,6 +179,7 @@ static void *app_function (void *userdata) {
 	GstElement *rtph264depay = gst_element_factory_make ("rtph264depay", "rtph264depay");
 	GstElement *avdec_h264 = gst_element_factory_make ("avdec_h264", "avdec_h264");
 	GstElement *videoconvert = gst_element_factory_make ("videoconvert", "videoconvert");
+	GstElement *queue = gst_element_factory_make ("queue", "queu");
 	GstElement *autovideosink = gst_element_factory_make ("autovideosink", "autovideosink");
 	//GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", "videotestsrc");
 
@@ -186,24 +187,26 @@ static void *app_function (void *userdata) {
     PBPRINTF("rtph264depay %p\n",rtph264depay);
     PBPRINTF("avdec_h264 %p\n",avdec_h264);
     PBPRINTF("videoconvert %p\n",videoconvert);
-    PBPRINTF("autovideosink %p\n",autovideosink);
+	PBPRINTF("autovideosink %p\n",autovideosink);
+	PBPRINTF("queue %p\n",queue);
     //PBPRINTF("videotestsrc %p\n",videotestsrc);
 
 
 	g_object_set (nicesrc, "agent", gst_agent, NULL);
 	g_object_set (nicesrc, "stream", gst_stream_id, NULL);
 	g_object_set (nicesrc, "component", 1, NULL);
+	g_object_set (queue, "leaky", 2, "max-size-buffers",20, NULL);
 	GstCaps *nicesrc_caps = gst_caps_from_string("application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=96");
 
 	data->pipeline = gst_pipeline_new ("receive-pipeline");
 
-	gst_bin_add_many (GST_BIN (data->pipeline), nicesrc, rtph264depay, avdec_h264, videoconvert, autovideosink,  NULL);
+	gst_bin_add_many (GST_BIN (data->pipeline), nicesrc, rtph264depay, avdec_h264, videoconvert, queue, autovideosink,  NULL);
 	//gst_bin_add_many (GST_BIN (data->pipeline), videotestsrc, videoconvert, autovideosink,  NULL);
 	if (!gst_element_link_filtered( nicesrc, rtph264depay, nicesrc_caps)) {
 		GST_ERROR ("Failed to link 1");
 		return NULL;
 	}
-	if (!gst_element_link_many(rtph264depay,avdec_h264,videoconvert,autovideosink,NULL)) {
+	if (!gst_element_link_many(rtph264depay,avdec_h264,videoconvert,queue,autovideosink,NULL)) {
 		GST_ERROR ("Failed to link 2");
 		return NULL;
 	}
@@ -368,7 +371,7 @@ static void gst_native_surface_finalize (JNIEnv *env, jobject thiz) {
 
 	if (data->video_sink) {
 		gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (data->video_sink), (guintptr)NULL);
-		//gst_element_set_state (data->pipeline, GST_STATE_READY);
+		gst_element_set_state (data->pipeline, GST_STATE_PAUSED); //MISKO
 	}
 
 	ANativeWindow_release (data->native_window);
