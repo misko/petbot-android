@@ -5,6 +5,7 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.util.Log;
+import android.widget.SeekBar;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -46,6 +47,65 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 		} catch (JSONException error) {
 			//TODO
 		}
+
+
+		SeekBarPreference volume = (SeekBarPreference) findPreference("master_volume");
+		volume.setMax(63);
+		volume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				SeekBarPreference volume = (SeekBarPreference) findPreference("master_volume");
+				int value = progress ;
+				pb.set("master_volume", Integer.toString(value));
+			}
+
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+			}
+
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+
+			}
+		});
+
+		SeekBarPreference selfie_sensitivity_slider = (SeekBarPreference) findPreference("selfie_sensitivity_slider");
+		selfie_sensitivity_slider.setMax(100);
+		selfie_sensitivity_slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				SeekBarPreference selfie_sensitivity_slider = (SeekBarPreference) findPreference("selfie_sensitivity_slider");
+				float value = ((float)progress)/100;
+				pb.set("selfie_pet_sensitivity", Float.toString(value));
+			}
+
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+			}
+
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+			}
+		});
+
+		SeekBarPreference motion_sensitivity_slider = (SeekBarPreference) findPreference("motion_sensitivity_slider");
+		motion_sensitivity_slider.setMax(100);
+		motion_sensitivity_slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				SeekBarPreference motion_sensitivity_slider = (SeekBarPreference) findPreference("motion_sensitivity_slider");
+				float value = ((float)progress)/100;
+				pb.set("selfie_mot_sensitivity", Float.toString(value));
+			}
+
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+			}
+
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+			}
+		});
 
 		SoundRecorderPreference recorder = (SoundRecorderPreference) findPreference("recorder");
 		recorder.setOnSoundUploadedListener(this);
@@ -220,6 +280,12 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 				} else if (setting_name.equals("master_volume")) {
 					SeekBarPreference volume = (SeekBarPreference) findPreference("master_volume");
 					volume.setValue(Integer.parseInt(setting_value));
+				} else if (setting_name.equals("selfie_pet_sensitivity")) {
+					SeekBarPreference selfie_sensitivity_slider = (SeekBarPreference) findPreference("selfie_sensitivity_slider");
+					selfie_sensitivity_slider.setValue(Math.round(Float.parseFloat(setting_value)*100));
+				} else if (setting_name.equals("selfie_mot_sensitivity")) {
+					SeekBarPreference motion_sensitivity_slider = (SeekBarPreference) findPreference("motion_sensitivity_slider");
+					motion_sensitivity_slider.setValue(Math.round(Float.parseFloat(setting_value)*100));
 				}
 			}
 		}
@@ -247,7 +313,7 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 	@Override
 	public void onStop(){
 		if(settings_retrieved){
-			saveSettings();
+			//saveSettings();
 		}
 		super.onStop();
 	}
