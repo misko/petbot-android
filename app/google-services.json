@@ -1,58 +1,27 @@
 {
   "project_info": {
-    "project_number": "630265928843",
-    "firebase_url": "https://petbot-78e54.firebaseio.com",
-    "project_id": "petbot-78e54",
-    "storage_bucket": "petbot-78e54.appspot.com"
+    "project_number": "276314863173",
+    "firebase_url": "https://petbot-c94f6.firebaseio.com",
+    "project_id": "petbot-c94f6",
+    "storage_bucket": "petbot-c94f6.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:630265928843:android:fceded8770db139b",
-        "android_client_info": {
-          "package_name": "com.petbot"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "630265928843-u80branqeud5btvss9mmd1u67u64b42g.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyAc00S1KXyQ1kx4tJOhyIT8DEZJ0RkqohA"
-        }
-      ],
-      "services": {
-        "analytics_service": {
-          "status": 1
-        },
-        "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
-        },
-        "ads_service": {
-          "status": 2
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:630265928843:android:634031fe56222b0a",
+        "mobilesdk_app_id": "1:276314863173:android:634031fe56222b0a",
         "android_client_info": {
           "package_name": "com.atos.petbot"
         }
       },
       "oauth_client": [
         {
-          "client_id": "630265928843-u80branqeud5btvss9mmd1u67u64b42g.apps.googleusercontent.com",
+          "client_id": "276314863173-9gl6p2cod9ga9js1rdefrk0rnudca8mn.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAc00S1KXyQ1kx4tJOhyIT8DEZJ0RkqohA"
+          "current_key": "AIzaSyBt89pusukd7Q8eKms5_nPyjFFdnatRLSA"
         }
       ],
       "services": {
