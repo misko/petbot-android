@@ -63,6 +63,12 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	private native void nativeSurfaceInit(Object surface);
 	private native void nativeSurfaceFinalize();
 	private long native_custom_data;      // Native code will use this to keep private data
+	private int bb_streamer_id=0;
+
+	boolean bye_pressed=false;
+	boolean petbot_found=false;
+
+	String status = "Connecting...";
 
 	PBConnector pb;
 	private Swipe swipe;
@@ -70,6 +76,45 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	Vibrator vibrator;
 
 
+	private void set_status(String s) {
+		status=s;
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				TextView connect_text = (TextView) findViewById(R.id.connect_status);
+				connect_text.setText(status);
+			}
+		});
+	}
+
+	public void exit_with_toast(String msg) {
+		//TODO USE THE TOAST?
+		pb.close();
+		nativePause();
+		finish();
+		Intent open_main = new Intent(PetBot.this, LoginActivity.class);
+		PetBot.this.startActivity(open_main);
+	}
+
+	private void look_for_petbot(int attempt) {
+		while (!petbot_found) {
+			if (attempt == 0) {
+				set_status("Looking for your PetBot...");
+				//"Looking for your PetBot..."
+			} else {
+				String s = "Looking for your PetBot... (x" + Integer.toString(attempt+1) + ")";
+				set_status(s);
+			}
+
+			pb.getUptime();
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException ie) {
+				return;
+			}
+			attempt++;
+		}
+ 	}
 	private class DownLoadImageTask extends AsyncTask<String,Void,Bitmap>{
 		ImageView imageView;
 
@@ -222,6 +267,16 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 
 		pb = new PBConnector(state.server, state.port, state.server_secret);
 
+		//start looking for the petbot
+		final Thread look_thread = new Thread() {
+			@Override
+			public void run() {
+				look_for_petbot(0);
+			}
+		};
+		look_thread.setDaemon(true);
+		look_thread.start();
+
 		//start up a read thread
 		final Thread read_thread = new Thread() {
 			@Override
@@ -232,32 +287,51 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 					Log.w("petbot", "ANDROID - READ MSG -DONE");
 					if (m == null) {
 						Log.w("petbot", "ANDROID - LEAVE READ THREAD");
+						if (!bye_pressed) {
+							exit_with_toast("PetBot connection closed");
+						}
 						break;
 					}
-					if ((m.pbmsg_type ^  (PBMsg.PBMSG_SUCCESS | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_ICE | PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_STRING))==0) {
-						Log.w("petbot", "READ" + m.toString() + " MOVE TO ICE NEGOTIATE!");        //start up a read thread
-						Thread negotiate_thread = new Thread() {
-							@Override
-							public void run() {
-								Log.w("petbot", "ANDROID - NEGOTIATE  ");
-								pb.iceNegotiate(m);
-								Log.w("petbot", "ANDROID - NEGOTIATE DONE");
+					if ((m.pbmsg_type ^ (PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_STRING))==0) {
 
-								runOnUiThread(new Runnable() {
-									@Override
-									public void run() {
-										FrameLayout layout = (FrameLayout) findViewById(R.id.wait_screen);
-										layout.setVisibility(View.GONE); // you can use INVISIBLE also instead of GONE
-										//findViewById(R.id.progressBar).setVisibility(View.GONE);
-									}
-								});
-
-								Log.w("petbot", "ANDROID - PLAY AGENT");
-								nativePlayAgent(pb.ptr_agent, pb.stream_id);
+						String msg = new String(m.pbmsg);
+						String[] parts = msg.split(" ");
+						if (parts[0].equals("UPTIME")) {
+							int uptime = Integer.parseInt(parts[1]);
+							if (uptime > 20) {
+								petbot_found=true;
+								set_status("Negotiating with your PetBot...");
+								pb.makeIceRequest();
+							} else {
+								set_status("Found your PetBot...");
 							}
-						};
-						negotiate_thread.setDaemon(true);
-						negotiate_thread.start();
+						}
+					} else if ((m.pbmsg_type ^  (PBMsg.PBMSG_SUCCESS | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_ICE | PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_STRING))==0) {
+						if (bb_streamer_id==0) {
+							bb_streamer_id=m.pbmsg_from;
+							Thread negotiate_thread = new Thread() {
+								@Override
+								public void run() {
+									pb.iceNegotiate(m);
+
+									runOnUiThread(new Runnable() {
+										@Override
+										public void run() {
+											FrameLayout layout = (FrameLayout) findViewById(R.id.wait_screen);
+											layout.setVisibility(View.GONE);
+										}
+									});
+
+									nativePlayAgent(pb.ptr_agent, pb.stream_id);
+								}
+							};
+							negotiate_thread.setDaemon(true);
+							negotiate_thread.start();
+						} else {
+							//someone else connected
+							exit_with_toast("Someone else connected :(");
+						}
+
 					} else if ((m.pbmsg_type ^  (PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_STRING | PBMsg.PBMSG_SUCCESS))==0) {
 						runOnUiThread(new Runnable() {
 							@Override
@@ -274,10 +348,9 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		read_thread.setDaemon(true);
 		read_thread.start();
 
-		pb.startNiceThread(0);
 
 		//start up a read thread
-		Thread request_thread = new Thread() {
+		/*Thread request_thread = new Thread() {
 			@Override
 			public void run() {
 				Log.w("petbot", "ANDROID - ICE REQUEST ");
@@ -286,7 +359,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 			}
 		};
 		request_thread.setDaemon(true);
-		request_thread.start();
+		request_thread.start();*/
 
 		Log.w("petbot", String.valueOf(pb.ptr_pbs));
 
@@ -324,6 +397,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		FloatingActionButton logoutButton = (FloatingActionButton) this.findViewById(R.id.logoutButton);
 		logoutButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+				bye_pressed=true;
 				pb.close();
 				nativePause();
 				finish();

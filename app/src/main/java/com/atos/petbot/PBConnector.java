@@ -21,7 +21,7 @@ public class PBConnector {
         this.portno=portno;
         this.hostname=hostname;
         connectToServerWithKey(hostname,portno,key);
-        initGlib();
+        init();
     }
 
 	public void getSettings(){
@@ -30,9 +30,15 @@ public class PBConnector {
 	}
 
 	public void set(String property, String value){
+        Log.w("petbot","SET"+property + "\t" + value);
 		PBMsg m = new PBMsg(property + "\t" + value, PBMsg.PBMSG_CONFIG_SET | PBMsg.PBMSG_STRING | PBMsg.PBMSG_REQUEST);
 		sendPBMsg(m);
 	}
+
+    public void getUptime() {
+        PBMsg m = new PBMsg("UPTIME", PBMsg.PBMSG_STRING);
+        sendPBMsg(m);
+    }
 
     public void takeSelfie() {
         PBMsg m = new PBMsg("selfie", PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
@@ -89,12 +95,14 @@ public class PBConnector {
     public native PBMsg readPBMsg();
     public native void sendPBMsg(PBMsg m);
     public native void nativeClose();
-    public native void startNiceThread(int s);
+    //public native void startNiceThread(int s);
     public native void iceRequest();
+    public native void makeIceRequest();
     public native void iceNegotiate(PBMsg m);
-    public native void initGlib();
+    public native void init();
 
 
+    public long ptr_pbnio = 0; //the socket to server
     public long ptr_pbs = 0; //the socket to server
     public long ptr_ctx = 0; //the ssl ctx reference pointer
     public long ptr_ice_thread_pipes_from_child = 0;

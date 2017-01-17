@@ -1,3 +1,12 @@
+
+char * stun_addr = "159.203.252.147";
+int stun_port = 3478;
+char * stun_user = "misko";
+char * stun_passwd = "misko";
+
+#ifndef TARGET_OS_IPHONE
+#ifndef ANDROID
+
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
@@ -20,19 +29,11 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-
 #define IO_BASE_ADDRESS  0x01c00000
 #define SID_BASE_ADDRESS 0x01c23800
 #define IO_SIZE          0x00300000
 #define SID_MMAP_START   ((SID_BASE_ADDRESS >> 12) << 12)
  
-typedef struct DeviceSID {
-  uint32_t key0;
-  uint32_t key1;
-  uint32_t key2;
-  uint32_t key3;
-} DeviceSID;
-
 #include <grp.h>
 
 #include "pb.h"
@@ -48,13 +49,21 @@ char * pb_tmp_path = NULL;
 
 char * root_mount_point = "/";
 
-float selfie_dog_sensitivity = 0.2;
-float selfie_cat_sensitivity = 0.2;
-float selfie_pet_sensitivity = 0.4;
+
+
+float selfie_dog_sensitivity = 0.8;
+float selfie_cat_sensitivity = 0.8;
+float selfie_pet_sensitivity = 0.8;
 float selfie_person_sensitivity = 0.3;
-float selfie_mot_sensitivity = 0.9;
-int selfie_timeout = 2000;
+float selfie_mot_sensitivity = 0.8;
+int selfie_timeout = 60*60*4; //2000;
 int selfie_length = 25;
+
+int pb_color_fx = 0;
+int pb_exposure = 0;
+int pb_hflip = 0;
+int pb_vflip = 0;
+int pb_white_balance = 0;
 
 long master_volume = 50; // 0-63
 
@@ -377,7 +386,6 @@ char *randstring(int length) {
     char *string = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.-#'?!";
     size_t stringLen = strlen(string);        
     char *randomString = NULL;
-
     srand(time(NULL) * length + ++mySeed);
 
     if (length < 1) {
@@ -543,7 +551,7 @@ char * get_config(char * key) {
 	} else if (strncmp(key,"selfie_pet_sensitivity",strlen("selfie_pet_sensitivity"))==0) {
 		sprintf(r,"%0.4f",selfie_pet_sensitivity);
 	} else if (strncmp(key,"selfie_mot_sensitivity",strlen("selfie_mot_sensitivity"))==0) {
-		sprintf(r,"%0.4f",selfie_cat_sensitivity);
+		sprintf(r,"%0.4f",selfie_mot_sensitivity);
 	} else if (strncmp(key,"stddev_multiplier",strlen("stddev_multiplier"))==0) {
 		sprintf(r,"%d",stddev_multiplier);
 	} else if (strncmp(key,"selfie_timeout",strlen("selfie_timeout"))==0) {
@@ -552,6 +560,16 @@ char * get_config(char * key) {
 		sprintf(r,"%d",selfie_length);
 	} else if (strncmp(key,"master_volume",strlen("master_volume"))==0) {
 		sprintf(r,"%ld",master_volume);
+	} else if (strncmp(key,"pb_color_fx",strlen("pb_color_fx"))==0) {
+		sprintf(r,"%d",pb_color_fx);
+	} else if (strncmp(key,"pb_exposure",strlen("pb_exposure"))==0) {
+		sprintf(r,"%d",pb_exposure);
+	} else if (strncmp(key,"pb_hflip",strlen("pb_hflip"))==0) {
+		sprintf(r,"%d",pb_hflip);
+	} else if (strncmp(key,"pb_vflip",strlen("pb_vflip"))==0) {
+		sprintf(r,"%d",pb_vflip);
+	} else if (strncmp(key,"pb_white_balance",strlen("pb_white_balance"))==0) {
+		sprintf(r,"%d",pb_white_balance);
 	} else {
 		free(r);
 		return NULL;
@@ -576,6 +594,16 @@ int set_config(char * key, char * v_str) {
 		selfie_length = atoi(v_str);
 	} else if (strncmp(key,"master_volume",strlen("master_volume"))==0) {
 		master_volume = atoi(v_str);
+	} else if (strncmp(key,"pb_color_fx",strlen("pb_color_fx"))==0) {
+		pb_color_fx = atoi(v_str);
+	} else if (strncmp(key,"pb_exposure",strlen("pb_exposure"))==0) {
+		pb_exposure = atoi(v_str);
+	} else if (strncmp(key,"pb_hflip",strlen("pb_hflip"))==0) {
+		pb_hflip = atoi(v_str);
+	} else if (strncmp(key,"pb_vflip",strlen("pb_vflip"))==0) {
+		pb_vflip = atoi(v_str);
+	} else if (strncmp(key,"pb_white_balance",strlen("pb_white_balance"))==0) {
+		pb_white_balance = atoi(v_str);
 	} else {
 		return -1;
 	} 
@@ -639,9 +667,26 @@ void pb_config_write() {
 	s=get_config("selfie_length");
 	offset+=sprintf(buffer+offset, "selfie_length\t%s\n", s);
 	free(s);
+
 	s=get_config("master_volume");
 	offset+=sprintf(buffer+offset, "master_volume\t%s\n", s);
 	free(s);
+	s=get_config("pb_color_fx");
+	offset+=sprintf(buffer+offset, "pb_color_fx\t%s\n", s);
+	free(s);
+	s=get_config("pb_exposure");
+	offset+=sprintf(buffer+offset, "pb_exposure\t%s\n", s);
+	free(s);
+	s=get_config("pb_hflip");
+	offset+=sprintf(buffer+offset, "pb_hflip\t%s\n", s);
+	free(s);
+	s=get_config("pb_vflip");
+	offset+=sprintf(buffer+offset, "pb_vflip\t%s\n", s);
+	free(s);
+	s=get_config("pb_white_balance");
+	offset+=sprintf(buffer+offset, "pb_white_balance\t%s\n", s);
+	free(s);
+
 	offset+=sprintf(buffer+offset, "VERSION\t%s\n", version);
 	if (pb_config_file_path!=NULL) {
 		pb_writeFile(pb_config_file_path, buffer, strlen(buffer));
@@ -721,3 +766,6 @@ char * pb_rewrite(char * config, char * output_fn, char ** keys, char ** values,
 	free(config_contents);
 	return output_fn;
 }
+
+#endif
+#endif

@@ -60,10 +60,11 @@ typedef enum {
 	PBMSG_KEEP_ALIVE = (1<<23),
 	PBMSG_GPIO = (1<<24),
 	PBMSG_UPDATE = (1<<25),
-	PBMSG_SYSTEM = (1<<26)
+	PBMSG_SYSTEM = (1<<26),
+	PBMSG_WEBRTC = (1<<27)
 } pbmsg_type;
 
-#define PBMSG_MAX_TYPE 26
+#define PBMSG_MAX_TYPE 27
 
 typedef struct pbmsg {
 	uint32_t pbmsg_type;
@@ -86,6 +87,7 @@ typedef struct pbsock {
 #endif
 	int client_sock;
 	pbsock_state state;
+	char * key;
 } pbsock;
 
 #if defined __cplusplus
@@ -100,7 +102,7 @@ void pbsock_set_state(pbsock * pbs, pbsock_state);
 pbsock_state pbsock_get_state(pbsock *pbs);
 #ifdef PBTHREADS
 void *keep_alive_handler(void * v );
-pbsock_state pbsock_wait_state(pbsock * pbs);
+//pbsock_state pbsock_wait_state(pbsock * pbs);
 
 int increment_waiting_threads(pbsock * pbs);
 int decrement_waiting_threads(pbsock * pbs);
@@ -108,6 +110,9 @@ int decrement_waiting_threads(pbsock * pbs);
 #endif
 
 #ifdef PBSSL
+int pbssl_setup();
+int pbssl_close();
+
 pbsock* new_pbsock(int client_sock, SSL_CTX* ctx, int accept);
 pbsock* connect_to_server_with_key(const char * hostname, int portno, SSL_CTX*ctx, const char * key);
 pbsock* connect_to_server(const char * hostname, int portno, SSL_CTX* ctx);

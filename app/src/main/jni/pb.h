@@ -1,17 +1,6 @@
 #ifndef PB_HEADER
 #define PB_HEADER
 
-#ifdef ANDROID
-#include <android/log.h>
-//#define PBPRINTF(fmt, args...) __android_log_print(ANDROID_LOG_DEBUG, "Petbot", "DEBUG: %s:%d:%s(): "  fmt, __FILE__, __LINE__, __func__, ##args)
-#define  LOG_TAG    "Petbot"
-#define  PBPRINTF(...)  __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
-#else
-#define PBPRINTF(fmt, args...) fprintf(stderr, "DEBUG: %s:%d:%s(): " fmt, \
-    __FILE__, __LINE__, __func__, ##args)
-#endif
-
-
 
 #ifdef TARGET_OS_IPHONE
 #include <agent.h>
@@ -19,6 +8,15 @@
 #include <nice/agent.h>
 #endif
 
+#ifdef A20
+#endif
+
+#ifdef OSX
+#endif
+
+
+#define HTTPS_ADDRESS_PB_STATIC HTTPS_ADDRESS "static/"
+#define HTTPS_ADDRESS_DEAUTH HTTPS_ADDRESS "DEAUTH"
 #define HTTPS_ADDRESS "https://petbot.ca:5000/"
 #define HTTPS_ADDRESS_AUTH HTTPS_ADDRESS "AUTH"
 #define HTTPS_ADDRESS_QRCODE_JSON HTTPS_ADDRESS "PB_QRCODE_JSON"
@@ -35,8 +33,22 @@
 #define HTTPS_ADDRESS_PB_SELFIE_COUNT HTTPS_ADDRESS "FILES_SELFIE_COUNT/"
 #define HTTPS_ADDRESS_PB_SELFIE_LAST HTTPS_ADDRESS "FILES_SELFIE_LAST/"
 
+#define SELFIE_TIMEOUT 3600
+ 
+#define SOUND_MAX_RECORD 10
 
 #define SELFIE_FN "/tmp/selfie.mov"
+
+//#define PBPRINTF(fmt, args...)    fprintf(stderr, fmt, ## args)
+#define PBPRINTF(fmt, args...) fprintf(stderr, "DEBUG: %s:%d:%s(): " fmt, \
+    __FILE__, __LINE__, __func__, ##args)
+
+typedef struct DeviceSID {
+  uint32_t key0;
+  uint32_t key1;
+  uint32_t key2;
+  uint32_t key3;
+} DeviceSID;
 
 
 typedef struct pb_nice_io {
@@ -55,7 +67,12 @@ typedef struct pb_nice_io {
    char * other_nice;
 } pb_nice_io;
 
-#if !defined(TARGET_OS_IPHONE) && !defined(ANDROID)
+#ifndef TARGET_OS_IPHONE
+
+extern char * stun_addr;
+extern int stun_port;
+extern char * stun_user;
+extern char * stun_passwd;
 
 extern float selfie_dog_sensitivity;
 extern float selfie_cat_sensitivity;
@@ -66,6 +83,11 @@ extern int selfie_timeout;
 extern int selfie_length;
 extern int stddev_multiplier;
 extern long master_volume;
+extern int pb_color_fx;
+extern int pb_exposure;
+extern int pb_hflip;
+extern int pb_vflip;
+extern int pb_white_balance;
 
 extern char * pb_path;
 extern char * pb_config_path;
@@ -73,6 +95,7 @@ extern char * pb_tmp_path;
 extern char * pb_config_file_path;
 extern int pty_master, pty_slave;
 
+char *randstring(int length);
 void * get_next_token(char ** s) ;
 float xor_float(float f, char chewbacca);
 int cp(const char *to , const char * from);
@@ -98,5 +121,6 @@ void pb_config_read();
 void pb_config_write();
 int set_config(char * pname, char * v_str);
 
+DeviceSID * getSID();
 #endif
 #endif

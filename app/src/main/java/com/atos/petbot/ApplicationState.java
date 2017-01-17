@@ -30,6 +30,7 @@ public class ApplicationState extends Application {
 	int port;
 	String username;
 	String server_secret;
+	String status="";
 
 	@Override
 	public void onCreate() {

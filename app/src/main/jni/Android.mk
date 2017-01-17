@@ -64,7 +64,7 @@ include $(GSTREAMER_NDK_BUILD_PATH)/gstreamer-1.0.mk
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := PBConnector
-LOCAL_SRC_FILES := PBConnector.c  tcp_utils.c nice_utils.c pb.h #pb.c
+LOCAL_SRC_FILES := PBConnector.c  tcp_utils.c nice_utils.c pb.h pb.c
 LOCAL_SHARED_LIBRARIES := gstreamer_android
 #ssl crypto
 LOCAL_STATIC_LIBRARIES := libssl-prebuilt libcrypto-prebuilt

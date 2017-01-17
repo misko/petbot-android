@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,6 +32,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -66,6 +68,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 	private View mProgressView;
 	private View mLoginFormView;
 	private SharedPreferences sharedPreferences;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -445,6 +448,15 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 		int ADDRESS = 0;
 		int IS_PRIMARY = 1;
 	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		Toast toast = Toast.makeText(getApplicationContext(), "Sound uploaded.", Toast.LENGTH_SHORT);
+		toast.setGravity(Gravity.TOP|Gravity.CENTER, 0, 0);
+		toast.show();
+	}
+
 
 }
 

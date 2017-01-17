@@ -30,6 +30,52 @@
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+
+/* we have this global to let the callback get easy access to it */ 
+static pthread_mutex_t *lockarray=NULL;
+ 
+#include <openssl/crypto.h>
+static void lock_callback(int mode, int type, char *file, int line) {
+  (void)file;
+  (void)line;
+  if(mode & CRYPTO_LOCK) {
+    pthread_mutex_lock(&(lockarray[type]));
+  }
+  else {
+    pthread_mutex_unlock(&(lockarray[type]));
+  }
+}
+ 
+static unsigned long thread_id(void) {
+  unsigned long ret;
+ 
+  ret=(unsigned long)pthread_self();
+  return ret;
+}
+ 
+static void init_locks(void) {
+  int i;
+ 
+  lockarray=(pthread_mutex_t *)OPENSSL_malloc(CRYPTO_num_locks() *
+                                            sizeof(pthread_mutex_t));
+  for(i=0; i<CRYPTO_num_locks(); i++) {
+    pthread_mutex_init(&(lockarray[i]), NULL);
+  }
+ 
+  CRYPTO_set_id_callback((unsigned long (*)())thread_id);
+  CRYPTO_set_locking_callback((void (*)())lock_callback);
+}
+ 
+static void kill_locks(void) {
+  int i;
+ 
+  CRYPTO_set_locking_callback(NULL);
+  for(i=0; i<CRYPTO_num_locks(); i++)
+    pthread_mutex_destroy(&(lockarray[i]));
+ 
+  OPENSSL_free(lockarray);
+}
+
 #endif
 
 const char * PBSOCK_STATE_STRING[] = {
@@ -67,7 +113,8 @@ const char * PBMSG_TYPES_STRING[] = {
         "KEEP_ALIVE",
         "GPIO",
         "UPDATE",
-	"SYSTEM"
+	"SYSTEM",
+	"WEBRTC"
 };
 
 #ifdef PBSSL
@@ -80,6 +127,19 @@ pbsock* connect_to_server_with_key(const char * hostname, int portno, const char
 pbsock* connect_to_server(const char * hostname, int portno);
 #endif
 
+#ifdef PBSSL 
+int pbssl_setup() {
+	PBPRINTF("SETUP PB SSL\n");
+	init_locks();
+	return 0;
+}
+
+int pbssl_close() {
+	kill_locks();
+	return 0;
+}
+
+#endif
 
 #ifdef PBSSL
 pbsock * connect_to_server_with_key(const char * hostname, int portno, SSL_CTX* ctx, const char * key) {
@@ -161,7 +221,7 @@ void *keep_alive_handler(void * v ) {
 		pthread_mutex_unlock(&(pbs->send_mutex));
 		//sleep(pbs->keep_alive_time);
 		if (send_pbmsg(pbs, m)!=12) {
-			PBPRINTF("TCP_UTILS: KEEP ALIVE HAS DETECTED A DISCONNECT -waiting for parent to clean me up?! %s\n",pbsock_state_to_string(pbs));
+			PBPRINTF("TCP_UTILS: KEEP ALIVE HAS DETECTED A DISCONNECT -waiting for parent to clean me up?! %s %s\n",pbsock_state_to_string(pbs), pbs->key != NULL ? pbs->key : "");
 			//other side disconnected!
 			assert(pbs->state!=PBSOCK_CONNECTED);
 			//TODO CALL A HANDLER? SEND A SIGNAL? UNLOCK A MUTEX?
@@ -197,6 +257,16 @@ pbsock * new_pbsock(int client_sock, SSL_CTX* ctx, int accept) {
 #else
 pbsock * new_pbsock(int client_sock) {
 #endif
+	struct timeval tv;
+
+	tv.tv_sec =30;
+	tv.tv_usec = 0 ;
+
+	if (setsockopt(client_sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof tv) == -1) {
+		perror("setsockopt error");
+		return NULL;
+	}
+
 	pbsock * pbs = (pbsock*)calloc(1,sizeof(pbsock));
 	if (pbs==NULL) {
 		PBPRINTF("TCP_UTILS: Failed to amlloc pbssock\n");
@@ -216,18 +286,25 @@ pbsock * new_pbsock(int client_sock) {
 		return NULL;
 	}                        
 	SSL_set_fd (pbs->ssl, pbs->client_sock);
-	int err=0;
-	if (accept==1) {
-		err = SSL_accept (pbs->ssl);                     
-	} else {
-		err = SSL_connect (pbs->ssl);                   	
+	int err=-1;
+	int retries = 3; 
+	for (int i=0; err<0 && i<retries; i++) {
+		if (accept==1) {
+			err = SSL_accept (pbs->ssl);                     
+		} else {
+			err = SSL_connect (pbs->ssl);                   	
+		}
+		if (err<0) {
+			PBPRINTF("TCP UTIL: SLIPPED!\n");
+			sleep(1); //TODO get SSL ERROR and do something?
+		}
 	}
     if (err==-1 || strcmp(SSL_get_cipher (pbs->ssl),"NONE")==0){
 		PBPRINTF( "TCP_UTILS: Whoops .. no SSL???\n");
 		free_pbsock(pbs);
 		return NULL;
 	}
-	printf ("SSL connection using %s\n", SSL_get_cipher (pbs->ssl));
+	//printf ("SSL connection using %s\n", SSL_get_cipher (pbs->ssl));
 #endif
 	pbs->state=PBSOCK_CONNECTED;
 #ifdef PBTHREADS
@@ -283,6 +360,7 @@ int increment_waiting_threads(pbsock * pbs) {
 	}
 	pbs->waiting_threads++;
 	pthread_mutex_unlock(&(pbs->waiting_threads_mutex));
+    return 0;
 }
 
 int decrement_waiting_threads(pbsock * pbs) {
@@ -292,10 +370,11 @@ int decrement_waiting_threads(pbsock * pbs) {
 	}
 	pbs->waiting_threads--;
 	pthread_mutex_unlock(&(pbs->waiting_threads_mutex));
+    return 0;
 }
 #endif
 
-#ifdef PBTHREADS
+/*#ifdef PBTHREADS
 //TODO might miss a statechange! if state changes back to original state quickyly - do we care?
 pbsock_state pbsock_wait_state(pbsock *pbs) {
 	if (pbs->state==PBSOCK_EXIT) {
@@ -328,7 +407,7 @@ pbsock_state pbsock_wait_state(pbsock *pbs) {
 	pthread_cond_broadcast(&(pbs->cond));
 	return new_state;
 }
-#endif
+#endif*/
 
 void free_pbsock(pbsock *pbs) {
 	//TODO SYNCHRONIZATION?
@@ -413,6 +492,63 @@ pbmsg * recv_pbmsg(pbsock *pbs) {
 	return recv_all_pbmsg(pbs,0);
 }
 
+int pb_ssl_io(pbsock *pbs, void * d, size_t len,int write) {
+	int retries=3;
+	int ret=0;
+	for (int i=0; i<retries; i++) {
+		if (write==1) {
+			ret = SSL_write (pbs->ssl, d, len);
+		} else {
+			ret = SSL_read (pbs->ssl, d, len);
+		}
+		switch (SSL_get_error(pbs->ssl, ret)) { 
+			case SSL_ERROR_NONE: 
+				//fprintf(stderr,"SSL READ IS FINE!\n");
+				return ret;
+			case SSL_ERROR_ZERO_RETURN: 
+				//fprintf(stderr,"CANNOT READ CONNECTION CLOSED!\n");
+				break;
+			case SSL_ERROR_WANT_READ:
+				//fprintf(stderr,"WANT READ SOMETHING?\n");
+				sleep(1);
+				break;
+			case SSL_ERROR_WANT_WRITE:
+				//fprintf(stderr,"WANT WRITE SOMETHING?\n");
+				sleep(1);
+				break;
+			case SSL_ERROR_WANT_CONNECT:
+				//fprintf(stderr,"WANT WRITE SOMETHING?\n");
+				sleep(1);
+				break;
+			case SSL_ERROR_WANT_ACCEPT:
+				//fprintf(stderr,"WANT WRITE SOMETHING?\n");
+				sleep(1);
+				break;
+			case SSL_ERROR_WANT_X509_LOOKUP:
+				//fprintf(stderr,"WANT WRITE SOMETHING?\n");
+				sleep(1);
+				break;
+			case SSL_ERROR_SYSCALL:
+				fprintf(stderr,"SSL ERROR SYSCALL?\n");
+				return ret;
+			case SSL_ERROR_SSL:
+				fprintf(stderr,"SSL ERROR SSL?\n");
+				return ret;
+			default: 
+				printf("SSL read problem WTF\n");
+		}
+	}
+	return ret;
+}
+
+int pb_ssl_write(pbsock *pbs, void * d, size_t len) {
+	return pb_ssl_io(pbs, d,len,1);
+}
+
+int pb_ssl_read(pbsock *pbs, void * d, size_t len) {
+	return pb_ssl_io(pbs, d,len,0);
+}
+
 pbmsg * recv_all_pbmsg(pbsock *pbs, int read_all) {
 	if (pbs==NULL) {
 		return NULL;
@@ -433,23 +569,37 @@ pbmsg * recv_all_pbmsg(pbsock *pbs, int read_all) {
 	m=new_pbmsg();
 	int read_size=0;
 	do {
-		read_size = SSL_read (pbs->ssl, &m->pbmsg_len, 4);
-		read_size += SSL_read (pbs->ssl, &m->pbmsg_type, 4);
-		read_size += SSL_read (pbs->ssl, &m->pbmsg_from, 4);                 
-		if (read_size!=12) {
-			PBPRINTF("TCP_UTILS: Failed to recieve correct size... %d\n",read_size);
-			if (pbs->state!=PBSOCK_EXIT) {
-				pbs->state=PBSOCK_DISCONNECTED;
+		fd_set readfds;
+		FD_ZERO(&readfds);
+		FD_SET(pbs->client_sock,&readfds);
+		int max_sd = pbs->client_sock;
+		int activity = select( max_sd + 1 , &readfds , NULL , NULL , NULL);
+		if (FD_ISSET(pbs->client_sock, &readfds))  {
+			pthread_mutex_lock(&(pbs->send_mutex)); //prevent sending, only SSL-read or write can be called at any given time!
+			//read_size = SSL_read (pbs->ssl, &m->pbmsg_len, 4);
+			read_size = pb_ssl_read(pbs, &m->pbmsg_len, 4);
+			//read_size += SSL_read (pbs->ssl, &m->pbmsg_type, 4);
+			read_size += pb_ssl_read (pbs, &m->pbmsg_type, 4);
+			//read_size += SSL_read (pbs->ssl, &m->pbmsg_from, 4);                 
+			read_size += pb_ssl_read (pbs, &m->pbmsg_from, 4);                 
+			if (read_size!=12) {
+				PBPRINTF("TCP_UTILS: Failed to recieve correct size... %d\n",read_size);
+				if (pbs->state!=PBSOCK_EXIT) {
+					pbsock_set_state(pbs,PBSOCK_DISCONNECTED);
+					//pbs->state=PBSOCK_DISCONNECTED;
+				}
+#ifdef PBTHREADS
+				pthread_mutex_unlock(&(pbs->send_mutex));
+				pthread_mutex_unlock(&(pbs->recv_mutex));
+				decrement_waiting_threads(pbs);
+#endif
+				free_pbmsg(m);
+				return NULL;
 			}
-			#ifdef PBTHREADS
-			pthread_mutex_unlock(&(pbs->recv_mutex));
-			decrement_waiting_threads(pbs);
-			#endif
-			free_pbmsg(m);
-			return NULL;
-		}
-		if ( (m->pbmsg_type & PBMSG_KEEP_ALIVE) !=0 ) {
-			//PBPRINTF("GOT A KEEP ALIVE\n");
+			if ( (m->pbmsg_type & PBMSG_KEEP_ALIVE) !=0 ) {
+				//PBPRINTF("GOT A KEEP ALIVE\n");
+			}
+			pthread_mutex_unlock(&(pbs->send_mutex));
 		}
 	} while ( (m->pbmsg_type & PBMSG_KEEP_ALIVE) !=0 && read_all==0);
 	//read the payload
@@ -464,18 +614,32 @@ pbmsg * recv_all_pbmsg(pbsock *pbs, int read_all) {
 		return NULL;
 	}
 	read_size=0;
-	while (read_size<m->pbmsg_len) {
-		int ret = SSL_read(pbs->ssl,m->pbmsg,m->pbmsg_len); 
-		if (ret==0 || ret<0) {
-			PBPRINTF("TCP_UTILS: Something failed in read of TCP socket\n");
-			#ifdef PBTHREADS
-			pthread_mutex_unlock(&(pbs->recv_mutex));
-			decrement_waiting_threads(pbs);
-			#endif
-			free_pbmsg(m);
-			return NULL;
+	if (m->pbmsg_len>0) {
+#ifdef PBTHREADS
+		pthread_mutex_lock(&(pbs->send_mutex));
+#endif
+		while (read_size<m->pbmsg_len) {
+			//int ret = SSL_read(pbs->ssl,m->pbmsg,m->pbmsg_len); 
+			int ret = pb_ssl_read(pbs,m->pbmsg, m->pbmsg_len);                 
+			if (ret==0 || ret<0) {
+				PBPRINTF("TCP_UTILS: Something failed in read of TCP socket\n");
+#ifdef PBTHREADS
+				pthread_mutex_unlock(&(pbs->send_mutex));
+				pthread_mutex_unlock(&(pbs->recv_mutex));
+				decrement_waiting_threads(pbs);
+#endif
+				free_pbmsg(m);
+				return NULL;
+			}
+			read_size+=ret;
 		}
-		read_size+=ret;
+#ifdef PBTHREADS
+		pthread_mutex_unlock(&(pbs->send_mutex));
+#endif
+	}
+	if ((m->pbmsg_type & PBMSG_STRING) !=0) {
+		//this is a string, make sure we terminate!
+		m->pbmsg[m->pbmsg_len-1]='\0';
 	}
 #else /// WITHOUT SSL
 	m=recv_fd_pbmsg(pbs->client_sock);
@@ -505,9 +669,12 @@ size_t send_pbmsg(pbsock *pbs, pbmsg * m) {
 	int ret=0;
 #ifdef PBSSL
 	//send the length and type
-	int r = SSL_write(pbs->ssl, &m->pbmsg_len, 4); 
-	r += SSL_write(pbs->ssl, &m->pbmsg_type, 4); 
-	r += SSL_write(pbs->ssl, &m->pbmsg_from, 4); 
+	//int r = SSL_write(pbs->ssl, &m->pbmsg_len, 4); 
+	int r = pb_ssl_write(pbs, &m->pbmsg_len, 4); 
+	//r += SSL_write(pbs->ssl, &m->pbmsg_type, 4); 
+	r += pb_ssl_write(pbs, &m->pbmsg_type, 4); 
+	//r += SSL_write(pbs->ssl, &m->pbmsg_from, 4); 
+	r += pb_ssl_write(pbs, &m->pbmsg_from, 4); 
 	if (r!=12) {
 		if (pbs->state!=PBSOCK_EXIT) {
 			pbsock_set_state(pbs,PBSOCK_DISCONNECTED);
@@ -522,7 +689,8 @@ size_t send_pbmsg(pbsock *pbs, pbmsg * m) {
 	ret+=r; //keep track of how many bytes sent
 	//send the message
 	if (m->pbmsg_len>0) {
-		r = SSL_write(pbs->ssl, m->pbmsg, m->pbmsg_len);
+		//r = SSL_write(pbs->ssl, m->pbmsg, m->pbmsg_len);
+		r = pb_ssl_write(pbs, m->pbmsg, m->pbmsg_len);
 		if (r!=m->pbmsg_len) {
 			PBPRINTF("TCP_UTILS: Failed to send message write\n");
 			#ifdef PBTHREADS

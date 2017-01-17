@@ -71,15 +71,15 @@ pbsock * get_pbsock(JNIEnv* env,jobject thiz) {
 
 
 
-void Java_com_atos_petbot_PBConnector_iceRequest(JNIEnv * env, jobject thiz) {
+void Java_com_atos_petbot_PBConnector_makeIceRequest(JNIEnv * env, jobject thiz) {
 
         jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
         jfieldID ice_to_child_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ice_thread_pipes_to_child", "J");
         jfieldID ice_from_child_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ice_thread_pipes_from_child", "J");
 
+
        int * ice_thread_pipes_to_child = (int*)( (*env)->GetLongField(env,thiz, ice_to_child_field ));
        int * ice_thread_pipes_from_child = (int*)( (*env)->GetLongField(env,thiz, ice_from_child_field ));
-
 
     LOGD("POINTERS FOR ICE PIPES %p %p\n",ice_thread_pipes_to_child,ice_thread_pipes_from_child);
 
@@ -100,28 +100,23 @@ void Java_com_atos_petbot_PBConnector_iceNegotiate(JNIEnv * env, jobject thiz, j
         jfieldID streamer_id_field = (*env)->GetFieldID(env,PBConnectorClass, "streamer_id", "I");
         jfieldID ptr_agent_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_agent", "J");
         jfieldID stream_id_field = (*env)->GetFieldID(env,PBConnectorClass, "stream_id", "I");
+        jfieldID pbnio_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_pbnio", "J");
 
        int * ice_thread_pipes_to_child = (int*)( (*env)->GetLongField(env,thiz, ice_to_child_field ));
        int * ice_thread_pipes_from_child = (int*)( (*env)->GetLongField(env,thiz, ice_from_child_field ));
+       pb_nice_io * pbnio = (pb_nice_io*)( (*env)->GetLongField(env,thiz, pbnio_field ));
 
 
 
 
        pbmsg * m = jpbmsg_to_pbmsg(env,jpbmsg);
-    LOGD("WTF!!!\n");
-
         (*env)->SetIntField(env,thiz,streamer_id_field,m->pbmsg_from);
-    LOGD("WTF!!!\n");
-        //int bb_streamer_id = m->pbmsg_from; //TODO save this in java object?
-        //PBPRINTF("BBSTREAMER ID %d\n",bb_streamer_id);
-        recvd_ice_response(m,ice_thread_pipes_from_child,ice_thread_pipes_to_child);
-    LOGD("WTF!!!\n");
+        recvd_ice_response(m,pbnio);
 
         //set the java variables right for calling after
 
-       (*env)->SetLongField(env,thiz, ptr_agent_field , agent);
-       (*env)->SetIntField(env,thiz, stream_id_field , stream_id);
-    LOGD("PASSING TO JAVA AGENT %p and STREAM_ID %d\n",agent,stream_id);
+       (*env)->SetLongField(env,thiz, ptr_agent_field , pbnio->agent);
+       (*env)->SetIntField(env,thiz, stream_id_field , pbnio->stream_id);
 
        /*    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                [gst_backend app_function];
@@ -137,7 +132,7 @@ static void * start_GMain(void * x) {
         //TODO cleanup? Thread join?
 }
 
-void Java_com_atos_petbot_PBConnector_initGlib(JNIEnv * env, jobject thiz) {
+void Java_com_atos_petbot_PBConnector_init(JNIEnv * env, jobject thiz) {
         GMainLoop * main_loop = g_main_loop_new (NULL, FALSE);
 
         jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
@@ -147,48 +142,37 @@ void Java_com_atos_petbot_PBConnector_initGlib(JNIEnv * env, jobject thiz) {
         pthread_t gst_app_thread; // TODO KEEP TRACK OF THIS?
 	    pthread_create (&gst_app_thread, NULL, &start_GMain, main_loop);
         pthread_detach(gst_app_thread);
+
+
+    jfieldID ice_to_child_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ice_thread_pipes_to_child", "J");
+    jfieldID ice_from_child_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ice_thread_pipes_from_child", "J");
+
+    int * ice_thread_pipes_to_child = (int*)malloc(sizeof(int)*2);
+    assert(ice_thread_pipes_to_child!=NULL);
+    int * ice_thread_pipes_from_child = (int*)malloc(sizeof(int)*2);
+    assert(ice_thread_pipes_from_child!=NULL);
+
+    (*env)->SetLongField(env,thiz, ice_to_child_field, ice_thread_pipes_to_child);
+    (*env)->SetLongField(env,thiz, ice_from_child_field, ice_thread_pipes_from_child);
+
+    //setup basic ICE
+    int ret = pipe(ice_thread_pipes_to_child);
+    LOGD("PIPES RET IS %d\n",ret);
+    ret= pipe(ice_thread_pipes_from_child);
+    LOGD("PIPES RET IS %d\n",ret);
+
+    pb_nice_io * pbnio =  new_pbnio();
+    pbnio->pipe_to_child=ice_thread_pipes_to_child[1];
+    pbnio->pipe_to_parent=ice_thread_pipes_from_child[1];
+    pbnio->pipe_from_parent=ice_thread_pipes_to_child[0];
+    pbnio->pipe_from_child=ice_thread_pipes_from_child[0];
+    pbnio->controlling=0;
+    init_ice(pbnio);
+
+    jfieldID pbnio_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_pbnio", "J");
+    (*env)->SetLongField(env,thiz, pbnio_field, pbnio);
 }
 
-
-/*void Java_com_petbot_PBConnector_startGThread(JNIEnv * env, jobject thiz) {
-
-        jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
-        jfieldID mainloop_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_mainloop", "J");
-
-        GMainLoop * main_loop = (GMainContext*)((*env)->GetLongField(env,thiz, mainloop_field ));
-
-        PBPRINTF("PBCONNECTOR ENTER MAIN LOOP CONTEXT\n",);
-        g_main_loop_run (main_loop);
-        PBPRINTF("PBCONNECTOR EXIT MAIN LOOP\n");
-}*/
-
-void Java_com_atos_petbot_PBConnector_startNiceThread(JNIEnv * env, jobject thiz, jint s) {
-
-        jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
-        jfieldID ice_to_child_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ice_thread_pipes_to_child", "J");
-        jfieldID ice_from_child_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ice_thread_pipes_from_child", "J");
-
-        int * ice_thread_pipes_to_child = (int*)malloc(sizeof(int)*2);
-        int * ice_thread_pipes_from_child = (int*)malloc(sizeof(int)*2);
-        if (ice_thread_pipes_to_child==NULL || ice_thread_pipes_from_child==NULL) {
-            LOGD("Failed to allocate memory for pipes\n");
-        }
-
-        int ret = pipe(ice_thread_pipes_to_child);
-        if (ret!=0) {
-            LOGD("ERROR MAKING PIPE!\n");
-        }
-        ret = pipe(ice_thread_pipes_from_child);
-        if (ret!=0) {
-            LOGD("ERROR MAKING PIPE!\n");
-        }
-
-        (*env)->SetLongField(env,thiz, ice_to_child_field, ice_thread_pipes_to_child);
-        (*env)->SetLongField(env,thiz, ice_from_child_field, ice_thread_pipes_from_child);
-    LOGD("POINTERS FOR ICE PIPES %p %p\n",ice_thread_pipes_to_child,ice_thread_pipes_from_child);
-
-        start_nice_thread(0,ice_thread_pipes_from_child,ice_thread_pipes_to_child);
-}
 
 void Java_com_atos_petbot_PBConnector_nativeClose(JNIEnv* env,jobject thiz) {
 
@@ -303,7 +287,6 @@ jobject Java_com_atos_petbot_PBConnector_readPBMsg(JNIEnv* env,jobject thiz) {
 
 
       LOGD("HOSTNAME %s with %d key %s\n",hostname_str,portno,key_str);
-      LOGD("AGENT %p\n",agent);
        jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
        jfieldID pbs_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_pbs", "J");
        jfieldID ctx_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ctx", "J");
@@ -387,7 +370,6 @@ Java_com_atos_petbot_PBConnector_stringFromJNI( JNIEnv* env,
 #else
    #define ABI "unknown"
 #endif
-    LOGD("WTF WTF WTF WTF WTF WTF\n");
 
     return (*env)->NewStringUTF(env, "Hello from JNI !  Compiled with ABI F " ABI ".");
 }
