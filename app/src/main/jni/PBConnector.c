@@ -231,48 +231,37 @@ void Java_com_atos_petbot_PBConnector_sendPBMsg(JNIEnv* env,jobject thiz, jobjec
 }
 
 jobject Java_com_atos_petbot_PBConnector_readPBMsg(JNIEnv* env,jobject thiz) {
-    LOGD("IN PBMSG\n");
     jclass pbmsg_cls = (*env)->FindClass(env, "com/atos/petbot/PBMsg");
     jmethodID constructor = (*env)->GetMethodID(env, pbmsg_cls,"<init>","()V"); //call the basic constructor
     jobject jpbmsg = (*env)->NewObject(env, pbmsg_cls, constructor);
-    LOGD("IN PBMSG 2\n");
-
     //ok so now allocated a Java object... lets actually get a pbmsg..
         pbsock * pbs = get_pbsock(env,thiz); //recover the socket
 
-    LOGD("IN PBMSG 3\n");
         //get the fields for the jpbmsg
        jfieldID pbmsg_len_fid = (*env)->GetFieldID(env,pbmsg_cls, "pbmsg_len", "I");
        jfieldID pbmsg_type_fid = (*env)->GetFieldID(env,pbmsg_cls, "pbmsg_type", "I");
        jfieldID pbmsg_from_fid = (*env)->GetFieldID(env,pbmsg_cls, "pbmsg_from", "I");
        jfieldID pbmsg_msg_fid = (*env)->GetFieldID(env,pbmsg_cls, "pbmsg", "[B");
 
-    LOGD("IN PBMSG 3\n");
-
-    LOGD("WAITING ON MSG\n");
 
     //get a msg
        pbmsg * m = recv_pbmsg(pbs);
         if (m==NULL) {
-            LOGD("IN PBMSG 5\n");
             return NULL;
         }
-    LOGD("GOT MSG\n");
 
-    LOGD("IN PBMSG 4\n");
        //ok now copy it into the structure...
        (*env)->SetIntField(env,jpbmsg, pbmsg_len_fid, m->pbmsg_len);
        (*env)->SetIntField(env,jpbmsg, pbmsg_type_fid, m->pbmsg_type);
        (*env)->SetIntField(env,jpbmsg, pbmsg_from_fid, m->pbmsg_from);
 
 
-    LOGD("IN PBMSG 6\n");
        jbyteArray d = (*env)->NewByteArray(env, m->pbmsg_len);
        char * ray = (char*)malloc(sizeof(char)*m->pbmsg_len);
        for (int i=0; i<m->pbmsg_len; i++) {
          ray[i]=m->pbmsg[i];
        }
-       PBPRINTF("GOT MESSAGE %d %d %d %d\n",m->pbmsg_len,m->pbmsg_type,m->pbmsg_from,m->pbmsg_type&PBMSG_STRING);
+       //PBPRINTF("GOT MESSAGE %d %d %d %d\n",m->pbmsg_len,m->pbmsg_type,m->pbmsg_from,m->pbmsg_type&PBMSG_STRING);
        (*env)->SetByteArrayRegion(env, d, 0, m->pbmsg_len, ray);
        (*env)->SetObjectField(env,jpbmsg, pbmsg_msg_fid, d);
         //TODO MEMORY LEAK? should release malloced?

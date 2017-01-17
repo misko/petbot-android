@@ -87,13 +87,21 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		});
 	}
 
-	public void exit_with_toast(String msg) {
+	public void exit_with_toast(final String msg) {
 		//TODO USE THE TOAST?
-		pb.close();
-		nativePause();
-		finish();
-		Intent open_main = new Intent(PetBot.this, LoginActivity.class);
-		PetBot.this.startActivity(open_main);
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+
+				ApplicationState state = (ApplicationState) getApplicationContext();
+				state.status=msg;
+				pb.close();
+				nativePause();
+				finish();
+				Intent open_main = new Intent(PetBot.this, LoginActivity.class);
+				PetBot.this.startActivity(open_main);
+			}
+		});
 	}
 
 	private void look_for_petbot(int attempt) {
@@ -293,20 +301,22 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 						break;
 					}
 					if ((m.pbmsg_type ^ (PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_STRING))==0) {
-
-						String msg = new String(m.pbmsg);
-						String[] parts = msg.split(" ");
-						if (parts[0].equals("UPTIME")) {
-							int uptime = Integer.parseInt(parts[1]);
-							if (uptime > 20) {
-								petbot_found=true;
-								set_status("Negotiating with your PetBot...");
-								pb.makeIceRequest();
-							} else {
-								set_status("Found your PetBot...");
+						if (petbot_found==false) {
+							String msg = new String(m.pbmsg);
+							String[] parts = msg.split(" ");
+							if (parts[0].equals("UPTIME")) {
+								int uptime = Integer.parseInt(parts[1]);
+								if (uptime > 20) {
+									petbot_found = true;
+									set_status("Negotiating with your PetBot...");
+									pb.makeIceRequest();
+								} else {
+									set_status("Found your PetBot...");
+								}
 							}
 						}
 					} else if ((m.pbmsg_type ^  (PBMsg.PBMSG_SUCCESS | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_ICE | PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_STRING))==0) {
+						Log.w("petbot","got ice response!!" + Integer.toString(bb_streamer_id));
 						if (bb_streamer_id==0) {
 							bb_streamer_id=m.pbmsg_from;
 							Thread negotiate_thread = new Thread() {
@@ -330,6 +340,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 						} else {
 							//someone else connected
 							exit_with_toast("Someone else connected :(");
+							return;
 						}
 
 					} else if ((m.pbmsg_type ^  (PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_STRING | PBMsg.PBMSG_SUCCESS))==0) {

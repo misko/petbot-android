@@ -452,9 +452,13 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 	@Override
 	public void onResume() {
 		super.onResume();
-		Toast toast = Toast.makeText(getApplicationContext(), "Sound uploaded.", Toast.LENGTH_SHORT);
-		toast.setGravity(Gravity.TOP|Gravity.CENTER, 0, 0);
-		toast.show();
+		ApplicationState state = (ApplicationState) getApplicationContext();
+		if (!state.status.equals("")) {
+			Toast toast = Toast.makeText(getApplicationContext(), state.status, Toast.LENGTH_SHORT);
+			toast.setGravity(Gravity.TOP|Gravity.CENTER, 0, 0);
+			toast.show();
+			state.status="";
+		}
 	}
 
 
