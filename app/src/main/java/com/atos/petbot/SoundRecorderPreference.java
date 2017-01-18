@@ -17,7 +17,6 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.SimpleMultiPartRequest;
-import com.atos.petbot.R;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,6 +36,7 @@ public class SoundRecorderPreference extends Preference {
 	}
 
 	Recorder recorder = new Recorder();
+	public String sound_name = "";
 
 	public SoundRecorderPreference(Context context) {
 		this(context, null, 0);
@@ -60,24 +60,21 @@ public class SoundRecorderPreference extends Preference {
 
 		final ApplicationState application = (ApplicationState) getContext().getApplicationContext();
 
-		final EditText filename = (EditText) view.findViewById(R.id.filename);
-		filename.addTextChangedListener(new TextWatcher() {
+		final EditText name_field = (EditText) view.findViewById(R.id.filename);
+		name_field.addTextChangedListener(new TextWatcher() {
 			@Override
 			public void afterTextChanged(Editable s) {}
 
 			@Override
-			public void beforeTextChanged(CharSequence s, int start,
-										  int count, int after) {
-			}
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
 			@Override
-			public void onTextChanged(CharSequence s, int start,
-									  int before, int count) {
-				recorder.filename=s.toString();
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+				sound_name = s.toString();
 			}
 		});
-		if (!recorder.filename.equals("")) {
-			filename.setText(recorder.filename);
+		if (!sound_name.equals("")) {
+			name_field.setText(sound_name);
 		}
 
 		Button upload_button = (Button) view.findViewById(R.id.upload);
@@ -90,12 +87,12 @@ public class SoundRecorderPreference extends Preference {
 					toast = Toast.makeText(getContext(), "Sound not finished recording.", Toast.LENGTH_SHORT);
 				} else if (recorder.sampleLength() == 0){
 					toast = Toast.makeText(getContext(), "No sound recorded.", Toast.LENGTH_SHORT);
-				} else if (TextUtils.isEmpty(filename.getText().toString())){
+				} else if (TextUtils.isEmpty(name_field.getText().toString())){
 					toast = Toast.makeText(getContext(), "Sound name can not be blank.", Toast.LENGTH_SHORT) ;
 				} else {
 
 					// rename file to user entered name
-					final String sound_name = filename.getText().toString();
+					final String sound_name = name_field.getText().toString();
 					File sound_file = new File(recorder.sampleFile().getParent(), sound_name + ".3gpp");
 					boolean foo = recorder.sampleFile().renameTo(sound_file);
 					Log.e("asdfasdf", "file rename success; " + foo);

@@ -31,22 +31,7 @@ public class PBMsg {
     public static int PBMSG_BIN = (1<<21);
     public static int PBMSG_FILE = (1<<22);
     public static int PBMSG_KEEP_ALIVE = (1<<23);
-    /*
-void free_pbmsg(pbmsg * m);
-pbmsg * new_pbmsg();
-pbmsg * new_pbmsg_from_str_wtype(const char * s, int type);
-pbmsg * new_pbmsg_from_str(const char *s);
-pbmsg * new_pbmsg_from_file(const char *s);
-pbmsg * new_pbmsg_from_ptr(void * x );
-pbmsg * new_pbmsg_from_ptr_and_int(void *x , int z);
-int pbmsg_to_file(pbmsg * m, const char * fn);
-//Send / recv pbmsg over pbsock
-pbmsg * recv_pbmsg(pbsock * pbs);
-size_t send_pbmsg(pbsock *, pbmsg *m);
-pbmsg * recv_fd_pbmsg(int fd);
-pbmsg * recv_all_fd_pbmsg(int fd,int read_all);
-size_t send_fd_pbmsg(int fd, pbmsg *m);
-*/
+	public static int PBMSG_UPDATE = (1<<25);
 
     public PBMsg() {
         //the base constructor

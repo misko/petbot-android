@@ -24,11 +24,9 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -48,8 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.firebase.iid.FirebaseInstanceId;
-
-import com.atos.petbot.R;
 
 /**
  * A login screen that offers login via email/password.
@@ -287,7 +283,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 			final Context context = this.getApplicationContext();
 			JsonObjectRequest login_request = new JsonObjectRequest(
 					Request.Method.POST,
-					ApplicationState.HTTPS_ADDRESS_ATUH,
+					ApplicationState.HTTPS_ADDRESS_AUTH,
 					login_info,
 					new Response.Listener<JSONObject>() {
 						@Override
@@ -303,23 +299,29 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 							}
 
 							if (success) {
+
 								SharedPreferences.Editor editor = sharedPreferences.edit();
 								editor.putString("username", username);
 								editor.putString("password", password);
 								editor.commit();
 
-
-
 								finish();
 								Intent open_main = new Intent(LoginActivity.this, PetBot.class);
-								//open_main.putExtra("json",response.toString());
+
 								try {
 									JSONObject pbserver = response.getJSONObject("pubsubserver");
+
 									ApplicationState state = (ApplicationState) getApplicationContext();
 									state.server_secret = pbserver.getString("secret");
 									state.server = pbserver.getString("server");
 									state.port = pbserver.getInt("port");
 									state.username = pbserver.getString("username");
+
+									boolean updates_allowed = !TextUtils.isEmpty(response.getString("updates_allowed"));
+									if(updates_allowed){
+										Settings.updateable = true;
+									}
+
 									Log.e("asdfasdf", pbserver.toString());
 									Log.e("asdfasdf", pbserver.getString("server"));
 									Log.e("asdfasdf", state.server);
@@ -460,7 +462,6 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 			state.status="";
 		}
 	}
-
 
 }
 

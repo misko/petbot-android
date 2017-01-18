@@ -51,29 +51,28 @@ public class PBConnector {
     }
 
 	public void playSound(String url) {
-        String command = "PLAYURL "+url;
+        String command = "PLAYURL " + url;
 		PBMsg m = new PBMsg(command, PBMsg.PBMSG_SOUND | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
 		sendPBMsg(m);
 	}
 
     public void camera_fx_up() {
-        String command = "adjust_fx 1";
-        PBMsg m = new PBMsg(command, PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
+        PBMsg m = new PBMsg("adjust_fx 1", PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
         sendPBMsg(m);
     }
+
     public void camera_fx_down() {
-        String command = "adjust_fx -1";
-        PBMsg m = new PBMsg(command, PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
+        PBMsg m = new PBMsg("adjust_fx -1", PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
         sendPBMsg(m);
     }
+
     public void camera_exp_up() {
-        String command = "adjust_exp 1";
-        PBMsg m = new PBMsg(command, PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
+        PBMsg m = new PBMsg("adjust_exp 1", PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
         sendPBMsg(m);
     }
+
     public void camera_exp_down() {
-        String command = "adjust_exp -1";
-        PBMsg m = new PBMsg(command, PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
+        PBMsg m = new PBMsg("adjust_exp -1", PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
         sendPBMsg(m);
     }
 
@@ -81,12 +80,17 @@ public class PBConnector {
         Log.w("petbot", "ANDROID - JAVA PBCONNECTOR - CLOSE ");
         nativeClose();
     }
-    public static native String stringFromJNI();
-    public native byte[] newByteArray();
 
-    //pbsock* new_pbsock(int client_sock, SSL_CTX* ctx, int accept);
-    //pbsock* connect_to_server_with_key(const char * hostname, int portno, SSL_CTX*ctx, const char * key);
-    //pbsock* connect_to_server(const char * hostname, int portno, SSL_CTX* ctx);
+	public void update() {
+		PBMsg m = new PBMsg("UPDATE updates@updates.petbot.ca:/", PBMsg.PBMSG_UPDATE | PBMsg.PBMSG_STRING | PBMsg.PBMSG_REQUEST);
+		sendPBMsg(m);
+	}
+
+	public void cancelUpdate() {
+		PBMsg m = new PBMsg("STOP", PBMsg.PBMSG_UPDATE | PBMsg.PBMSG_STRING | PBMsg.PBMSG_REQUEST);
+		sendPBMsg(m);
+	}
+
     public String hostname = "";
     public int portno=0;
     public String key="";

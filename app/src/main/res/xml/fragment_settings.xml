@@ -3,6 +3,15 @@
 
     <PreferenceCategory android:title="System">
 
+        <com.atos.petbot.UpdatePreference
+            android:key="update"
+            android:title="Update"
+            android:summary="Retrieve the latest PetBot firmware"
+            android:dialogTitle="Updating..."
+            android:dialogMessage="Do not unplug! Please wait until your PetBot says 'PetBot operational'. Signing in again during this update will stop the update."
+            android:positiveButtonText="@null"
+            android:negativeButtonText="Cancel"/>
+
         <Preference
             android:key="VERSION"
             android:title="Version"

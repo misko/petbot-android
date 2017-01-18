@@ -23,6 +23,7 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 
 	PBConnector pb;
 	boolean settings_retrieved = false;
+	public static boolean updateable = false;
 
 	@Override
 	public void onDestroy() {
@@ -48,63 +49,57 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 			//TODO
 		}
 
+		UpdatePreference update = (UpdatePreference) findPreference("update");
+		update.setEnabled(updateable);
 
 		SeekBarPreference volume = (SeekBarPreference) findPreference("master_volume");
 		volume.setMax(63);
 		volume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				SeekBarPreference volume = (SeekBarPreference) findPreference("master_volume");
-				int value = progress ;
-				pb.set("master_volume", Integer.toString(value));
+				pb.set("master_volume", Integer.toString(progress));
 			}
 
 			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
-			}
+			public void onStartTrackingTouch(SeekBar seekBar) {}
 
 			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
-
-			}
+			public void onStopTrackingTouch(SeekBar seekBar) {}
 		});
 
 		SeekBarPreference selfie_sensitivity_slider = (SeekBarPreference) findPreference("selfie_sensitivity_slider");
 		selfie_sensitivity_slider.setMax(100);
 		selfie_sensitivity_slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				SeekBarPreference selfie_sensitivity_slider = (SeekBarPreference) findPreference("selfie_sensitivity_slider");
 				float value = ((float)progress)/100;
 				pb.set("selfie_pet_sensitivity", Float.toString(value));
 			}
 
 			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
-			}
+			public void onStartTrackingTouch(SeekBar seekBar) {}
 
 			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
-			}
+			public void onStopTrackingTouch(SeekBar seekBar) {}
 		});
 
 		SeekBarPreference motion_sensitivity_slider = (SeekBarPreference) findPreference("motion_sensitivity_slider");
 		motion_sensitivity_slider.setMax(100);
 		motion_sensitivity_slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				SeekBarPreference motion_sensitivity_slider = (SeekBarPreference) findPreference("motion_sensitivity_slider");
 				float value = ((float)progress)/100;
 				pb.set("selfie_mot_sensitivity", Float.toString(value));
 			}
 
 			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
-			}
+			public void onStartTrackingTouch(SeekBar seekBar) {}
 
 			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
-			}
+			public void onStopTrackingTouch(SeekBar seekBar) {}
 		});
 
 		SoundRecorderPreference recorder = (SoundRecorderPreference) findPreference("recorder");
@@ -176,18 +171,16 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 
 		NumberPickerPreference length = (NumberPickerPreference) findPreference("selfie_length");
 		length.setOnPreferenceChangeListener(
-				new Preference.OnPreferenceChangeListener() {
-					@Override
-					public boolean onPreferenceChange(Preference preference,Object length) {
-						Log.w("petbot","setting length to " + Integer.toString((Integer)length));
-						pb.set("selfie_length", Integer.toString((Integer)length));
-						return true;
-					}
-				});
-
-
+			new Preference.OnPreferenceChangeListener() {
+				@Override
+				public boolean onPreferenceChange(Preference preference,Object length) {
+					Log.w("petbot","setting length to " + Integer.toString((Integer)length));
+					pb.set("selfie_length", Integer.toString((Integer)length));
+					return true;
+				}
+			}
+		);
 	}
-
 
 
 	public void onSoundUploaded(String name, String fileID){
@@ -290,31 +283,10 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 			}
 		}
 
-
-
-
-
-
-
-
-	}
-
-	void saveSettings(){
-		Thread save_thread = new Thread() {
-			@Override
-			public void run() {
-				SeekBarPreference volume = (SeekBarPreference) findPreference("master_volume");
-				pb.set("master_volume", Integer.toString(volume.getValue()));
-			}
-		};
-		save_thread.start();
 	}
 
 	@Override
 	public void onStop(){
-		if(settings_retrieved){
-			//saveSettings();
-		}
 		super.onStop();
 	}
 }

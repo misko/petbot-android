@@ -173,18 +173,13 @@ public class SoundRecorder extends LinearLayout
 		int state = mRecorder.state();
 
 		boolean ongoing = state == Recorder.RECORDING_STATE || state == Recorder.PLAYING_STATE;
-		long total_time = mRecorder.maxSampleLength; //state == Recorder.RECORDING_STATE ? mRecorder.maxSampleLength : mRecorder.sampleLength();
+		long total_time = mRecorder.maxSampleLength;
 
 		if (ongoing) {
 			mStateProgressBar.setProgress((int)(100 * mRecorder.progress() / total_time));
 			mHandler.postDelayed(mUpdateTimer, 1000);
-		} else {
-			//mStateProgressBar.setProgress(1);
-			//Log.w("petbot","RECORDER" + Integer.toString(mRecorder.mSampleLength) + " " + Long.toString(total_time));
-			if (total_time>0) {
-				mStateProgressBar.setProgress((int)(100 * mRecorder.mSampleLength / total_time));
-			}
-			//mHandler.postDelayed(mUpdateTimer, 1000);
+		} else if (total_time > 0) {
+			mStateProgressBar.setProgress((int)(100 * mRecorder.mSampleLength / total_time));
 		}
 
 	}
