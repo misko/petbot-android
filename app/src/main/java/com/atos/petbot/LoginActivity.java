@@ -310,12 +310,18 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
 								try {
 									JSONObject pbserver = response.getJSONObject("pubsubserver");
+									JSONObject turnserver = response.getJSONArray("turn").getJSONObject(0);
 
 									ApplicationState state = (ApplicationState) getApplicationContext();
 									state.server_secret = pbserver.getString("secret");
 									state.server = pbserver.getString("server");
 									state.port = pbserver.getInt("port");
 									state.username = pbserver.getString("username");
+
+									state.stun_server = turnserver.getString("server");
+									state.stun_port = turnserver.getString("port");
+									state.stun_username = turnserver.getString("username");
+									state.stun_password = turnserver.getString("password");
 
 									boolean updates_allowed = !TextUtils.isEmpty(response.getString("updates_allowed"));
 									if(updates_allowed){
@@ -340,6 +346,10 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 						public void onErrorResponse(VolleyError error) {
 							Log.e("asdfasdfasdf", error.toString());
 							showProgress(false);
+							Toast toast = Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_SHORT);
+							toast.setGravity(Gravity.TOP|Gravity.CENTER, 0, 0);
+							toast.setDuration(5);
+							toast.show();
 						}
 					}
 			);

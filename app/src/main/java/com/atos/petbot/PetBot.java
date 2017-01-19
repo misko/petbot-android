@@ -273,7 +273,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 
 		ApplicationState state = (ApplicationState) this.getApplicationContext();
 
-		pb = new PBConnector(state.server, state.port, state.server_secret);
+		pb = new PBConnector(state.server, state.port, state.server_secret, state.stun_server, state.stun_port, state.stun_username, state.stun_password);
 
 		//start looking for the petbot
 		final Thread look_thread = new Thread() {

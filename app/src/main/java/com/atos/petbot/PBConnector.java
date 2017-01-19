@@ -13,10 +13,15 @@ public class PBConnector {
         System.loadLibrary("PBConnector");
     }
 
-    public PBConnector (String hostname, int portno, String key) {
+    public PBConnector (String hostname, int portno, String key, String stun_server, String stun_port, String stun_username , String stun_password) {
         Log.w("petbot", "Create PBConnector");
         Log.w("petbot", (new PBMsg()).toString());
         Log.w("petbot", (new PBMsg("Test")).toString());
+
+        if (stun_server!=null && stun_port!=null) {
+            setStun(stun_server,stun_port,stun_username,stun_password);
+        }
+
         this.key=key;
         this.portno=portno;
         this.hostname=hostname;
@@ -91,10 +96,12 @@ public class PBConnector {
 		sendPBMsg(m);
 	}
 
+
     public String hostname = "";
     public int portno=0;
     public String key="";
 
+    public native void setStun(String server, String port, String username, String password);
     public native void connectToServerWithKey(String hostname, int portno, String key);
     public native PBMsg readPBMsg();
     public native void sendPBMsg(PBMsg m);
@@ -104,6 +111,8 @@ public class PBConnector {
     public native void makeIceRequest();
     public native void iceNegotiate(PBMsg m);
     public native void init();
+
+
 
 
     public long ptr_pbnio = 0; //the socket to server

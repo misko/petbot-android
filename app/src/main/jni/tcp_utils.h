@@ -108,6 +108,9 @@ int increment_waiting_threads(pbsock * pbs);
 int decrement_waiting_threads(pbsock * pbs);
 
 #endif
+    
+void set_stun(char * stun_addr_x, char * stun_port_x, char * stun_user_x, char * stun_password_x);
+char * hostname_to_ip_str(char * hostname, int portno);
 
 #ifdef PBSSL
 int pbssl_setup();

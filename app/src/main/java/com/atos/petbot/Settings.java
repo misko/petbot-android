@@ -207,7 +207,7 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 	void startMessageThread(){
 
 		ApplicationState state = (ApplicationState) this.getActivity().getApplicationContext();
-		pb = new PBConnector(state.server, state.port, state.server_secret);
+		pb = new PBConnector(state.server, state.port, state.server_secret, null, null, null, null);
 
 		//start up a read thread
 		final Thread read_thread = new Thread() {

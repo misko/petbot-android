@@ -92,6 +92,18 @@ void Java_com_atos_petbot_PBConnector_makeIceRequest(JNIEnv * env, jobject thiz)
 }
 
 
+void Java_com_atos_petbot_PBConnector_setStun(JNIEnv* env,jobject thiz, jstring server, jstring port, jstring username, jstring password ) {
+
+    const char* jni_stun_server = (*env)->GetStringUTFChars(env,server,0);
+    const char* jni_stun_port = (*env)->GetStringUTFChars(env,port,0);
+    const char* jni_stun_username = (*env)->GetStringUTFChars(env,username,0);
+    const char* jni_stun_password = (*env)->GetStringUTFChars(env,password,0);
+
+    set_stun(jni_stun_server,jni_stun_port,jni_stun_username,jni_stun_password);
+    return;
+
+}
+
 void Java_com_atos_petbot_PBConnector_iceNegotiate(JNIEnv * env, jobject thiz, jobject jpbmsg) {
 
         jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);

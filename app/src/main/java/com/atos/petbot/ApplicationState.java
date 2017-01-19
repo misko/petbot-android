@@ -32,6 +32,11 @@ public class ApplicationState extends Application {
 	String server_secret;
 	String status="";
 
+	String stun_server ="";
+	String stun_port="";
+	String stun_username="";
+	String stun_password="";
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
