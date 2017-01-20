@@ -342,7 +342,16 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 							exit_with_toast("Someone else connected :(");
 							return;
 						}
-
+					} else if ((m.pbmsg_type & PBMsg.PBMSG_DISCONNECTED) !=0) {
+						if (m.pbmsg_from==bb_streamer_id) {
+							if (!bye_pressed) {
+								exit_with_toast("PetBot connection closed");
+							}
+							break;
+							//g_main_loop_quit(main_loop);
+						} else {
+							//fprintf(stderr,"SOMEONE ELSE DISCONNETED %d vs %d\n",bb_streamer_id,m->pbmsg_from);
+						}
 					} else if ((m.pbmsg_type ^  (PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_STRING | PBMsg.PBMSG_SUCCESS))==0) {
 						runOnUiThread(new Runnable() {
 							@Override
