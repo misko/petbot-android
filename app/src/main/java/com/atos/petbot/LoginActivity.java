@@ -323,10 +323,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 									state.stun_username = turnserver.getString("username");
 									state.stun_password = turnserver.getString("password");
 
-									boolean updates_allowed = !TextUtils.isEmpty(response.getString("updates_allowed"));
-									if(updates_allowed){
-										Settings.updateable = true;
-									}
+									Settings.updateable = !TextUtils.isEmpty(response.getString("updates_allowed"));
 
 									Log.e("asdfasdf", pbserver.toString());
 									Log.e("asdfasdf", pbserver.getString("server"));
@@ -348,7 +345,6 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 							showProgress(false);
 							Toast toast = Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_SHORT);
 							toast.setGravity(Gravity.TOP|Gravity.CENTER, 0, 0);
-							toast.setDuration(5);
 							toast.show();
 						}
 					}

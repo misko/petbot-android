@@ -50,6 +50,7 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 		}
 
 		UpdatePreference update = (UpdatePreference) findPreference("update");
+		Log.e("asdfasdf", "??? in settings; " + Boolean.toString(updateable) + " ???");
 		update.setEnabled(updateable);
 
 		SeekBarPreference volume = (SeekBarPreference) findPreference("master_volume");
