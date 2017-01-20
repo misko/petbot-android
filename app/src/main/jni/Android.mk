@@ -3,26 +3,13 @@ CURRENT_PATH := $(LOCAL_PATH)
 
 #include $(call all-subdir-makefiles)
 
-
 OPENSSL_ROOT := openssl-1.0.2
 
 # might need to include the gstreamer libs in the jni folder, similar to openssl
-#GSTREAMER_ANDROID_DIR := /home/ssitwell/gstreamer-android-bak
+GSTREAMER_ANDROID_DIR := /home/ssitwell/gstreamer-android-bak
 #GSTREAMER_ROOT := /Users/miskodzamba/research/petbot/petbot_2015/gstreamer-1.0-android-$(TARGET_ARCH)-1.9.1
 #GSTREAMER_ANDROID_DIR := /Users/miskodzamba/research/petbot/petbot_2015/gstreamer-1.0-android-universal-1.9.90
-GSTREAMER_ANDROID_DIR := /Users/miskodzamba/research/petbot/petbot_2015/gstreamer-1.0-android-universal-1.10.2
-
-#include $(CLEAR_VARS)
-#LOCAL_MODULE := ssl
-#LOCAL_SRC_FILES := $(OPENSSL_ROOT)/$(APP_ABI)/libssl.so
-#LOCAL_EXPORT_C_INCLUDES += $(LOCAL_PATH)/$(OPENSSL_ROOT)/include
-#include $(PREBUILT_SHARED_LIBRARY)
-
-#include $(CLEAR_VARS)
-#LOCAL_MODULE := crypto
-#LOCAL_SRC_FILES := $(OPENSSL_ROOT)/$(APP_ABI)/libcrypto.so
-#LOCAL_EXPORT_CFLAGS := -DWAZA
-#include $(PREBUILT_SHARED_LIBRARY)
+#GSTREAMER_ANDROID_DIR := /Users/miskodzamba/research/petbot/petbot_2015/gstreamer-1.0-android-universal-1.10.2
 
 # Prepare the SSL static library
 include $(CLEAR_VARS)
