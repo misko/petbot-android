@@ -464,6 +464,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 		if (!state.status.equals("")) {
 			Toast toast = Toast.makeText(getApplicationContext(), state.status, Toast.LENGTH_SHORT);
 			toast.setGravity(Gravity.TOP|Gravity.CENTER, 0, 0);
+			toast.setDuration(5);
 			toast.show();
 			state.status="";
 		}
