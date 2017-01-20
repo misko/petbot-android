@@ -227,6 +227,13 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		Log.w("petbot", "ANDROID - ON CREATE PETBOT" );
 		start_wait();
 
+        this.findViewById(android.R.id.content).setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                pb.camera_hflip();
+                return true;
+            }
+        });
 
 
 		swipe = new Swipe();

@@ -81,6 +81,11 @@ public class PBConnector {
         sendPBMsg(m);
     }
 
+    public void camera_hflip() {
+        PBMsg m = new PBMsg("hflip", PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_REQUEST | PBMsg.PBMSG_STRING);
+        sendPBMsg(m);
+    }
+
     public void close () {
         Log.w("petbot", "ANDROID - JAVA PBCONNECTOR - CLOSE ");
         nativeClose();
