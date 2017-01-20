@@ -24,13 +24,20 @@
                     android:data="http://www.petbot.com/help"/>
         </Preference>
 
+        <SwitchPreference
+            android:key="LED"
+            android:title="LED enable"
+            android:summary="Take selfies automatically"
+            android:enabled="false" />
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Selfie">
 
-        <!--<SwitchPreference
+        <SwitchPreference
             android:title="Enable"
-            android:summary="Take selfies automatically" />-->
+            android:summary="Take selfies automatically"
+            android:enabled="false" />
 
         <com.atos.petbot.NumberPickerPreference
             android:key="selfie_timeout"

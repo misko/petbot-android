@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.preference.SwitchPreference;
 import android.util.Log;
 import android.widget.SeekBar;
 
@@ -29,7 +30,6 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 	public void onDestroy() {
 		Log.w("asdfasdf", "ANDROID - DESTROY SETTINGS");
 		super.onDestroy();
-
 	}
 
 	@Override
@@ -169,18 +169,25 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 				}
 		});
 
-
 		NumberPickerPreference length = (NumberPickerPreference) findPreference("selfie_length");
 		length.setOnPreferenceChangeListener(
 			new Preference.OnPreferenceChangeListener() {
 				@Override
-				public boolean onPreferenceChange(Preference preference,Object length) {
+				public boolean onPreferenceChange(Preference preference, Object length) {
 					Log.w("petbot","setting length to " + Integer.toString((Integer)length));
 					pb.set("selfie_length", Integer.toString((Integer)length));
 					return true;
 				}
 			}
 		);
+
+		findPreference("LED").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object checked) {
+				pb.set("pb_led_enable", (Boolean) checked ? "1" : "0");
+				return true;
+			}
+		});
 	}
 
 
@@ -280,6 +287,10 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 				} else if (setting_name.equals("selfie_mot_sensitivity")) {
 					SeekBarPreference motion_sensitivity_slider = (SeekBarPreference) findPreference("motion_sensitivity_slider");
 					motion_sensitivity_slider.setValue(Math.round(Float.parseFloat(setting_value)*100));
+				} else if (setting_name.equals("pb_led_enable")) {
+					SwitchPreference led_enable_switch = (SwitchPreference) findPreference("LED");
+					led_enable_switch.setEnabled(true);
+					led_enable_switch.setChecked(setting_value.equals("1"));
 				}
 			}
 		}

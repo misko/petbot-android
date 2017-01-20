@@ -442,65 +442,6 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 			}
 		});
 
-		/*SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-		if(preferences.contains("alert_sounds")){
-			setSound(preferences.getString("alert_sounds", ""));
-		} else {
-
-
-			JSONObject sounds_info = new JSONObject();
-			try {
-				sounds_info.put("file_type", "mp3");
-				sounds_info.put("start_idx", 0);
-				sounds_info.put("end_idx", 0); //TODO: start_idx and end_idx are not used in server
-			} catch (JSONException error) {
-				//TODO
-			}
-
-			final String server_secret = state.server_secret;
-			JsonObjectRequest sounds_request = new JsonObjectRequest(
-					Request.Method.POST,
-					"https://petbot.ca:5000/FILES_LS/" + state.server_secret,
-					sounds_info,
-					new Response.Listener<JSONObject>() {
-						@Override
-						public void onResponse(JSONObject response) {
-
-							Log.e("petbot", response.toString());
-							boolean success = false;
-							try {
-
-								success = response.getInt("status") == 1;
-								if (success) {
-
-									JSONArray sound_files = response.getJSONArray("files");
-									if (sound_files.length() > 0) {
-
-										// get the file id of the first sound in the list
-										final String file_id = sound_files.getJSONArray(0).getString(0);
-										setSound(file_id);
-
-									}
-								}
-							} catch (JSONException error) {
-								//TODO
-								Log.e("petbot", error.toString());
-							}
-
-						}
-					},
-					new Response.ErrorListener() {
-						@Override
-						public void onErrorResponse(VolleyError error) {
-							Log.e("petbot", error.toString());
-						}
-					}
-			);
-
-			RequestQueue queue = Volley.newRequestQueue(this);
-			queue.add(sounds_request);
-		}*/
-
 		SurfaceView sv = (SurfaceView) this.findViewById(R.id.surface_video);
 		SurfaceHolder sh = sv.getHolder();
 		sh.addCallback(this);
