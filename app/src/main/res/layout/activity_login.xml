@@ -142,8 +142,18 @@
                     android:layout_weight="1"
                     android:layout_gravity="center" />
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:id="@+id/versionText"
+                    android:fontFamily="sans-serif"
+                    android:textSize="14sp"
+                    android:layout_height="20dp"
+                    android:textColor="@color/PBRedColor"
+                    android:textStyle="normal|bold" />
+
             </LinearLayout>
         </ScrollView>
+
     </LinearLayout>
 
 </FrameLayout>

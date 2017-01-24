@@ -6,6 +6,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
 import android.app.Activity;
 import android.app.LoaderManager.LoaderCallbacks;
@@ -115,7 +116,13 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 		});
 
 
-
+		try {
+			String versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+			TextView versionStringView = (TextView) findViewById(R.id.versionText);
+			versionStringView.setText(versionName);
+		} catch (PackageManager.NameNotFoundException e) {
+			e.printStackTrace();
+		}
 
 		mLoginFormView = findViewById(R.id.login_form);
 		mProgressView = findViewById(R.id.login_progress);
