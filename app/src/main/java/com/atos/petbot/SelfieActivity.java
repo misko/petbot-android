@@ -49,7 +49,7 @@ public class SelfieActivity extends Activity {
 		rm_url = getIntent().getStringExtra("rm_url");
 
 		try {
-			video_file = File.createTempFile("selfie", "mp4");
+			video_file = File.createTempFile("selfie", ".mp4");
 			DownloadRequest downloader = new DownloadRequest(
 				media_url.toString(),
 				video_file.getPath(),
@@ -141,10 +141,12 @@ public class SelfieActivity extends Activity {
 	}
 
 	public void share(View view) {
+		File f = save(null);
+
 		Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND);
 
 		shareIntent.setAction(Intent.ACTION_SEND);
-		shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(video_file));
+		shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(f));
 		shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "PetSelfie");
 		shareIntent.putExtra(Intent.EXTRA_TEXT, getIntent().getStringExtra("message"));
 		shareIntent.setType("video/mp4");
@@ -152,7 +154,7 @@ public class SelfieActivity extends Activity {
 		startActivity(Intent.createChooser(shareIntent, "Share via"));
 	}
 
-	public void save(View view){
+	public File save(View view){
 
 		try {
 			// copy file to movies directory
@@ -173,10 +175,12 @@ public class SelfieActivity extends Activity {
 			);
 
 			showToast("Saved");
+			return dest_file;
 
 		} catch (Exception exc){
 			showToast("Failed");
 		}
+		return null;
 	}
 
 	public void copy(File src, File dst) throws IOException {
