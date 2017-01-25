@@ -48,7 +48,7 @@ public class Recorder implements OnCompletionListener, OnErrorListener, MediaRec
 	OnStateChangedListener mOnStateChangedListener = null;
 
 	long mSampleStart = 0;       // time at which latest record or play operation started
-	int mSampleLength = 0;      // length of current sample
+	int mSampleLength = 0;      // selfie_length of current sample
 	int maxSampleLength = 10;
 	File mSampleFile = null;
 

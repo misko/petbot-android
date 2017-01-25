@@ -4,7 +4,7 @@
     <PreferenceCategory android:title="System">
 
         <com.atos.petbot.UpdatePreference
-            android:key="update"
+            android:key="update_preference"
             android:title="Update"
             android:summary="Retrieve the latest PetBot firmware"
             android:dialogTitle="Updating..."
@@ -85,6 +85,11 @@
             android:key="selfie_sounds"
             android:title="Selfie Sound"
             android:summary="Sound played on PetBot when selfie triggered"/>
+
+        <ListPreference
+            android:key="remove_sounds"
+            android:title="Delete sound"
+            android:summary="Remove an existing sound"/>
 
         <com.atos.petbot.SoundRecorderPreference
             android:key="recorder"

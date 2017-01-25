@@ -6,21 +6,30 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.util.Log;
+import android.view.Gravity;
 import android.widget.SeekBar;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
-import com.atos.petbot.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
 
 public class Settings extends PreferenceFragment implements SoundRecorderPreference.OnSoundUploadedListener {
+
+	SeekBarPreference volume_preference;
+	UpdatePreference update_preference;
+	SeekBarPreference selfie_sensitivity_slider;
+	SeekBarPreference motion_sensitivity_slider;
+	SoundRecorderPreference recorder;
+	NumberPickerPreference selfie_timeout;
+	NumberPickerPreference selfie_length;
+
 
 	PBConnector pb;
 	boolean settings_retrieved = false;
@@ -32,31 +41,18 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 		super.onDestroy();
 	}
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		Log.w("asdfasdf", "ANDROID - CREATE SETTINGS");
-		super.onCreate(savedInstanceState);
-		addPreferencesFromResource(R.xml.fragment_settings);
-
+	private void setup() {
 		ApplicationState application = (ApplicationState) this.getActivity().getApplicationContext();
 
-		JSONObject sounds_info = new JSONObject();
-		try {
-			sounds_info.put("file_type", "mp3");
-			sounds_info.put("start_idx", 0);
-			sounds_info.put("end_idx", 0); //TODO: start_idx and end_idx are not used in server
-		} catch (JSONException error) {
-			//TODO
-		}
 
-		UpdatePreference update = (UpdatePreference) findPreference("update");
-		Log.e("asdfasdf", "??? in settings; " + Boolean.toString(updateable) + " ???");
-		update.setEnabled(updateable);
 
-		SeekBarPreference volume = (SeekBarPreference) findPreference("master_volume");
-		volume.setMax(63);
-		volume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+		update_preference = (UpdatePreference) findPreference("update_preference");
+		update_preference.setEnabled(updateable);
 
+		volume_preference = (SeekBarPreference) findPreference("master_volume");
+		volume_preference.setEnabled(false);
+		volume_preference.setMax(63);
+		volume_preference.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				pb.set("master_volume", Integer.toString(progress));
@@ -69,7 +65,8 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 			public void onStopTrackingTouch(SeekBar seekBar) {}
 		});
 
-		SeekBarPreference selfie_sensitivity_slider = (SeekBarPreference) findPreference("selfie_sensitivity_slider");
+		selfie_sensitivity_slider = (SeekBarPreference) findPreference("selfie_sensitivity_slider");
+		selfie_sensitivity_slider.setEnabled(false);
 		selfie_sensitivity_slider.setMax(100);
 		selfie_sensitivity_slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
@@ -86,10 +83,10 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 			public void onStopTrackingTouch(SeekBar seekBar) {}
 		});
 
-		SeekBarPreference motion_sensitivity_slider = (SeekBarPreference) findPreference("motion_sensitivity_slider");
+		motion_sensitivity_slider = (SeekBarPreference) findPreference("motion_sensitivity_slider");
+		motion_sensitivity_slider.setEnabled(false);
 		motion_sensitivity_slider.setMax(100);
 		motion_sensitivity_slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				float value = ((float)progress)/100;
@@ -103,9 +100,127 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 			public void onStopTrackingTouch(SeekBar seekBar) {}
 		});
 
-		SoundRecorderPreference recorder = (SoundRecorderPreference) findPreference("recorder");
+		recorder = (SoundRecorderPreference) findPreference("recorder");
 		recorder.setOnSoundUploadedListener(this);
+		
+		selfie_timeout = (NumberPickerPreference) findPreference("selfie_timeout");
+		selfie_timeout.setEnabled(false);
+		selfie_timeout.setOnPreferenceChangeListener(
+				new Preference.OnPreferenceChangeListener() {
+					@Override
+					public boolean onPreferenceChange(Preference preference,Object timeout) {
+						Log.w("petbot","setting selfie_timeout to " + Integer.toString((Integer)timeout * 3600));
+						pb.set("selfie_timeout", Integer.toString((Integer)timeout * 3600));
+						return true;
+					}
+				});
 
+		selfie_length = (NumberPickerPreference) findPreference("selfie_length");
+		selfie_length.setEnabled(false);
+		selfie_length.setOnPreferenceChangeListener(
+				new Preference.OnPreferenceChangeListener() {
+					@Override
+					public boolean onPreferenceChange(Preference preference, Object length) {
+						Log.w("petbot","setting selfie_length to " + Integer.toString((Integer)length));
+						pb.set("selfie_length", Integer.toString((Integer)length));
+						return true;
+					}
+				}
+		);
+
+		findPreference("LED").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object checked) {
+				pb.set("pb_led_enable", (Boolean) checked ? "1" : "0");
+				return true;
+			}
+		});
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+
+
+
+
+	}
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		Log.w("asdfasdf", "ANDROID - CREATE SETTINGS");
+		super.onCreate(savedInstanceState);
+		addPreferencesFromResource(R.xml.fragment_settings);
+
+		startMessageThread();
+
+	}
+
+	private void removeFile(String fid ) {
+
+		enableSounds(false);
+		final ApplicationState application = (ApplicationState) this.getActivity().getApplicationContext();
+		JSONObject json_request = new JSONObject(); //TODO CAN REMOVE EMPTY REQUEST?
+
+		JsonObjectRequest remove_request = new JsonObjectRequest(
+				Request.Method.POST,
+				ApplicationState.HTTPS_ADDRESS_PB_RM + application.server_secret + "/"+fid,
+				json_request,
+				new Response.Listener<JSONObject>() {
+					@Override
+					public void onResponse(JSONObject response) {
+
+
+						boolean success = false;
+						try {
+							success = response.getInt("status") == 1;
+						} catch (JSONException error) {
+							//TODO
+						}
+
+						if (success) {
+							Toast toast = Toast.makeText(application.getApplicationContext(), "Removed", Toast.LENGTH_SHORT);
+							toast.setGravity(Gravity.TOP|Gravity.CENTER, 0, 0);
+							toast.show();
+							updateSoundsList();
+						}
+					}
+				},
+				new Response.ErrorListener() {
+					@Override
+					public void onErrorResponse(VolleyError error) {
+							Toast toast = Toast.makeText(application.getApplicationContext(), error.toString(), Toast.LENGTH_SHORT);
+							toast.setGravity(Gravity.TOP|Gravity.CENTER, 0, 0);
+							toast.show();
+					}
+				}
+		);
+		application.request_queue.add(remove_request);
+		return;
+	}
+
+	private void enableSounds(boolean x) {
+		ListPreference alert_sounds = (ListPreference) findPreference("alert_sounds");
+		ListPreference selfie_sounds = (ListPreference) findPreference("selfie_sounds");
+		ListPreference remove_sounds = (ListPreference) findPreference("remove_sounds");
+		alert_sounds.setEnabled(x);
+		selfie_sounds.setEnabled(x);
+		remove_sounds.setEnabled(x);
+	}
+
+	private void updateSoundsList() {
+
+		enableSounds(false);
+
+		ApplicationState application = (ApplicationState) this.getActivity().getApplicationContext();
+		JSONObject sounds_info = new JSONObject();
+		try {
+			sounds_info.put("file_type", "mp3");
+			sounds_info.put("start_idx", 0);
+			sounds_info.put("end_idx", 0); //TODO: start_idx and end_idx are not used in server
+		} catch (JSONException error) {
+			//TODO
+		}
 		JsonObjectRequest sounds_request = new JsonObjectRequest(
 				Request.Method.POST,
 				application.HTTPS_ADDRESS_PB_LS + application.server_secret,
@@ -126,7 +241,7 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 								CharSequence[] sound_names = new CharSequence[sound_files.length()];
 								CharSequence[] sound_IDs = new CharSequence[sound_files.length()];
 
-								for(int index = 0; index < sound_files.length(); index++){
+								for (int index = 0; index < sound_files.length(); index++) {
 									sound_names[index] = sound_files.getJSONArray(index).getString(1);
 									sound_IDs[index] = sound_files.getJSONArray(index).getString(0);
 								}
@@ -138,6 +253,22 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 								ListPreference selfie_sounds = (ListPreference) findPreference("selfie_sounds");
 								selfie_sounds.setEntries(sound_names);
 								selfie_sounds.setEntryValues(sound_IDs);
+
+								ListPreference remove_sounds = (ListPreference) findPreference("remove_sounds");
+								remove_sounds.setEntries(sound_names);
+								remove_sounds.setEntryValues(sound_IDs);
+								remove_sounds.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+									@Override
+									public boolean onPreferenceChange(Preference preference, Object newValue) {
+										String fid = (String) newValue;
+										removeFile(fid);
+										return false;
+									}
+								});
+
+
+
+								enableSounds(true);
 							}
 						} catch (JSONException error) {
 							//TODO
@@ -155,46 +286,13 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 		);
 
 		application.request_queue.add(sounds_request);
-		startMessageThread();
-
-
-		NumberPickerPreference timeout = (NumberPickerPreference) findPreference("selfie_timeout");
-		timeout.setOnPreferenceChangeListener(
-				new Preference.OnPreferenceChangeListener() {
-				@Override
-				public boolean onPreferenceChange(Preference preference,Object timeout) {
-					Log.w("petbot","setting timeout to " + Integer.toString((Integer)timeout * 3600));
-					pb.set("selfie_timeout", Integer.toString((Integer)timeout * 3600));
-					return true;
-				}
-		});
-
-		NumberPickerPreference length = (NumberPickerPreference) findPreference("selfie_length");
-		length.setOnPreferenceChangeListener(
-			new Preference.OnPreferenceChangeListener() {
-				@Override
-				public boolean onPreferenceChange(Preference preference, Object length) {
-					Log.w("petbot","setting length to " + Integer.toString((Integer)length));
-					pb.set("selfie_length", Integer.toString((Integer)length));
-					return true;
-				}
-			}
-		);
-
-		findPreference("LED").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-			@Override
-			public boolean onPreferenceChange(Preference preference, Object checked) {
-				pb.set("pb_led_enable", (Boolean) checked ? "1" : "0");
-				return true;
-			}
-		});
 	}
-
 
 	public void onSoundUploaded(String name, String fileID){
 
 		ListPreference alert_sounds = (ListPreference) findPreference("alert_sounds");
 		ListPreference selfie_sounds = (ListPreference) findPreference("selfie_sounds");
+		ListPreference remove_sounds = (ListPreference) findPreference("remove_sounds");
 		int size = alert_sounds.getEntries().length;
 
 		CharSequence[] sound_names = new CharSequence[size + 1];
@@ -210,17 +308,22 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 
 		selfie_sounds.setEntries(sound_names);
 		selfie_sounds.setEntryValues(fileIDs);
+
+		remove_sounds.setEntries(sound_names);
+		remove_sounds.setEntryValues(fileIDs);
 	}
 
 	void startMessageThread(){
-
-		ApplicationState state = (ApplicationState) this.getActivity().getApplicationContext();
-		pb = new PBConnector(state.server, state.port, state.server_secret, null, null, null, null);
-
 		//start up a read thread
 		final Thread read_thread = new Thread() {
 			@Override
 			public void run() {
+
+				ApplicationState state = (ApplicationState) getActivity().getApplicationContext();
+				pb = new PBConnector(state.server, state.port, state.server_secret, null, null, null, null);
+				pb.getSettings();
+				setup();
+				updateSoundsList();
 
 				int response_mask = PBMsg.PBMSG_SUCCESS | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_STRING;
 
@@ -254,7 +357,6 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 		};
 		read_thread.setDaemon(true);
 		read_thread.start();
-		pb.getSettings();
 	}
 
 	void parseSettings(String settings_string){
@@ -273,20 +375,20 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 					Preference version = findPreference("VERSION");
 					version.setSummary(setting_value);
 				} else if (setting_name.equals("selfie_timeout")) {
-					NumberPickerPreference timeout = (NumberPickerPreference) findPreference("selfie_timeout");
-					timeout.setValue(Integer.parseInt(setting_value) / 3600);
+					selfie_timeout.setValue(Integer.parseInt(setting_value) / 3600);
+					selfie_timeout.setEnabled(true);
 				} else if (setting_name.equals("selfie_length")) {
-					NumberPickerPreference length = (NumberPickerPreference) findPreference("selfie_length");
-					length.setValue(Integer.parseInt(setting_value));
+					selfie_length.setValue(Integer.parseInt(setting_value));
+					selfie_length.setEnabled(true);
 				} else if (setting_name.equals("master_volume")) {
-					SeekBarPreference volume = (SeekBarPreference) findPreference("master_volume");
-					volume.setValue(Integer.parseInt(setting_value));
+					volume_preference.setValue(Integer.parseInt(setting_value));
+					volume_preference.setEnabled(true);
 				} else if (setting_name.equals("selfie_pet_sensitivity")) {
-					SeekBarPreference selfie_sensitivity_slider = (SeekBarPreference) findPreference("selfie_sensitivity_slider");
 					selfie_sensitivity_slider.setValue(Math.round(Float.parseFloat(setting_value)*100));
+					selfie_sensitivity_slider.setEnabled(true);
 				} else if (setting_name.equals("selfie_mot_sensitivity")) {
-					SeekBarPreference motion_sensitivity_slider = (SeekBarPreference) findPreference("motion_sensitivity_slider");
 					motion_sensitivity_slider.setValue(Math.round(Float.parseFloat(setting_value)*100));
+					motion_sensitivity_slider.setEnabled(true);
 				} else if (setting_name.equals("pb_led_enable")) {
 					SwitchPreference led_enable_switch = (SwitchPreference) findPreference("LED");
 					led_enable_switch.setEnabled(true);

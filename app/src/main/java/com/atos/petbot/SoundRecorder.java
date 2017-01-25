@@ -166,7 +166,7 @@ public class SoundRecorder extends LinearLayout
 	}
 
 	/**
-	 * Update the big MM:SS timer. If we are in playback, also update the
+	 * Update the big MM:SS timer. If we are in playback, also update_preference the
 	 * progress bar.
 	 */
 	private void updateAudioProgress() {
@@ -262,7 +262,7 @@ public class SoundRecorder extends LinearLayout
 		switch (error) {
 
 			case Recorder.IN_CALL_RECORD_ERROR:
-				// TODO: update error message to reflect that the recording could not be
+				// TODO: update_preference error message to reflect that the recording could not be
 				//       performed during a call.
 			case Recorder.INTERNAL_ERROR:
 				message = "internal error";

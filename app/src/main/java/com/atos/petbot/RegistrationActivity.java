@@ -133,7 +133,7 @@ public class RegistrationActivity extends Activity implements LoaderCallbacks<Cu
 	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
 										   @NonNull int[] grantResults) {
 		if (requestCode == REQUEST_READ_CONTACTS) {
-			if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+			if (grantResults.selfie_length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 				populateAutoComplete();
 			}
 		}

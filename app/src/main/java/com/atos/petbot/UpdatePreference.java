@@ -41,7 +41,7 @@ public class UpdatePreference extends DialogPreference {
 		// prevent dismissing of dialog by outside clicks
 		builder.setCancelable(false);
 
-		// send command to update PetBot firmware
+		// send command to update_preference PetBot firmware
 		ApplicationState state = (ApplicationState) getContext().getApplicationContext();
 		pb = new PBConnector(state.server, state.port, state.server_secret, null, null, null, null);
 		pb.update();
