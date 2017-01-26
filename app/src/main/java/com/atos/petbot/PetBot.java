@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.media.AudioManager;
 
 import android.graphics.BitmapFactory;
@@ -12,9 +14,11 @@ import android.graphics.BitmapFactory;
 import java.io.InputStream;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -52,6 +56,8 @@ import com.github.pwittchen.swipe.library.SwipeListener;
 
 import rx.Subscription;
 
+import static android.graphics.Paint.ANTI_ALIAS_FLAG;
+
 public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback {
 
 	private native void nativeInit();     // Initialize native code, build pipeline, etc
@@ -64,9 +70,12 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	private native void nativeSurfaceFinalize();
 	private long native_custom_data;      // Native code will use this to keep private data
 	private int bb_streamer_id=0;
+	private int waiting_selfies=0;
 
 	boolean bye_pressed=false;
 	boolean petbot_found=false;
+
+	FloatingActionButton selfieButton;
 
 	String status = "Connecting...";
 
@@ -95,8 +104,10 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 
 				ApplicationState state = (ApplicationState) getApplicationContext();
 				state.status=msg;
-				pb.close();
-				nativePause();
+				if (pb!=null) {
+					pb.close();
+					nativePause();
+				}
 				finish();
 				Intent open_main = new Intent(PetBot.this, LoginActivity.class);
 				PetBot.this.startActivity(open_main);
@@ -210,7 +221,6 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	}
 
 	private void enable_selfie_button(boolean x) {
-		final FloatingActionButton selfieButton = (FloatingActionButton) this.findViewById(R.id.selfieButton);
 		selfieButton.setEnabled(x);
 		if (x) {
 			selfieButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.PBBlueColor)));
@@ -219,12 +229,112 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		}
 	}
 
+	public static Bitmap textAsBitmap(String text, float textSize, int textColor) {
+		Paint paint = new Paint(ANTI_ALIAS_FLAG);
+		paint.setTextSize(textSize);
+		paint.setColor(textColor);
+		paint.setTextAlign(Paint.Align.LEFT);
+		float baseline = -paint.ascent(); // ascent() is negative
+		int width = (int) (paint.measureText(text) + 0.0f); // round
+		int height = (int) (baseline + paint.descent() + 0.0f);
+		Bitmap image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+		Canvas canvas = new Canvas(image);
+		canvas.drawText(text, 0, baseline, paint);
+		return image;
+	}
+
+	private void check_selfie(final boolean activate) {
+
+		ApplicationState state = (ApplicationState) this.getApplicationContext();
+		//code to forget user here
+		JSONObject json_request = new JSONObject();
+
+
+		JsonObjectRequest selfie_request = new JsonObjectRequest(
+				Request.Method.POST,
+				ApplicationState.HTTPS_ADDRESS_PB_SELFIE_LAST+state.server_secret,
+				json_request,
+				new Response.Listener<JSONObject>() {
+					@Override
+					public void onResponse(JSONObject response) {
+						boolean success = false;
+						String rm_url = "";
+						String media_url = "";
+						try {
+							success = response.getInt("status") == 1;
+							waiting_selfies = response.getInt("count");
+							rm_url = response.getString("rm_url");
+							media_url = response.getString("selfie_url");
+						} catch (JSONException error) {
+							//TODO
+						}
+
+						if (success) {
+						} else {
+							waiting_selfies=0;
+						}
+
+						//run the corresponding event
+						if (waiting_selfies>0) {
+							if (activate) {
+								waiting_selfies--;
+								//run selfie activity
+								Intent open_selfie = new Intent(PetBot.this, SelfieActivity.class);
+								open_selfie.putExtra("rm_url", rm_url);
+								open_selfie.putExtra("media_url", media_url);
+								PetBot.this.startActivity(open_selfie);
+								if (waiting_selfies==0) {
+									enable_selfie_button(true);
+								}
+							}
+							if (waiting_selfies>0) {
+								selfieButton.setImageBitmap(textAsBitmap(Integer.toString(waiting_selfies),40, getResources().getColor(R.color.PBTextWhite)));
+								selfieButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.PBRedColor)));
+							} else {
+								selfieButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_video));
+								selfieButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.PBBlueColor)));
+							}
+						} else {
+							if (activate) {
+								vibrator.vibrate(400);
+								pb.takeSelfie();
+								enable_selfie_button(false);
+							}
+						}
+
+					}
+				},
+				new Response.ErrorListener() {
+					@Override
+					public void onErrorResponse(VolleyError error) {
+						waiting_selfies=0;
+						Log.e("asdfasdfasdf", error.toString());
+					}
+				}
+		);
+
+		RequestQueue queue = Volley.newRequestQueue(this);
+		queue.add(selfie_request);
+
+	}
+
 	// Called when the activity is first created.
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+
 		Log.w("petbot", "ANDROID - ON CREATE PETBOT" );
+
+		ApplicationState state = (ApplicationState) this.getApplicationContext();
+
+		pb = new PBConnector(state.server, state.port, state.server_secret, state.stun_server, state.stun_port, state.stun_username, state.stun_password);
+		if (!pb.error.isEmpty()) {
+			exit_with_toast(pb.error);
+			return;
+		}
+
 		start_wait();
 
         this.findViewById(android.R.id.content).setOnLongClickListener(new View.OnLongClickListener() {
@@ -277,10 +387,6 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 				return true;
 			}
 		});*/
-
-		ApplicationState state = (ApplicationState) this.getApplicationContext();
-
-		pb = new PBConnector(state.server, state.port, state.server_secret, state.stun_server, state.stun_port, state.stun_username, state.stun_password);
 
 		//start looking for the petbot
 		final Thread look_thread = new Thread() {
@@ -364,6 +470,26 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 							@Override
 							public void run() {
 								enable_selfie_button(true);
+
+								final Handler handler = new Handler();
+								handler.postDelayed(new Runnable() {
+									@Override
+									public void run() {
+										check_selfie(false);
+									}
+								}, 10*1000);
+								handler.postDelayed(new Runnable() {
+									@Override
+									public void run() {
+										check_selfie(false);
+									}
+								}, 30*1000);
+								handler.postDelayed(new Runnable() {
+									@Override
+									public void run() {
+										check_selfie(false);
+									}
+								}, 60*1000);
 							}
 						});
 					} else {
@@ -412,12 +538,13 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 			}
 		});
 
-		final FloatingActionButton selfieButton = (FloatingActionButton) this.findViewById(R.id.selfieButton);
+		selfieButton = (FloatingActionButton) this.findViewById(R.id.selfieButton);
 		selfieButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				selfieButton.setEnabled(false);
+				check_selfie(true);
+				/*selfieButton.setEnabled(false);
 				vibrator.vibrate(400);
-				pb.takeSelfie();
+				pb.takeSelfie();*/
 			}
 		});
 
@@ -454,6 +581,8 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		sh.addCallback(this);
 
 		nativeInit();
+
+		check_selfie(false);
 
 	}
 

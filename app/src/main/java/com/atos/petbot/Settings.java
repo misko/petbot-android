@@ -1,5 +1,6 @@
 package com.atos.petbot;
 
+import android.app.Application;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -29,6 +30,7 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 	SoundRecorderPreference recorder;
 	NumberPickerPreference selfie_timeout;
 	NumberPickerPreference selfie_length;
+	Preference reboot_preference;
 
 
 	PBConnector pb;
@@ -49,20 +51,31 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 		update_preference = (UpdatePreference) findPreference("update_preference");
 		update_preference.setEnabled(updateable);
 
+		reboot_preference = (Preference) findPreference("reboot_preference");
+		reboot_preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				pb.reboot();
+				return false;
+			}
+		});
+
 		volume_preference = (SeekBarPreference) findPreference("master_volume");
 		volume_preference.setEnabled(false);
 		volume_preference.setMax(63);
 		volume_preference.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				pb.set("master_volume", Integer.toString(progress));
 			}
 
 			@Override
 			public void onStartTrackingTouch(SeekBar seekBar) {}
 
 			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {}
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				pb.set("master_volume", Integer.toString(seekBar.getProgress()));
+
+			}
 		});
 
 		selfie_sensitivity_slider = (SeekBarPreference) findPreference("selfie_sensitivity_slider");
@@ -72,15 +85,16 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				float value = ((float)progress)/100;
-				pb.set("selfie_pet_sensitivity", Float.toString(value));
 			}
 
 			@Override
 			public void onStartTrackingTouch(SeekBar seekBar) {}
 
 			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {}
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				float value = ((float)seekBar.getProgress())/100;
+				pb.set("selfie_pet_sensitivity", Float.toString(value));
+			}
 		});
 
 		motion_sensitivity_slider = (SeekBarPreference) findPreference("motion_sensitivity_slider");
@@ -89,20 +103,22 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 		motion_sensitivity_slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				float value = ((float)progress)/100;
-				pb.set("selfie_mot_sensitivity", Float.toString(value));
 			}
 
 			@Override
 			public void onStartTrackingTouch(SeekBar seekBar) {}
 
 			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {}
+			public void onStopTrackingTouch(SeekBar seekBar) {
+
+				float value = ((float)seekBar.getProgress())/100;
+				pb.set("selfie_mot_sensitivity", Float.toString(value));
+			}
 		});
 
 		recorder = (SoundRecorderPreference) findPreference("recorder");
 		recorder.setOnSoundUploadedListener(this);
-		
+
 		selfie_timeout = (NumberPickerPreference) findPreference("selfie_timeout");
 		selfie_timeout.setEnabled(false);
 		selfie_timeout.setOnPreferenceChangeListener(
@@ -221,6 +237,7 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 		} catch (JSONException error) {
 			//TODO
 		}
+
 		JsonObjectRequest sounds_request = new JsonObjectRequest(
 				Request.Method.POST,
 				application.HTTPS_ADDRESS_PB_LS + application.server_secret,
@@ -253,6 +270,17 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 								ListPreference selfie_sounds = (ListPreference) findPreference("selfie_sounds");
 								selfie_sounds.setEntries(sound_names);
 								selfie_sounds.setEntryValues(sound_IDs);
+								selfie_sounds.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+									@Override
+									public boolean onPreferenceChange(Preference preference, Object newValue) {
+										String fid = (String) newValue;
+
+										ApplicationState state = (ApplicationState) getActivity().getApplicationContext();
+										String url = ApplicationState.HTTPS_ADDRESS_PB_DL +  state.server_secret  + "/"+ fid;
+										pb.set("selfie_sound_url",url);
+										return false;
+									}
+								});
 
 								ListPreference remove_sounds = (ListPreference) findPreference("remove_sounds");
 								remove_sounds.setEntries(sound_names);

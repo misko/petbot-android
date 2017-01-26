@@ -6,6 +6,8 @@ import android.util.Log;
  * Created by miskodzamba on 16-08-28.
  */
 public class PBConnector {
+    String error = "";
+
     static {
         Log.d("petbot", "Try to make pbconnector x2");
         System.loadLibrary("crypto");
@@ -26,7 +28,9 @@ public class PBConnector {
         this.portno=portno;
         this.hostname=hostname;
         connectToServerWithKey(hostname,portno,key);
-        init();
+        error = init();
+        Log.w("petbot","ERROR IS ");
+        Log.w("petbot","ERROR IS " + error);
     }
 
 	public void getSettings(){
@@ -101,6 +105,11 @@ public class PBConnector {
 		sendPBMsg(m);
 	}
 
+    public void reboot() {
+        PBMsg m = new PBMsg("QUIT", PBMsg.PBMSG_STRING);
+        sendPBMsg(m);
+    }
+
 
     public String hostname = "";
     public int portno=0;
@@ -115,7 +124,7 @@ public class PBConnector {
     public native void iceRequest();
     public native void makeIceRequest();
     public native void iceNegotiate(PBMsg m);
-    public native void init();
+    public native String init();
 
 
 

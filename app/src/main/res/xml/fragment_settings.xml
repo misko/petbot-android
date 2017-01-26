@@ -17,6 +17,12 @@
             android:title="Version"
             android:summary="unknown"/>
 
+
+        <Preference
+            android:key="reboot_preference"
+            android:title="Reboot PetBot"
+            android:summary=""/>
+
         <Preference
             android:title="Help"
             android:summary="Our online manual and troubleshooting guide">

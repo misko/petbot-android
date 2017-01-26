@@ -144,7 +144,7 @@ static void * start_GMain(void * x) {
         //TODO cleanup? Thread join?
 }
 
-void Java_com_atos_petbot_PBConnector_init(JNIEnv * env, jobject thiz) {
+jstring Java_com_atos_petbot_PBConnector_init(JNIEnv * env, jobject thiz) {
         GMainLoop * main_loop = g_main_loop_new (NULL, FALSE);
 
         jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
@@ -183,6 +183,11 @@ void Java_com_atos_petbot_PBConnector_init(JNIEnv * env, jobject thiz) {
 
     jfieldID pbnio_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_pbnio", "J");
     (*env)->SetLongField(env,thiz, pbnio_field, pbnio);
+
+    if (pbnio->error!=NULL) {
+        return (*env)->NewStringUTF(env, pbnio->error);
+    }
+    return (*env)->NewStringUTF(env, "");
 }
 
 

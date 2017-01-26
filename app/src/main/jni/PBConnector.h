@@ -16,6 +16,6 @@ void Java_com_atos_petbot_PBConnector_setStun(JNIEnv* env,jobject thiz, jstring 
 JNIEXPORT jstring JNICALL
 Java_com_atos_petbot_PBConnector_stringFromJNI( JNIEnv* env,
                                                   jobject thiz );
-
-JNIEXPORT jbyteArray JNICALL Java_com_atos_petbot_PBConnector_newByteArray(JNIEnv* env,jobject thiz )
+JNIEXPORT jstring JNICALL Java_com_atos_petbot_PBConnector_init(JNIEnv * env, jobject thiz);
+JNIEXPORT jbyteArray JNICALL Java_com_atos_petbot_PBConnector_newByteArray(JNIEnv* env,jobject thiz );
 #endif //PETBOT_ANDROID_PBCONNECTOR_H
