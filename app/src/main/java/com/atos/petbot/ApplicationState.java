@@ -41,6 +41,7 @@ public class ApplicationState extends Application {
 	public void onCreate() {
 		super.onCreate();
 
+		FirebaseLogger.initialize(this.getApplicationContext());
 		request_queue = Volley.newRequestQueue(this.getApplicationContext());
 	}
 }

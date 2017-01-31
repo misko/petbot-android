@@ -46,6 +46,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 /**
@@ -66,6 +67,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 	private View mLoginFormView;
 	private SharedPreferences sharedPreferences;
 
+	boolean debug_mode = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -96,12 +98,22 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 			}
 		});
 
+		mUsernameSignInButton.setOnLongClickListener(new View.OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View view) {
+
+				debug_mode = true;
+				FirebaseLogger.setLogLevel(FirebaseLogger.log_level.DEBUG);
+				view.setBackgroundColor(getResources().getColor(R.color.PBRedColor));
+
+				return false;
+			}
+		});
 
 		Button forgetMeButton = (Button) findViewById(R.id.forgetme);
 		forgetMeButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
-
 				deauth();
 			}
 		});
@@ -139,7 +151,6 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 	}
 
 	private void deauth() {
-
 
 		Log.e("petbot", "DEAUTH!");
 		//code to forget user here
@@ -306,6 +317,11 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 							}
 
 							if (success) {
+
+								if(debug_mode) {
+									FirebaseAnalytics firebase = FirebaseAnalytics.getInstance(context);
+									firebase.setUserId(username);
+								}
 
 								SharedPreferences.Editor editor = sharedPreferences.edit();
 								editor.putString("username", username);
