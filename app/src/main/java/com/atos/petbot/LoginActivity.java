@@ -54,10 +54,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
  */
 public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
-	//private static final String HTTPS_ADDRESS_AUTH = "https://petbot.ca:5000/AUTH";
-	/**
-	 * Id to identity READ_CONTACTS permission request.
-	 */
+	// Id to identity READ_CONTACTS permission request.
 	private static final int REQUEST_READ_CONTACTS = 0;
 
 	// UI references.
@@ -105,6 +102,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 				debug_mode = true;
 				FirebaseLogger.setLogLevel(FirebaseLogger.log_level.DEBUG);
 				view.setBackgroundColor(getResources().getColor(R.color.PBRedColor));
+				FirebaseLogger.logInfo("debug mode set");
 
 				return false;
 			}
@@ -152,13 +150,12 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
 	private void deauth() {
 
-		Log.e("petbot", "DEAUTH!");
-		//code to forget user here
+		FirebaseLogger.logInfo("deauthenticating user");
 		JSONObject json_request = new JSONObject();
 		try {
 			json_request.put("deviceID", FirebaseInstanceId.getInstance().getToken());
 		} catch (JSONException error) {
-			//TODO
+			FirebaseLogger.logError(error.toString());
 		}
 
 		JsonObjectRequest deauth_request = new JsonObjectRequest(
@@ -169,15 +166,17 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 					@Override
 					public void onResponse(JSONObject response) {
 
+						FirebaseLogger.logDebug("deauth response:\n" + response.toString());
 						showProgress(false);
 
 						boolean success = false;
 						try {
 							success = response.getInt("status") == 1;
 						} catch (JSONException error) {
-							//TODO
+							FirebaseLogger.logError(error.toString());
 						}
 
+						FirebaseLogger.logInfo("deauth success; " + Boolean.toString(success));
 						if (success) {
 							SharedPreferences.Editor editor = sharedPreferences.edit();
 							editor.putString("username", "");
@@ -191,7 +190,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 				new Response.ErrorListener() {
 					@Override
 					public void onErrorResponse(VolleyError error) {
-						Log.e("asdfasdfasdf", error.toString());
+						FirebaseLogger.logError("deauth error:\n" + error.toString());
 						showProgress(false);
 					}
 				}
@@ -236,7 +235,6 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 		//hide the keyboard
 		View view = this.getCurrentFocus();
 		if (view != null) {
-			Log.w("petbot", "DEAUTH! - hide");
 			InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
 			imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 		}
@@ -249,6 +247,9 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 	 * errors are presented and no actual login attempt is made.
 	 */
 	private void attemptLogin() {
+
+		FirebaseLogger.logInfo("attempting login");
+
 		hideKeyboard();
 		// Reset errors.
 		mUsernameView.setError(null);
@@ -295,7 +296,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 				login_info.put("deviceID", FirebaseInstanceId.getInstance().getToken());
 				login_info.put("notifier", "firebase");
 			} catch (JSONException error) {
-				//TODO
+				FirebaseLogger.logError(error.toString());
 			}
 
 			final Context context = this.getApplicationContext();
@@ -307,13 +308,14 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 						@Override
 						public void onResponse(JSONObject response) {
 
+							FirebaseLogger.logDebug("login response:\n" + response.toString());
 							showProgress(false);
 
 							boolean success = false;
 							try {
 								success = response.getInt("status") == 1;
 							} catch (JSONException error) {
-								//TODO
+								FirebaseLogger.logError(error.toString());
 							}
 
 							if (success) {
@@ -322,14 +324,12 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 									FirebaseAnalytics firebase = FirebaseAnalytics.getInstance(context);
 									firebase.setUserId(username);
 								}
+								FirebaseLogger.logInfo("login success");
 
 								SharedPreferences.Editor editor = sharedPreferences.edit();
 								editor.putString("username", username);
 								editor.putString("password", password);
 								editor.commit();
-
-								finish();
-								Intent open_main = new Intent(LoginActivity.this, PetBot.class);
 
 								try {
 									JSONObject pbserver = response.getJSONObject("pubsubserver");
@@ -348,14 +348,17 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
 									Settings.updateable = !TextUtils.isEmpty(response.getString("updates_allowed"));
 
-									Log.e("asdfasdf", pbserver.toString());
-									Log.e("asdfasdf", pbserver.getString("server"));
-									Log.e("asdfasdf", state.server);
+									Intent open_main = new Intent(LoginActivity.this, PetBot.class);
 									LoginActivity.this.startActivity(open_main);
+									finish();
+
 								} catch (JSONException error) {
 									Log.e("petbot", error.toString());
 								}
+
 							} else {
+								// TODO: put reason for login failure
+								FirebaseLogger.logInfo("login failed");
 								mPasswordView.setError(getString(R.string.error_incorrect_password));
 								mPasswordView.requestFocus();
 							}
@@ -364,7 +367,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 					new Response.ErrorListener() {
 						@Override
 						public void onErrorResponse(VolleyError error) {
-							Log.e("asdfasdfasdf", error.toString());
+							FirebaseLogger.logError("login error:\n"  + error.toString());
 							showProgress(false);
 							Toast toast = Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_SHORT);
 							toast.setGravity(Gravity.TOP|Gravity.CENTER, 0, 0);
@@ -374,6 +377,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 			);
 
 			RequestQueue queue = Volley.newRequestQueue(this);
+			FirebaseLogger.logInfo("adding login request to queue");
 			queue.add(login_request);
 
 		}
