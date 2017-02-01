@@ -353,7 +353,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 									finish();
 
 								} catch (JSONException error) {
-									Log.e("petbot", error.toString());
+									FirebaseLogger.logError(error.toString());
 								}
 
 							} else {

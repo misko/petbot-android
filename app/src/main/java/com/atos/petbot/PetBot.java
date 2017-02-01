@@ -69,11 +69,11 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	private native void nativeSurfaceInit(Object surface);
 	private native void nativeSurfaceFinalize();
 	private long native_custom_data;      // Native code will use this to keep private data
-	private int bb_streamer_id=0;
-	private int waiting_selfies=0;
+	private int bb_streamer_id = 0;
+	private int waiting_selfies = 0;
 
-	boolean bye_pressed=false;
-	boolean petbot_found=false;
+	boolean bye_pressed = false;
+	boolean petbot_found = false;
 
 	FloatingActionButton selfieButton;
 
@@ -116,10 +116,11 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	}
 
 	private void look_for_petbot(int attempt) {
+
 		while (!petbot_found) {
+
 			if (attempt == 0) {
 				set_status("Looking for your PetBot...");
-				//"Looking for your PetBot..."
 			} else {
 				String s = "Looking for your PetBot... (x" + Integer.toString(attempt+1) + ")";
 				set_status(s);
@@ -134,6 +135,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 			attempt++;
 		}
  	}
+
 	private class DownLoadImageTask extends AsyncTask<String,Void,Bitmap>{
 		ImageView imageView;
 
@@ -179,13 +181,16 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		//code to forget user here
 		JSONObject json_request = new JSONObject();
 
-		JsonObjectRequest deauth_request = new JsonObjectRequest(
+		JsonObjectRequest story_request = new JsonObjectRequest(
 				Request.Method.POST,
 				ApplicationState.HTTPS_ADDRESS_PB_WAIT,
 				json_request,
 				new Response.Listener<JSONObject>() {
+
 					@Override
 					public void onResponse(JSONObject response) {
+
+						FirebaseLogger.logDebug("pet story response:\n" + response.toString());
 						boolean success = false;
 						try {
 							success = response.getInt("status") == 1;
@@ -193,6 +198,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 							String img = pet.getString("img");
 							String name = pet.getString("name");
 							String story = pet.getString("story");
+
 							ImageView petImageView = (ImageView) findViewById(R.id.petImageView);
 							new DownLoadImageTask(petImageView).execute(img);
 
@@ -200,24 +206,23 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 							petName.setText(name);
 							TextView petStory = (TextView) findViewById(R.id.petStory);
 							petStory.setText(story);
+
 						} catch (JSONException error) {
-							//TODO
+							FirebaseLogger.logError(error.toString());
 						}
 
-						if (success) {
-						}
 					}
 				},
 				new Response.ErrorListener() {
 					@Override
 					public void onErrorResponse(VolleyError error) {
-						Log.e("asdfasdfasdf", error.toString());
+						FirebaseLogger.logError("pet story error:\n" + error.toString());
 					}
 				}
 		);
 
 		RequestQueue queue = Volley.newRequestQueue(this);
-		queue.add(deauth_request);
+		queue.add(story_request);
 	}
 
 	private void enable_selfie_button(boolean x) {
@@ -247,17 +252,18 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	private void check_selfie(final boolean activate) {
 
 		ApplicationState state = (ApplicationState) this.getApplicationContext();
-		//code to forget user here
+
 		JSONObject json_request = new JSONObject();
-
-
 		JsonObjectRequest selfie_request = new JsonObjectRequest(
 				Request.Method.POST,
 				ApplicationState.HTTPS_ADDRESS_PB_SELFIE_LAST+state.server_secret,
 				json_request,
 				new Response.Listener<JSONObject>() {
+
 					@Override
 					public void onResponse(JSONObject response) {
+
+						FirebaseLogger.logDebug("pet story response:\n" + response.toString());
 						boolean success = false;
 						String rm_url = "";
 						String media_url = "";
@@ -267,16 +273,17 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 							rm_url = response.getString("rm_url");
 							media_url = response.getString("selfie_url");
 						} catch (JSONException error) {
-							//TODO
+							FirebaseLogger.logError(error.toString());
 						}
 
-						if (success) {
-						} else {
-							waiting_selfies=0;
+						if (!success) {
+							// TODO: log reason why this was not a success
+							waiting_selfies = 0;
 						}
 
 						//run the corresponding event
-						if (waiting_selfies>0) {
+						if (waiting_selfies > 0) {
+
 							if (activate) {
 								waiting_selfies--;
 								//run selfie activity
@@ -288,13 +295,15 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 									enable_selfie_button(true);
 								}
 							}
-							if (waiting_selfies>0) {
+
+							if (waiting_selfies > 0) {
 								selfieButton.setImageBitmap(textAsBitmap(Integer.toString(waiting_selfies),40, getResources().getColor(R.color.PBTextWhite)));
 								selfieButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.PBRedColor)));
 							} else {
 								selfieButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_video));
 								selfieButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.PBBlueColor)));
 							}
+
 						} else {
 							if (activate) {
 								vibrator.vibrate(400);
@@ -308,8 +317,8 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 				new Response.ErrorListener() {
 					@Override
 					public void onErrorResponse(VolleyError error) {
-						waiting_selfies=0;
-						Log.e("asdfasdfasdf", error.toString());
+						FirebaseLogger.logError("pet story error:\n" + error.toString());
+						waiting_selfies = 0;
 					}
 				}
 		);
@@ -348,16 +357,11 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 
 		swipe = new Swipe();
 		swipe.addListener(new SwipeListener() {
-			@Override public void onSwipingLeft(final MotionEvent event) {
-			}
-			@Override public void onSwipingRight(final MotionEvent event) {
-			}
 
-			@Override public void onSwipingUp(final MotionEvent event) {
-			}
-
-			@Override public void onSwipingDown(final MotionEvent event) {
-			}
+			@Override public void onSwipingLeft(final MotionEvent event) {}
+			@Override public void onSwipingRight(final MotionEvent event) {}
+			@Override public void onSwipingUp(final MotionEvent event) {}
+			@Override public void onSwipingDown(final MotionEvent event) {}
 
 			@Override public void onSwipedLeft(final MotionEvent event) {
 				Log.w("petbot","SWIPED_LEFT");
@@ -368,6 +372,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 				Log.w("petbot","SWIPED_RIGHT");
 				pb.camera_fx_up();
 			}
+
 			@Override public void onSwipedUp(final MotionEvent event) {
 				Log.w("petbot","SWIPED_UP");
 				pb.camera_exp_up();
@@ -378,15 +383,6 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 				pb.camera_exp_down();
 			}
 		});
-
-
-		/*RelativeLayout myView = (RelativeLayout) findViewById(R.id.mainLayout);
-		myView.setOnTouchListener(new View.OnTouchListener() {
-			public boolean onTouch(View v, MotionEvent event) {
-				// ... Respond to touch events
-				return true;
-			}
-		});*/
 
 		//start looking for the petbot
 		final Thread look_thread = new Thread() {
@@ -400,23 +396,31 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 
 		//start up a read thread
 		final Thread read_thread = new Thread() {
+
 			@Override
 			public void run() {
+
 				while (true) {
+
 					Log.w("petbot", "ANDROID - READ MSG");
 					final PBMsg m = pb.readPBMsg();
 					Log.w("petbot", "ANDROID - READ MSG -DONE");
+
 					if (m == null) {
-						Log.w("petbot", "ANDROID - LEAVE READ THREAD");
 						if (!bye_pressed) {
+							FirebaseLogger.logError("connection closed");
 							exit_with_toast("PetBot connection closed");
 						}
 						break;
 					}
-					if ((m.pbmsg_type ^ (PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_STRING))==0) {
-						if (petbot_found==false) {
+
+					if ((m.pbmsg_type ^ (PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_STRING)) == 0) {
+
+						if (!petbot_found) {
+
 							String msg = new String(m.pbmsg);
 							String[] parts = msg.split(" ");
+
 							if (parts[0].equals("UPTIME")) {
 								int uptime = Integer.parseInt(parts[1]);
 								if (uptime > 20) {
@@ -428,15 +432,19 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 								}
 							}
 						}
-					} else if ((m.pbmsg_type ^  (PBMsg.PBMSG_SUCCESS | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_ICE | PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_STRING))==0) {
-						Log.w("petbot","got ice response!!" + Integer.toString(bb_streamer_id));
-						if (bb_streamer_id==0) {
-							bb_streamer_id=m.pbmsg_from;
+
+					} else if ((m.pbmsg_type ^  (PBMsg.PBMSG_SUCCESS | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_ICE | PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_STRING)) == 0) {
+
+						FirebaseLogger.logError("got ice response: " + Integer.toString(bb_streamer_id));
+						if (bb_streamer_id == 0) {
+
+							bb_streamer_id = m.pbmsg_from;
 							Thread negotiate_thread = new Thread() {
+
 								@Override
 								public void run() {
-									pb.iceNegotiate(m);
 
+									pb.iceNegotiate(m);
 									runOnUiThread(new Runnable() {
 										@Override
 										public void run() {
@@ -448,27 +456,38 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 									nativePlayAgent(pb.ptr_agent, pb.stream_id);
 								}
 							};
+
 							negotiate_thread.setDaemon(true);
 							negotiate_thread.start();
+
 						} else {
-							//someone else connected
+							FirebaseLogger.logWarn("multiple client connection attempt");
 							exit_with_toast("Someone else connected :(");
 							return;
 						}
-					} else if ((m.pbmsg_type & PBMsg.PBMSG_DISCONNECTED) !=0) {
-						if (m.pbmsg_from==bb_streamer_id) {
+
+					} else if ((m.pbmsg_type & PBMsg.PBMSG_DISCONNECTED) != 0) {
+
+						if (m.pbmsg_from == bb_streamer_id) {
+
 							if (!bye_pressed) {
+								FirebaseLogger.logError("PetBot connection closed");
 								exit_with_toast("PetBot connection closed");
 							}
 							break;
-							//g_main_loop_quit(main_loop);
+
 						} else {
+							FirebaseLogger.logWarn("other client disconnected: " + Integer.toString(bb_streamer_id));
 							//fprintf(stderr,"SOMEONE ELSE DISCONNETED %d vs %d\n",bb_streamer_id,m->pbmsg_from);
 						}
-					} else if ((m.pbmsg_type ^  (PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_STRING | PBMsg.PBMSG_SUCCESS))==0) {
+
+					} else if ((m.pbmsg_type ^  (PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_STRING | PBMsg.PBMSG_SUCCESS)) == 0) {
+
 						runOnUiThread(new Runnable() {
+
 							@Override
 							public void run() {
+
 								enable_selfie_button(true);
 
 								final Handler handler = new Handler();
@@ -492,27 +511,15 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 								}, 60*1000);
 							}
 						});
+
 					} else {
-						Log.w("petbot", "READ" + m.toString());
+						FirebaseLogger.logWarn("unknown message:\n" + m.toString());
 					}
 				}
 			}
 		};
 		read_thread.setDaemon(true);
 		read_thread.start();
-
-
-		//start up a read thread
-		/*Thread request_thread = new Thread() {
-			@Override
-			public void run() {
-				Log.w("petbot", "ANDROID - ICE REQUEST ");
-				pb.iceRequest();
-				Log.w("petbot", "ANDROID - ICE REQUEST DONE");
-			}
-		};
-		request_thread.setDaemon(true);
-		request_thread.start();*/
 
 		Log.w("petbot", String.valueOf(pb.ptr_pbs));
 
@@ -542,9 +549,6 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		selfieButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				check_selfie(true);
-				/*selfieButton.setEnabled(false);
-				vibrator.vibrate(400);
-				pb.takeSelfie();*/
 			}
 		});
 
@@ -587,10 +591,13 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	}
 
 	public void playSound() {
+
 		final ApplicationState application = (ApplicationState) getApplicationContext();
+
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 		String sound_ID  = preferences.getString("alert_sounds", "00000000000000000000000000000000");
 		vibrator.vibrate(400);
+
 		String url = "https://petbot.ca:5000/FILES_DL/" + application.server_secret + "/" + sound_ID;
 		MediaPlayer mediaPlayer = new MediaPlayer();
 		mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -598,35 +605,11 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 			mediaPlayer.setDataSource(url);
 			mediaPlayer.prepare(); // might take long! (for buffering, etc)
 		} catch (IOException error) {
-			//TODO
-			Log.e("petbot", error.toString());
+			FirebaseLogger.logError(error.toString());
 		}
+
 		mediaPlayer.start();
 		pb.playSound(url);
-	}
-
-	public void setSound(final String sound_ID){
-
-
-		final ApplicationState application = (ApplicationState) getApplicationContext();
-		FloatingActionButton soundButton = (FloatingActionButton) this.findViewById(R.id.soundButton);
-		soundButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				vibrator.vibrate(400);
-				String url = "https://petbot.ca:5000/FILES_DL/" + application.server_secret + "/" + sound_ID;
-				MediaPlayer mediaPlayer = new MediaPlayer();
-				mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-				try {
-					mediaPlayer.setDataSource(url);
-					mediaPlayer.prepare(); // might take long! (for buffering, etc)
-				} catch (IOException error) {
-					//TODO
-					Log.e("petbot", error.toString());
-				}
-				mediaPlayer.start();
-				pb.playSound(url);
-			}
-		});
 	}
 
 	public void onConfigurationChanged(Configuration newConfig) {
@@ -676,8 +659,15 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	}
 
 	protected void onDestroy() {
-		Log.w("Petbot","WTF WTF DESTROY????");
-		Log.d("Petbot", Log.getStackTraceString(new Exception()));
+
+		if(!isFinishing()) {
+			try {
+				new Exception();
+			} catch(Exception error) {
+				FirebaseLogger.logError(Log.getStackTraceString(error));
+			}
+		}
+
 		nativeFinalize();
 		super.onDestroy();
 	}
@@ -695,7 +685,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	// Called from native code. Native code calls this once it has created its pipeline and
 	// the main loop is running, so it is ready to accept commands.
 	private void onGStreamerInitialized () {
-		Log.w("petbot","GSTREAMER PLAY!!");
+		FirebaseLogger.logInfo("gstreamer play");
 		nativePlay();
 	}
 
@@ -708,22 +698,19 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		nativeClassInit();
 	}
 
-	public void surfaceChanged(SurfaceHolder holder, int format, int width,
-							   int height) {
-		Log.d("GStreamer", "Surface changed to format " + format + " width "
-				+ width + " height " + height);
+	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+		FirebaseLogger.logDebug("Surface changed to format " + format + " width " + width + " height " + height);
 		nativeSurfaceInit (holder.getSurface());
-
 	}
 
 	public void surfaceCreated(SurfaceHolder holder) {
-		Log.d("GStreamer", "Surface created: " + holder.getSurface());
+		FirebaseLogger.logDebug("Surface created: " + holder.getSurface());
 	}
 
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		Log.d("GStreamer", "Surface destroyed");
+		FirebaseLogger.logDebug("Surface destroyed");
 		nativeSurfaceFinalize ();
-		Log.d("GStreamer", "Surface destroyed - done");
+		FirebaseLogger.logDebug("Surface destroyed - done");
 	}
 
 	@Override
