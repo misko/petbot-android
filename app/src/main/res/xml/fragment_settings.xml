@@ -33,7 +33,7 @@
         <SwitchPreference
             android:key="LED"
             android:title="LED enable"
-            android:summary="Take selfies automatically"
+            android:summary="Turn the LED on the bottom of the PetBot on or off"
             android:enabled="false" />
 
     </PreferenceCategory>
