@@ -684,12 +684,12 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 
 	// Called from native code. This sets the content of the TextView from the UI thread.
 	private void setMessage(final String message) {
-		final TextView tv = (TextView) this.findViewById(R.id.textview_message);
-		runOnUiThread (new Runnable() {
+		//final TextView tv = (TextView) this.findViewById(R.id.textview_message);
+		/*runOnUiThread (new Runnable() {
 			public void run() {
 				tv.setText(message);
 			}
-		});
+		});*/
 	}
 
 	// Called from native code. Native code calls this once it has created its pipeline and
