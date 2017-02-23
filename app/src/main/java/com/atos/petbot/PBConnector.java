@@ -6,7 +6,10 @@ import android.util.Log;
  * Created by miskodzamba on 16-08-28.
  */
 public class PBConnector {
-    String error = "";
+
+    public static int NICE_MODE_OLD = 0;
+    public static int NICE_MODE_SDP = 1;
+    public static int NICE_MODE_WEBRTC = 2;
 
     static {
         Log.d("petbot", "Try to make pbconnector x2");
@@ -17,21 +20,20 @@ public class PBConnector {
 
     public PBConnector (String hostname, int portno, String key, String stun_server, String stun_port, String stun_username , String stun_password) {
         Log.w("petbot", "Create PBConnector");
-        Log.w("petbot", (new PBMsg()).toString());
-        Log.w("petbot", (new PBMsg("Test")).toString());
+        //Log.w("petbot", (new PBMsg()).toString());
+        //Log.w("petbot", (new PBMsg("Test")).toString());
 
-        if (stun_server!=null && stun_port!=null) {
-            setStun(stun_server,stun_port,stun_username,stun_password);
-        }
+        //if (stun_server!=null && stun_port!=null) {
+        //    setStun(stun_server,stun_port,stun_username,stun_password);
+        //}
 
         this.key=key;
         this.portno=portno;
         this.hostname=hostname;
         connectToServerWithKey(hostname,portno,key);
-        error = init();
-        Log.w("petbot","ERROR IS ");
-        Log.w("petbot","ERROR IS " + error);
+        //init();
     }
+
 
 	public void getSettings(){
 		PBMsg m = new PBMsg("all", PBMsg.PBMSG_CONFIG_GET | PBMsg.PBMSG_STRING | PBMsg.PBMSG_REQUEST);
@@ -95,9 +97,16 @@ public class PBConnector {
         nativeClose();
     }
 
-	public void update() {
-		PBMsg m = new PBMsg("UPDATE updates@updates.petbot.ca:/", PBMsg.PBMSG_UPDATE | PBMsg.PBMSG_STRING | PBMsg.PBMSG_REQUEST);
-		sendPBMsg(m);
+	public void update(String u) {
+        if (!u.isEmpty()) {
+            PBMsg m;
+            if (u.equals("dev")) {
+                m=new PBMsg("UPDATE updates-dev@updates.petbot.ca:/", PBMsg.PBMSG_UPDATE | PBMsg.PBMSG_STRING | PBMsg.PBMSG_REQUEST);
+            } else {
+                m=new PBMsg("UPDATE updates@updates.petbot.ca:/", PBMsg.PBMSG_UPDATE | PBMsg.PBMSG_STRING | PBMsg.PBMSG_REQUEST);
+            }
+            sendPBMsg(m);
+        }
 	}
 
 	public void cancelUpdate() {
@@ -107,6 +116,11 @@ public class PBConnector {
 
     public void reboot() {
         PBMsg m = new PBMsg("QUIT", PBMsg.PBMSG_STRING);
+        sendPBMsg(m);
+    }
+
+    public void log(String x) {
+        PBMsg m = new PBMsg("LOG "+x, PBMsg.PBMSG_STRING);
         sendPBMsg(m);
     }
 
@@ -124,7 +138,9 @@ public class PBConnector {
     public native void iceRequest();
     public native void makeIceRequest();
     public native void iceNegotiate(PBMsg m);
-    public native String init();
+    public native void init();
+    public native String getError();
+    public native String getIcePair();
 
 
 
@@ -134,6 +150,7 @@ public class PBConnector {
     public long ptr_ctx = 0; //the ssl ctx reference pointer
     public long ptr_ice_thread_pipes_from_child = 0;
     public long ptr_ice_thread_pipes_to_child = 0;
+    public int nice_mode = 0;
     public int streamer_id=0;
 
     public long ptr_agent=0;
