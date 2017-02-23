@@ -3,6 +3,7 @@ package com.atos.petbot;
 import android.os.Bundle;
 import android.app.Activity;
 import android.util.Log;
+import android.view.WindowManager;
 
 import com.atos.petbot.R;
 
@@ -12,6 +13,8 @@ public class SettingsActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_settings);
+
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
 
 	@Override
