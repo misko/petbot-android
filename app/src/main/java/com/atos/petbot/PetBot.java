@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
+import android.support.annotation.IntegerRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MotionEventCompat;
@@ -27,6 +28,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -65,6 +67,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	private native void nativeFinalize(); // Destroy pipeline and shutdown native code
 	private native void nativePlay();     // Set pipeline to PLAYING
 	private native void nativePause();    // Set pipeline to PAUSED
+	private native int[] jitterStats();
 	private static native boolean nativeClassInit(); // Initialize native class: cache Method IDs for callbacks
 	private native void nativeSurfaceInit(Object surface);
 	private native void nativeSurfaceFinalize();
@@ -72,12 +75,17 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	private int bb_streamer_id = 0;
 	private int waiting_selfies = 0;
 
+	Handler handler;
+	private TextView ice_textview=null;
+	private TextView fps_textview=null;
+
+
 	boolean bye_pressed = false;
 	boolean petbot_found = false;
 
 	FloatingActionButton selfieButton;
 
-	String status = "Connecting...";
+	String status = "";
 
 	PBConnector pb;
 	private Swipe swipe;
@@ -85,32 +93,56 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 	Vibrator vibrator;
 
 
-	private void set_status(String s) {
-		status=s;
+
+	private void set_status(final String s) {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				TextView connect_text = (TextView) findViewById(R.id.connect_status);
-				connect_text.setText(status);
+				connect_text.setText(s);
 			}
 		});
 	}
 
-	public void exit_with_toast(final String msg) {
+	public void exit_streaming() {
 		//TODO USE THE TOAST?
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 
 				ApplicationState state = (ApplicationState) getApplicationContext();
-				state.status=msg;
+				if (!status.isEmpty()) {
+					state.status = status;
+				}
 				if (pb!=null) {
 					pb.close();
+					pb=null;
+					Log.w("petbot", "ANDROID - SETTING NULL" );
 					nativePause();
 				}
 				finish();
+
+				Log.w("petbot", "ANDROID - FINISH" );
 				Intent open_main = new Intent(PetBot.this, LoginActivity.class);
 				PetBot.this.startActivity(open_main);
+			}
+		});
+	}
+
+	private void fps_monitor() {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+
+				Log.w("petbot", "ANDROID - JITTER" );
+				if (pb != null) {
+					int jt[] = jitterStats();
+					Log.w("petbot", "ANDROID - JITTER x2" );
+					if (jt != null) {
+						Log.w("petbot", "ANDROID - JITTER x3" );
+						fps_textview.setText(Integer.toString(jt[0]) + "/" + Integer.toString(jt[1]) + "/" + Integer.toString(jt[2]) + "/" + Integer.toString(jt[3]));
+					}
+				}
 			}
 		});
 	}
@@ -336,15 +368,78 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 
 		Log.w("petbot", "ANDROID - ON CREATE PETBOT" );
 
-		ApplicationState state = (ApplicationState) this.getApplicationContext();
+		setContentView(R.layout.main);
+
+		final ApplicationState state = (ApplicationState) this.getApplicationContext();
+
+		set_status("Connecting...");
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+		Foreground.Listener myListener = new Foreground.Listener() {
+			@Override
+			public void onBecameForeground() {
+				Log.w("petbot","WTF FOREGROUND????!?!!?");
+
+			}
+
+			@Override
+			public void onBecameBackground() {
+				Log.w("petbot","WTF BACKGROUND????!?!!?");
+				exit_streaming();
+			}
+		};
+		 Foreground.get(this).addListener(myListener);
+
+		status="";
+		ice_textview = (TextView) this.findViewById(R.id.ice_textview);
+		fps_textview = (TextView) this.findViewById(R.id.fps_textview);
+		if (!state.debug_mode) {
+			ice_textview.setVisibility(View.GONE);
+			fps_textview.setVisibility(View.GONE);
+		} else {
+
+			handler =new Handler();
+			final int delay = 1000; //milliseconds
+			handler.postDelayed(new Runnable(){
+				public void run(){
+					fps_monitor();
+					if (pb!=null) {
+						handler.postDelayed(this, delay);
+					}
+				}
+			}, delay);
+		}
+		ice_textview.setText("");
+		fps_textview.setText("");
+
 
 		pb = new PBConnector(state.server, state.port, state.server_secret, state.stun_server, state.stun_port, state.stun_username, state.stun_password);
-		if (!pb.error.isEmpty()) {
-			exit_with_toast(pb.error);
+		Log.w("petbot","GOT EHRE");
+		Log.w("petbot","GOT EHRE");
+		Log.w("petbot","GOT EHRE");
+		Log.w("petbot","GOT EHRE");
+		Log.w("petbot","GOT EHRE");
+		Log.w("petbot","GOT EHRE");
+		Log.w("petbot","GOT EHRE");
+		if (!pb.getError().isEmpty()) {
+			pb.log("INIT ERROR " + pb.getError());
+			status = pb.getError();
+			Log.w("petbot","GOT EHREx3");
+			Log.w("petbot","GOT EHREx3");
+			Log.w("petbot","GOT EHREx3");
+			Log.w("petbot","GOT EHREx3");
+			exit_streaming();
 			return;
 		}
+		Log.w("petbot","GOT EHREx2");
+		Log.w("petbot","GOT EHREx2");
+		Log.w("petbot","GOT EHREx2");
+		Log.w("petbot","GOT EHREx2");
+		Log.w("petbot","GOT EHREx2");
 
 		start_wait();
+
+
 
         this.findViewById(android.R.id.content).setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -407,25 +502,44 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 					Log.w("petbot", "ANDROID - READ MSG -DONE");
 
 					if (m == null) {
-						if (!bye_pressed) {
+
+						Log.w("petbot", "ANDROID - BLANK MESSAGE MOVE TO EXIT");
+						if (!bye_pressed && !state.status.isEmpty()) {
 							FirebaseLogger.logError("connection closed");
-							exit_with_toast("PetBot connection closed");
+							status="PetBot connection closed";
 						}
-						break;
+						exit_streaming();
+						Log.w("petbot", "EXIT HERE X5");
+						return;
 					}
 
 					if ((m.pbmsg_type ^ (PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_STRING)) == 0) {
 
+							//m.pbmsg.toString().substring(0,"UPTIME".length()).equals("UPTIME")) {
+						Log.w("petbot",new String(m.pbmsg));
+						Log.w("petbot",m.pbmsg.toString().substring(0,"UPTIME".length()));
 						if (!petbot_found) {
-
 							String msg = new String(m.pbmsg);
 							String[] parts = msg.split(" ");
-
-							if (parts[0].equals("UPTIME")) {
+							if (parts.length>=3) {
 								int uptime = Integer.parseInt(parts[1]);
 								if (uptime > 20) {
 									petbot_found = true;
 									set_status("Negotiating with your PetBot...");
+									if (parts.length>=5) {
+										if (Integer.parseInt(parts[4])>1) {
+											pb.nice_mode=pb.NICE_MODE_SDP;
+										}
+									} else {
+										pb.nice_mode=pb.NICE_MODE_OLD;
+									}
+									pb.init();  //TODO WATCH OUT FOR TIMEOUTS HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+									if (!pb.getError().isEmpty()) {
+										status=pb.getError();
+										exit_streaming();
+										Log.w("petbot", "EXIT HERE X2");
+										return;
+									}
 									pb.makeIceRequest();
 								} else {
 									set_status("Found your PetBot...");
@@ -437,17 +551,34 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 
 						FirebaseLogger.logError("got ice response: " + Integer.toString(bb_streamer_id));
 						if (bb_streamer_id == 0) {
-
 							bb_streamer_id = m.pbmsg_from;
 							Thread negotiate_thread = new Thread() {
 
 								@Override
 								public void run() {
 
+									Log.w("petbot", "ANDROID - START ICE" );
 									pb.iceNegotiate(m);
+									if (!pb.getError().isEmpty()) {
+
+										Log.w("petbot", "ANDROID - ERROR IN ICE" );
+										pb.log("ICE NEGOTIATION FAILED " + pb.getError());
+										status = pb.getError();
+										exit_streaming();
+										Log.w("petbot", "EXIT HERE X3");
+										return;
+									}
+									Log.w("petbot", "ANDROID - ICE GOOD" );
+
+									pb.log("ICE NEGOTIATION SUCCESS");
 									runOnUiThread(new Runnable() {
 										@Override
 										public void run() {
+											if (state.debug_mode) {
+												ice_textview.setText(pb.getIcePair());
+												pb.log("ICE PAIR " + pb.getIcePair());
+
+											}
 											FrameLayout layout = (FrameLayout) findViewById(R.id.wait_screen);
 											layout.setVisibility(View.GONE);
 										}
@@ -462,23 +593,10 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 
 						} else {
 							FirebaseLogger.logWarn("multiple client connection attempt");
-							exit_with_toast("Someone else connected :(");
+							status="Someone else connected :(";
+							exit_streaming();
+							Log.w("petbot", "EXIT HERE X4");
 							return;
-						}
-
-					} else if ((m.pbmsg_type & PBMsg.PBMSG_DISCONNECTED) != 0) {
-
-						if (m.pbmsg_from == bb_streamer_id) {
-
-							if (!bye_pressed) {
-								FirebaseLogger.logError("PetBot connection closed");
-								exit_with_toast("PetBot connection closed");
-							}
-							break;
-
-						} else {
-							FirebaseLogger.logWarn("other client disconnected: " + Integer.toString(bb_streamer_id));
-							//fprintf(stderr,"SOMEONE ELSE DISCONNETED %d vs %d\n",bb_streamer_id,m->pbmsg_from);
 						}
 
 					} else if ((m.pbmsg_type ^  (PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_VIDEO | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_STRING | PBMsg.PBMSG_SUCCESS)) == 0) {
@@ -512,6 +630,23 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 							}
 						});
 
+					} else if ((m.pbmsg_type & PBMsg.PBMSG_DISCONNECTED) != 0) {
+
+						if (m.pbmsg_from == bb_streamer_id) {
+
+							if (!bye_pressed) {
+								FirebaseLogger.logError("PetBot connection closed");
+								status="PetBot connection closed";
+								exit_streaming();
+							}
+							Log.w("petbot", "EXIT HERE X1");
+							return;
+
+						} else {
+							FirebaseLogger.logWarn("other client disconnected: " + Integer.toString(bb_streamer_id));
+							//fprintf(stderr,"SOMEONE ELSE DISCONNETED %d vs %d\n",bb_streamer_id,m->pbmsg_from);
+						}
+
 					} else {
 						FirebaseLogger.logWarn("unknown message:\n" + m.toString());
 					}
@@ -531,8 +666,6 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 			finish();
 			return;
 		}
-
-		setContentView(R.layout.main);
 
 		// Get instance of Vibrator from current Context
 		vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
@@ -556,11 +689,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		logoutButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				bye_pressed=true;
-				pb.close();
-				nativePause();
-				finish();
-				Intent open_main = new Intent(PetBot.this, LoginActivity.class);
-				PetBot.this.startActivity(open_main);
+				exit_streaming();
 			}
 		});
 
@@ -568,6 +697,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		settingsButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
+				nativePause();
 				Intent open_settings = new Intent(PetBot.this, SettingsActivity.class);
 				PetBot.this.startActivity(open_settings);
 			}
@@ -588,6 +718,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 
 		check_selfie(false);
 
+
 	}
 
 	public void playSound() {
@@ -598,7 +729,7 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 		String sound_ID  = preferences.getString("alert_sounds", "00000000000000000000000000000000");
 		vibrator.vibrate(400);
 
-		String url = "https://petbot.ca:5000/FILES_DL/" + application.server_secret + "/" + sound_ID;
+		String url = ApplicationState.HTTPS_ADDRESS_PB_DL+ application.server_secret + "/" + sound_ID;
 		MediaPlayer mediaPlayer = new MediaPlayer();
 		mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 		try {

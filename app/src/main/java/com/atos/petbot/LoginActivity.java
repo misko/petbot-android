@@ -345,8 +345,10 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 									state.stun_port = turnserver.getString("port");
 									state.stun_username = turnserver.getString("username");
 									state.stun_password = turnserver.getString("password");
+									state.debug_mode=debug_mode;
 
-									Settings.updateable = !TextUtils.isEmpty(response.getString("updates_allowed"));
+									//Settings.updateable = !TextUtils.isEmpty(response.getString("updates_allowed"));
+									state.updateable = response.getString("updates_allowed");
 
 									Intent open_main = new Intent(LoginActivity.this, PetBot.class);
 									LoginActivity.this.startActivity(open_main);
