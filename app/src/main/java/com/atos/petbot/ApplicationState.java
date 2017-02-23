@@ -26,6 +26,7 @@ public class ApplicationState extends Application {
 	public static final String HTTPS_ADDRESS_PB_SELFIE_LAST = HTTPS_ADDRESS + "FILES_SELFIE_LAST/";
 
 	RequestQueue request_queue;
+	String updateable="";
 	String server;
 	int port;
 	String username;
@@ -37,10 +38,12 @@ public class ApplicationState extends Application {
 	String stun_username="";
 	String stun_password="";
 
+	boolean debug_mode=false;
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
-
+		Foreground.init(this);
 		FirebaseLogger.initialize(this.getApplicationContext());
 		request_queue = Volley.newRequestQueue(this.getApplicationContext());
 	}

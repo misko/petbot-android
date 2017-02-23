@@ -8,6 +8,7 @@ import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.WindowManager;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
@@ -35,7 +36,6 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 
 	PBConnector pb;
 	boolean settings_retrieved = false;
-	public static boolean updateable = false;
 
 	@Override
 	public void onDestroy() {
@@ -49,7 +49,7 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 
 
 		update_preference = (UpdatePreference) findPreference("update_preference");
-		update_preference.setEnabled(updateable);
+		update_preference.setEnabled(!application.updateable.isEmpty());
 
 		reboot_preference = (Preference) findPreference("reboot_preference");
 		reboot_preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -169,6 +169,7 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 		addPreferencesFromResource(R.xml.fragment_settings);
 
 		startMessageThread();
+
 
 	}
 
@@ -350,8 +351,14 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 				ApplicationState state = (ApplicationState) getActivity().getApplicationContext();
 				pb = new PBConnector(state.server, state.port, state.server_secret, null, null, null, null);
 				pb.getSettings();
-				setup();
-				updateSoundsList();
+
+				getActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						setup();
+						updateSoundsList();
+					}
+				});
 
 				int response_mask = PBMsg.PBMSG_SUCCESS | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_STRING;
 

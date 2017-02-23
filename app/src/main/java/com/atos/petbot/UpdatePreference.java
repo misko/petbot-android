@@ -44,7 +44,7 @@ public class UpdatePreference extends DialogPreference {
 		// send command to update_preference PetBot firmware
 		ApplicationState state = (ApplicationState) getContext().getApplicationContext();
 		pb = new PBConnector(state.server, state.port, state.server_secret, null, null, null, null);
-		pb.update();
+		pb.update(state.updateable);
 	}
 
 }
