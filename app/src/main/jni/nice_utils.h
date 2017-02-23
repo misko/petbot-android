@@ -11,6 +11,7 @@
 
 //extern guint stream_id;
 //extern NiceAgent *agent;
+int add_relays(NiceAgent * agent, int stream_id);
 
 char * our_nice_string(int controlling);
 void start_nice(pbsock * pbs);

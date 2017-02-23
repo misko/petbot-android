@@ -46,6 +46,15 @@ typedef struct _CustomData {
 	gboolean initialized;   /* To avoid informing the UI multiple times about the initialization */
 	GstElement *video_sink; /* The video sink element which receives XOverlay commands */
 	ANativeWindow *native_window; /* The Android native window where video will be rendered */
+
+	GstElement *nicesrc;
+	GstElement *rtph264depay;
+	GstElement *avdec_h264;
+	GstElement *videoconvert;
+	GstElement *queue;
+	GstElement *autovideosink;
+	GstElement *rtpjitterbuffer;
+	gint64  * jitter_stats;
 } CustomData;
 
 /* These global variables cache values which are not changing during execution */
@@ -175,12 +184,13 @@ static void *app_function (void *userdata) {
 	// data->pipeline = gst_parse_launch("videotestsrc ! warptv ! videoconvert ! autovideosink", &error);
 
 	// construct pipeline elements
-    GstElement *nicesrc = gst_element_factory_make ("nicesrc", "nicesrc");
-	GstElement *rtph264depay = gst_element_factory_make ("rtph264depay", "rtph264depay");
-	GstElement *avdec_h264 = gst_element_factory_make ("avdec_h264", "avdec_h264");
-	GstElement *videoconvert = gst_element_factory_make ("videoconvert", "videoconvert");
-	GstElement *queue = gst_element_factory_make ("queue", "queu");
-	GstElement *autovideosink = gst_element_factory_make ("autovideosink", "autovideosink");
+	data->nicesrc = gst_element_factory_make ("nicesrc", "nicesrc");
+	data->rtph264depay = gst_element_factory_make ("rtph264depay", "rtph264depay");
+	data->avdec_h264 = gst_element_factory_make ("avdec_h264", "avdec_h264");
+	data->videoconvert = gst_element_factory_make ("videoconvert", "videoconvert");
+	data->queue = gst_element_factory_make ("queue", "queue");
+	data->autovideosink = gst_element_factory_make ("fpsdisplaysink", "autovideosink");
+	data->rtpjitterbuffer = gst_element_factory_make ("rtpjitterbuffer", "rtpjitterbuffer");
 	//GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", "videotestsrc");
 
     PBPRINTF("nicesrc %p\n",nicesrc);
@@ -192,27 +202,28 @@ static void *app_function (void *userdata) {
     //PBPRINTF("videotestsrc %p\n",videotestsrc);
 
 
-	g_object_set (nicesrc, "agent", gst_agent, NULL);
-	g_object_set (nicesrc, "stream", gst_stream_id, NULL);
-	g_object_set (nicesrc, "component", 1, NULL);
-	g_object_set (queue, "leaky", 2, "max-size-buffers",20, NULL);
+	g_object_set (data->autovideosink, "text-overlay", FALSE, NULL);
+	g_object_set (data->nicesrc, "agent", gst_agent, NULL);
+	g_object_set (data->nicesrc, "stream", gst_stream_id, NULL);
+	g_object_set (data->nicesrc, "component", 1, NULL);
+	g_object_set (data->queue, "leaky", 2, "max-size-buffers",20, NULL);
 	GstCaps *nicesrc_caps = gst_caps_from_string("application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=96");
 
 	data->pipeline = gst_pipeline_new ("receive-pipeline");
 
-	gst_bin_add_many (GST_BIN (data->pipeline), nicesrc, rtph264depay, avdec_h264, videoconvert, queue, autovideosink,  NULL);
+	gst_bin_add_many (GST_BIN (data->pipeline), data->nicesrc, data->rtph264depay, data->avdec_h264, data->videoconvert, data->queue, data->rtpjitterbuffer, data->autovideosink,  NULL);
 	//gst_bin_add_many (GST_BIN (data->pipeline), videotestsrc, videoconvert, autovideosink,  NULL);
-	if (!gst_element_link_filtered( nicesrc, rtph264depay, nicesrc_caps)) {
+	if (!gst_element_link_filtered( data->nicesrc, data->rtpjitterbuffer, nicesrc_caps)) {
 		GST_ERROR ("Failed to link 1");
 		return NULL;
 	}
-	if (!gst_element_link_many(rtph264depay,avdec_h264,videoconvert,queue,autovideosink,NULL)) {
+	if (!gst_element_link_many(data->rtpjitterbuffer, data->rtph264depay,data->avdec_h264,data->videoconvert,data->queue,data->autovideosink,NULL)) {
 		GST_ERROR ("Failed to link 2");
 		return NULL;
 	}
 
 	//g_object_set( G_OBJECT(nicesrc), "port", udp_port,NULL);
-	g_object_set( G_OBJECT(autovideosink), "sync", FALSE, NULL);
+	g_object_set( G_OBJECT(data->autovideosink), "sync", FALSE, NULL);
 
 
   //data->pipeline = gst_parse_launch("videotestsrc ! videoconvert ! autovideosink", &error);
@@ -288,6 +299,20 @@ static void gst_native_init (JNIEnv* env, jobject thiz) {
 	data->app = (*env)->NewGlobalRef (env, thiz);
 	GST_DEBUG ("Created GlobalRef for app object at %p", data->app);
 
+
+	data->nicesrc=NULL;
+	data->rtph264depay=NULL;
+	data->avdec_h264=NULL;
+	data->videoconvert=NULL;
+	data->queue=NULL;
+	data->autovideosink=NULL;
+	data->rtpjitterbuffer=NULL;
+
+	data->jitter_stats=(guint64*)malloc(sizeof(guint64)*4);
+	if (data->jitter_stats==NULL) {
+		PBPRINTF("ERROR MALLOC!");
+	}
+
 	//pthread_create (&gst_app_thread, NULL, &app_function, data);
 }
 
@@ -297,6 +322,13 @@ static void gst_native_finalize (JNIEnv* env, jobject thiz) {
 	if (!data) return;
 	GST_DEBUG ("Quitting main loop...");
 	g_main_loop_quit (data->main_loop);
+	g_main_loop_unref (data->main_loop);
+	if (gst_agent!=NULL) {
+		gst_element_set_state (data->pipeline, GST_STATE_NULL);
+		gst_object_unref (data->pipeline);
+		g_object_unref(gst_agent);
+		gst_agent=NULL;
+	}
 	GST_DEBUG ("Waiting for thread to finish...");
 	pthread_join (gst_app_thread, NULL);
 	GST_DEBUG ("Deleting GlobalRef for app object at %p", data->app);
@@ -305,6 +337,38 @@ static void gst_native_finalize (JNIEnv* env, jobject thiz) {
 	g_free (data);
 	SET_CUSTOM_DATA (env, thiz, custom_data_field_id, NULL);
 	GST_DEBUG ("Done finalizing");
+}
+
+
+static jintArray get_jitter_stats (JNIEnv* env, jobject thiz) {
+	CustomData *data = GET_CUSTOM_DATA (env, thiz, custom_data_field_id);
+	if (data->rtpjitterbuffer==NULL || data->autovideosink==NULL) {
+		return NULL;
+	}
+	GstStructure * stats;
+	g_object_get (data->rtpjitterbuffer, "stats", &stats, NULL);
+	gst_structure_get_uint64 (stats, "num-pushed", data->jitter_stats);
+	gst_structure_get_uint64 (stats, "num-lost", data->jitter_stats+1);
+	gst_structure_get_uint64 (stats, "num-late", data->jitter_stats+2);
+
+	g_object_get(data->autovideosink,"frames-rendered",data->jitter_stats+3,NULL);
+
+
+	int size = 4;
+	jintArray result;
+	result = (*env)->NewIntArray(env, size);
+	if (result == NULL) {
+		return NULL; /* out of memory error thrown */
+	}
+	// fill a temp structure to use to populate the java int array
+	jint fill[size];
+	int i;
+	for (i = 0; i < size; i++) {
+		fill[i] = data->jitter_stats[i]; // put whatever logic you want to populate the values here.
+	}
+	// move from the temp structure to the java structure
+	(*env)->SetIntArrayRegion(env, result, 0, size, fill);
+	return result;
 }
 
 /* Set pipeline to PLAYING state */
@@ -381,6 +445,7 @@ static void gst_native_surface_finalize (JNIEnv *env, jobject thiz) {
 
 /* List of implemented native methods */
 static JNINativeMethod native_methods[] = {
+		{ "jitterStats", "()[I", (void *) get_jitter_stats},
 	{ "nativeInit", "()V", (void *) gst_native_init},
 	{ "nativePlayAgent", "(JI)V", (void *) gst_play_with_agent},
 	{ "nativeFinalize", "()V", (void *) gst_native_finalize},

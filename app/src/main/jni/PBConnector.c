@@ -25,7 +25,7 @@
 #define  LOG_TAG    "Petbot"
 
 #define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
-#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+#define  LOGW(...)  __android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__)
 
 //static jclass pbmsg_cls;
 
@@ -81,13 +81,13 @@ void Java_com_atos_petbot_PBConnector_makeIceRequest(JNIEnv * env, jobject thiz)
        int * ice_thread_pipes_to_child = (int*)( (*env)->GetLongField(env,thiz, ice_to_child_field ));
        int * ice_thread_pipes_from_child = (int*)( (*env)->GetLongField(env,thiz, ice_from_child_field ));
 
-    LOGD("POINTERS FOR ICE PIPES %p %p\n",ice_thread_pipes_to_child,ice_thread_pipes_from_child);
 
-       pbsock * pbs =  get_pbsock(env,thiz);
+        pbsock * pbs =  get_pbsock(env,thiz);
 
 
         pbmsg * ice_request_m = make_ice_request(ice_thread_pipes_from_child,ice_thread_pipes_to_child);
         fprintf(stderr,"make the ice request!\n");
+        LOGD("OUR ICE %s\n",ice_request_m->pbmsg);
         send_pbmsg(pbs, ice_request_m);
 }
 
@@ -102,6 +102,29 @@ void Java_com_atos_petbot_PBConnector_setStun(JNIEnv* env,jobject thiz, jstring 
     set_stun(jni_stun_server,jni_stun_port,jni_stun_username,jni_stun_password);
     return;
 
+}
+
+jstring Java_com_atos_petbot_PBConnector_getIcePair(JNIEnv * env, jobject thiz) {
+
+    jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
+    jfieldID pbnio_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_pbnio", "J");
+    pb_nice_io * pbnio = (pb_nice_io*)( (*env)->GetLongField(env,thiz, pbnio_field ));
+
+    if (pbnio->ice_pair!=NULL) {
+        return (*env)->NewStringUTF(env, pbnio->ice_pair);
+    }
+    return (*env)->NewStringUTF(env, "");
+}
+
+jstring Java_com_atos_petbot_PBConnector_getError(JNIEnv * env, jobject thiz) {
+
+    jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
+    jfieldID pbnio_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_pbnio", "J");
+    pb_nice_io * pbnio = (pb_nice_io*)( (*env)->GetLongField(env,thiz, pbnio_field ));
+    if (pbnio!=NULL && pbnio->error!=NULL) {
+        return (*env)->NewStringUTF(env, pbnio->error);
+    }
+    return (*env)->NewStringUTF(env, "");
 }
 
 void Java_com_atos_petbot_PBConnector_iceNegotiate(JNIEnv * env, jobject thiz, jobject jpbmsg) {
@@ -144,7 +167,7 @@ static void * start_GMain(void * x) {
         //TODO cleanup? Thread join?
 }
 
-jstring Java_com_atos_petbot_PBConnector_init(JNIEnv * env, jobject thiz) {
+void Java_com_atos_petbot_PBConnector_init(JNIEnv * env, jobject thiz) {
         GMainLoop * main_loop = g_main_loop_new (NULL, FALSE);
 
         jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
@@ -155,9 +178,17 @@ jstring Java_com_atos_petbot_PBConnector_init(JNIEnv * env, jobject thiz) {
 	    pthread_create (&gst_app_thread, NULL, &start_GMain, main_loop);
         pthread_detach(gst_app_thread);
 
+    clear_stun_servers();
+    add_stun_server("sfturn.petbot.com", "3478", "misko", "misko");
+    add_stun_server("bangturn.petbot.com", "3478", "misko", "misko");
+    add_stun_server("torturn.petbot.com", "3478", "misko", "misko");
+    add_stun_server("frankturn.petbot.com", "3478", "misko", "misko");
 
     jfieldID ice_to_child_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ice_thread_pipes_to_child", "J");
     jfieldID ice_from_child_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ice_thread_pipes_from_child", "J");
+
+    jfieldID nice_mode_field = (*env)->GetFieldID(env,PBConnectorClass, "nice_mode", "I");
+    int nice_mode = (*env)->GetIntField(env,thiz,nice_mode_field);
 
     int * ice_thread_pipes_to_child = (int*)malloc(sizeof(int)*2);
     assert(ice_thread_pipes_to_child!=NULL);
@@ -174,6 +205,7 @@ jstring Java_com_atos_petbot_PBConnector_init(JNIEnv * env, jobject thiz) {
     LOGD("PIPES RET IS %d\n",ret);
 
     pb_nice_io * pbnio =  new_pbnio();
+    pbnio->mode=nice_mode;
     pbnio->pipe_to_child=ice_thread_pipes_to_child[1];
     pbnio->pipe_to_parent=ice_thread_pipes_from_child[1];
     pbnio->pipe_from_parent=ice_thread_pipes_to_child[0];
@@ -184,17 +216,16 @@ jstring Java_com_atos_petbot_PBConnector_init(JNIEnv * env, jobject thiz) {
     jfieldID pbnio_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_pbnio", "J");
     (*env)->SetLongField(env,thiz, pbnio_field, pbnio);
 
-    if (pbnio->error!=NULL) {
-        return (*env)->NewStringUTF(env, pbnio->error);
-    }
-    return (*env)->NewStringUTF(env, "");
 }
 
 
 void Java_com_atos_petbot_PBConnector_nativeClose(JNIEnv* env,jobject thiz) {
 
         pbsock * pbs = get_pbsock(env,thiz);
+    LOGW("CLOSING THE SOCKET %p %d\n",pbs,pbs->client_sock);
         free_pbsock(pbs);
+
+        LOGW("CLOSING THE SOCKET %p %d\n",pbs,pbs->client_sock);
 
         jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
         jfieldID pbs_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_pbs", "J");
@@ -219,19 +250,26 @@ pbmsg * jpbmsg_to_pbmsg(JNIEnv* env,jobject jpbmsg) {
        int type = (*env)->GetIntField(env,jpbmsg,pbmsg_type_fid);
        int from = (*env)->GetIntField(env,jpbmsg,pbmsg_from_fid);
 
+       //todo check for null termination?
+
        jbyteArray jary = (jbyteArray)((*env)->GetObjectField(env,jpbmsg, pbmsg_msg_fid));
         jbyte *b = (jbyte *)((*env)->GetByteArrayElements(env,jary, NULL));
 
        //TODO assert lengths are correct...
        int alen = (*env)->GetArrayLength( env, jary );
        assert(alen==len);
-       char * ray = (char*)malloc(sizeof(char)*len);
+       int null_terminate = ((type & PBMSG_STRING) !=0) && b[len-1]!='\0';
+
+       char * ray = (char*)malloc(sizeof(char)*(len+(null_terminate ? 1 : 0)));
        for (int i=0; i<len; i++) {
          ray[i]=b[i];
        }
+       if (null_terminate) {
+           ray[len]='\0';
+       }
 
        pbmsg * m = new_pbmsg();
-       m->pbmsg_len = len;
+       m->pbmsg_len = len+(null_terminate ? 1 : 0);
        m->pbmsg_type = type;
        m->pbmsg_from = from;
        m->pbmsg = ray;
@@ -262,16 +300,22 @@ jobject Java_com_atos_petbot_PBConnector_readPBMsg(JNIEnv* env,jobject thiz) {
 
 
     //get a msg
+        LOGW("LISTENING FOR MESSAGE ON PBSOCKET %p %d",pbs,pbs!=NULL ? pbs->client_sock : -1);
        pbmsg * m = recv_pbmsg(pbs);
         if (m==NULL) {
+            LOGW("LISTENING FOR MESSAGE ON PBSOCKET %p NULL",pbs);
             return NULL;
         }
+    LOGW("LISTENING FOR MESSAGE ON PBSOCKET %p - NOT NULL",pbs);
 
+        //make sure we convert strings correctly
+        if ((m->pbmsg_type & PBMSG_STRING ) !=0 ) {
+            m->pbmsg_len=strlen(m->pbmsg);
+        }
        //ok now copy it into the structure...
        (*env)->SetIntField(env,jpbmsg, pbmsg_len_fid, m->pbmsg_len);
        (*env)->SetIntField(env,jpbmsg, pbmsg_type_fid, m->pbmsg_type);
        (*env)->SetIntField(env,jpbmsg, pbmsg_from_fid, m->pbmsg_from);
-
 
        jbyteArray d = (*env)->NewByteArray(env, m->pbmsg_len);
        char * ray = (char*)malloc(sizeof(char)*m->pbmsg_len);
@@ -289,6 +333,7 @@ jobject Java_com_atos_petbot_PBConnector_readPBMsg(JNIEnv* env,jobject thiz) {
   void Java_com_atos_petbot_PBConnector_connectToServerWithKey(JNIEnv* env,jobject thiz, jstring hostname, int portno, jstring key ) {
 
         const char* hostname_str = (*env)->GetStringUTFChars(env,hostname,0);
+      LOGD("HOSTNAMExx2 %s with %d \n",hostname_str,portno);
         const char* key_str = (*env)->GetStringUTFChars(env,key,0);
 
 
@@ -296,24 +341,30 @@ jobject Java_com_atos_petbot_PBConnector_readPBMsg(JNIEnv* env,jobject thiz) {
        jclass PBConnectorClass = (*env)->GetObjectClass(env,thiz);
        jfieldID pbs_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_pbs", "J");
        jfieldID ctx_field = (*env)->GetFieldID(env,PBConnectorClass, "ptr_ctx", "J");
+      LOGD("HOSTNAME %s with %d key %s\n",hostname_str,portno,key_str);
 
 	   SSL_CTX* ctx;
 	   OpenSSL_add_ssl_algorithms();
 	   SSL_load_error_strings();
 	   ctx = SSL_CTX_new (SSLv23_client_method());
 	   CHK_NULL(ctx);
+      LOGD("HOSTNAME %s with %d key %s\n",hostname_str,portno,key_str);
 
        pbsock * pbs = connect_to_server_with_key(hostname_str, portno, ctx, key_str);
+      LOGD("HOSTNAME x4 %s with %d key %s\n",hostname_str,portno,key_str);
        //jlong ptr_pbs = env->GetLongField(obj, pbs_field);
 
        jlong l_pbs = (jlong) pbs;
        (*env)->SetLongField(env,thiz, pbs_field, l_pbs);
 
+      LOGD("HOSTNAME x3 %s with %d key %s\n",hostname_str,portno,key_str);
        jlong l_ctx = (jlong) ctx;
        (*env)->SetLongField(env,thiz, ctx_field, l_ctx);
 
+      LOGD("HOSTNAME x %s with %d key %s\n",hostname_str,portno,key_str);
         (*env)->ReleaseStringUTFChars(env,hostname,hostname_str);
         (*env)->ReleaseStringUTFChars(env,key,key_str);
+      LOGD("HOSTNAME x2 %s with %d key %s\n",hostname_str,portno,key_str);
   }
 
   jbyteArray Java_com_atos_petbot_PBConnector_newByteArray(JNIEnv* env,jobject thiz ) {
