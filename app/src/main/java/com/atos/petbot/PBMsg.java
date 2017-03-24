@@ -32,6 +32,8 @@ public class PBMsg {
     public static int PBMSG_FILE = (1<<22);
     public static int PBMSG_KEEP_ALIVE = (1<<23);
 	public static int PBMSG_UPDATE = (1<<25);
+    public static int PBMSG_SYSTEM = (1<<26);
+    public static int PBMSG_WEBRTC = (1<<27);
 
     public PBMsg() {
         //the base constructor

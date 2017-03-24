@@ -36,11 +36,13 @@
             android:summary="Turn the LED on the bottom of the PetBot on or off"
             android:enabled="false" />
 
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Selfie">
 
         <SwitchPreference
+            android:key="pb_selfie_enable"
             android:title="Enable"
             android:summary="Take selfies automatically"
             android:enabled="false" />

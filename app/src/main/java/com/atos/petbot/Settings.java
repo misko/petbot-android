@@ -151,6 +151,13 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 				return true;
 			}
 		});
+		findPreference("pb_selfie_enable").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object checked) {
+				pb.set("pb_selfie_enable", (Boolean) checked ? "1" : "0");
+				return true;
+			}
+		});
 	}
 
 	@Override
@@ -428,6 +435,10 @@ public class Settings extends PreferenceFragment implements SoundRecorderPrefere
 					SwitchPreference led_enable_switch = (SwitchPreference) findPreference("LED");
 					led_enable_switch.setEnabled(true);
 					led_enable_switch.setChecked(setting_value.equals("1"));
+				} else if (setting_name.equals("pb_selfie_enable")) {
+					SwitchPreference selfie_enable_switch = (SwitchPreference) findPreference("pb_selfie_enable");
+					selfie_enable_switch.setEnabled(true);
+					selfie_enable_switch.setChecked(setting_value.equals("1"));
 				}
 			}
 		}

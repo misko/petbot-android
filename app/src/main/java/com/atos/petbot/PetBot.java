@@ -547,6 +547,13 @@ public class PetBot extends AppCompatActivity implements SurfaceHolder.Callback 
 							}
 						}
 
+
+					} else if ((m.pbmsg_type ^  (PBMsg.PBMSG_SUCCESS | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_WEBRTC | PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_STRING)) == 0) {
+						FirebaseLogger.logWarn("multiple client connection attempt");
+						status="Someone else connected :(";
+						exit_streaming();
+						Log.w("petbot", "EXIT HERE X4");
+						return;
 					} else if ((m.pbmsg_type ^  (PBMsg.PBMSG_SUCCESS | PBMsg.PBMSG_RESPONSE | PBMsg.PBMSG_ICE | PBMsg.PBMSG_CLIENT | PBMsg.PBMSG_STRING)) == 0) {
 
 						FirebaseLogger.logError("got ice response: " + Integer.toString(bb_streamer_id));
